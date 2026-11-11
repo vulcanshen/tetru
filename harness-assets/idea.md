@@ -45,7 +45,8 @@
 - （2026-11-11）預設改成 k 右旋、d 左旋。
 - （2026-11-11）遊戲裡的 Space menu 不需要給 h、l、k、j、Enter，連 d、k 都不需要，應該是給 restart、save。
   後來說：列出來的確實是屬於這個模式的 key，tdp #7 也關掉（照 tdp menu.4 列，再加 restart、save）。
-  再後來問：為什麼 h/l/j/Enter 又出現在 Play mode 的 menu 裡面？聽了 tdp 的規定之後選：重新打開 tdp #7，請 tdp 讓遊戲例外。
+  再後來問：為什麼 h/l/j/Enter 又出現在 Play mode 的 menu 裡面？聽了 tdp 的規定之後選：重新打開 tdp #7。
+  又說：應該不是讓遊戲例外，而是讓 app 特殊模式中可以不再 tdp space menu 內的限制（#7 照這樣改了標題與內文）。
 
 ## 關卡
 
