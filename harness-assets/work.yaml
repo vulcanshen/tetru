@@ -37,7 +37,7 @@ tasks:
       旋轉在方塊自己的框裡轉；轉不過去依序試左 1、右 1、上 1，長條再試左 2、右 2
       分數：一次消 1–4 行 100、300、500、800 乘當時的關卡；往下一格 1 分，落到底每一格 2 分
       固定時有一格在場地上方就結束
-      tgo App.Tick 每 40 ms 一格推進遊戲（README 的計時器）
+      tgo App.Tick 每 40 ms 一格推進遊戲（README 的計時器）；消行時每 16 ms 一格（task 9）
     test: [TestPiecesComeSevenToABag, TestSameSeedSameGame, TestPieceComesInAtTheTopInTheMiddle, TestMoveStopsAtTheWalls, TestRotateTurnsAndComesBack, TestRotateKicksOffTheWall, TestDownScoresARow, TestDropSetsThePieceAndScoresTwoARow, TestGravityAtTheLevelsSpeed, TestLockWaitsAndMovingRestartsIt, TestLockResetsRunOut, TestClearScoresAtTheLevelAndGoesUp, TestTheSpeedStopsAtTheLastLevel, TestTheStackAtTheTopEnds, TestEndStopsThePiece, TestTheGameFalls]
   - id: 4
     spec: 10
@@ -100,17 +100,17 @@ tasks:
       沒有 Enter 與其他動作；j|k、gg|G 由 tgo 移動
     test: [TestScoresBestFirst, TestTopOutKeepsTheScore, TestScreensSwitchOnTRS]
   - id: 9
-    spec: 12
+    spec: 15
     implementation: |
       消行：方塊落定、湊滿的那一刻，滿的那幾行離開堆疊，行數與分數馬上加（關卡跟著升），下一個方塊同時出現在最上面等著
-      滿的那幾行整行畫成 #ffffff，200 ms 之後白色的從最下面那一行開始往左滑：一行 360 ms，先慢後快（滑的距離照時間的平方），上面那一行在下面那一行開始 120 ms 後跟著滑；
+      滿的那幾行整行畫成 #ffffff，100 ms 之後白色的從最下面那一行開始往左滑：一行 200 ms，等速（滑的距離照時間），上面那一行在下面那一行開始 50 ms 後跟著滑；
       滑的那一行一次往左移一個 icon（2 欄），畫過場地左邊的空白、超過 GAME 的框就不畫了，滑走的地方畫底；窄寬時一樣從 GAME 的左邊滑出去
-      全部滑出去之後，最下面那個空行上面的整片每 40 ms 往下降一列像素，一列一列補到沒有空行；最上面補空的格子；等著的方塊不跟著降
+      全部滑出去之後，最下面那個空行上面的整片每 20 ms 往下降一列像素，一列一列補到沒有空行；最上面補空的格子；等著的方塊不跟著降
       這段期間 Play 模式的鍵按了沒反應，方塊也不往下掉；降完方塊才開始掉，放不進去就結束（堆到頂）；有 popup 蓋著時動畫停著
       結束：方塊由上往下一列像素一列像素變成框的灰，5 秒蓋滿整張圖（場地與兩格），灰的留著，場地上不寫字（第一版的紅色 END 拿掉了）
       堆到頂結束的，灰幕落完才開 popup：有分數的問誰玩的（task 6）；0 分的開 tgo App.Confirm：標題 PLAY，內容 Game over: no points, so nothing is kept.，
       問句 Play again?，Enter:play 開下一局，Esc:cancel 回到 GAME（Enter:play）；[x] End game、[n]ew game 結束的不開
-      兩段動畫都由 tgo App.Tick 每 40 ms 推一格；灰幕不管有沒有 popup 都照走
+      兩段動畫都由 tgo App.Tick 推：消行時每 16 ms 一格，灰幕每 40 ms 一格；消 1 行 0.32 秒、4 行 0.53 秒；灰幕不管有沒有 popup 都照走
     test: [TestLineClearSlidesOutToTheLeft, TestClearSlidesThenTheStackComesDown, TestClearScoresAtTheLevelAndGoesUp, TestTopOutKeepsTheScore, TestTheStackAtTheTopEnds, TestTopOutWithNoPoints, TestNoPointsNotKept]
   - id: 10
     spec: 11

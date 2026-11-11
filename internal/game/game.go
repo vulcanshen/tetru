@@ -32,11 +32,12 @@ const (
 	// the full rows go white for Flash, then slide out to the left, white,
 	// the bottom one first, each taking Slide and the one over it starting
 	// Stagger after it; then the stack over them comes down a row every
-	// Settle till the rows they left are filled.
-	Flash   = 200 * time.Millisecond
-	Slide   = 360 * time.Millisecond
-	Stagger = 120 * time.Millisecond
-	Settle  = 40 * time.Millisecond
+	// Settle till the rows they left are filled. About half what they were
+	// (user, 2026-11-11: too slow, not smooth): a row 0.32 s, four 0.53 s.
+	Flash   = 100 * time.Millisecond
+	Slide   = 200 * time.Millisecond
+	Stagger = 50 * time.Millisecond
+	Settle  = 20 * time.Millisecond
 	// Curtain is the end: the pieces going grey from the top.
 	Curtain = 5 * time.Second
 )
@@ -442,7 +443,9 @@ func (g *Game) settle() {
 }
 
 // Slid is how far row i of Going has slid out to the left, 0 to 1, after
-// the flash: slow at first, faster as it goes.
+// the flash: at an even speed, so that a frame moves it as far as the
+// next does (user, 2026-11-11: not smooth); speeding up, it went a few
+// pixels a frame at the end.
 func (g *Game) Slid(i int) float64 {
 	k := g.fx - Flash - time.Duration(i)*Stagger
 	if k <= 0 {
@@ -451,8 +454,7 @@ func (g *Game) Slid(i int) float64 {
 	if k >= Slide {
 		return 1
 	}
-	f := float64(k) / float64(Slide)
-	return f * f
+	return float64(k) / float64(Slide)
 }
 
 // End ends the game where it is: the player ended it.

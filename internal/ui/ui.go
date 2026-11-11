@@ -43,8 +43,11 @@ const (
 	// sideW is the least a box at GAME's right is: INFO's rows and its
 	// frame.
 	sideW = infoW + 2
-	// frame is a step of the game: the pace of the clear, as locku's.
-	frame = 40 * time.Millisecond
+	// frame is a step of the game, as locku's; clearFrame is one while rows
+	// clear, a frame of a screen at 60 Hz, so the rows slide out a pixel or
+	// two a frame (user, 2026-11-11: the clear not smooth).
+	frame      = 40 * time.Millisecond
+	clearFrame = 16 * time.Millisecond
 	// nameLen is the most characters a name has.
 	nameLen = 16
 )
@@ -485,29 +488,34 @@ func (t *Tetru) over() tea.Cmd {
 // down, or who played being asked.
 func (t *Tetru) waiting() bool { return t.g != nil && t.g.Over && !t.saved }
 
-// tick is a frame of the game.
-type tick struct{}
+// tick is a frame of the game, dt long.
+type tick struct{ dt time.Duration }
 
-// wake starts the frames, unless they are on their way.
+// wake starts the frames, unless they are on their way: clearFrame while
+// rows clear, frame otherwise.
 func (t *Tetru) wake() tea.Cmd {
 	if t.ticking {
 		return nil
 	}
 	t.ticking = true
-	return t.App.Tick(frame, func(time.Time) tea.Msg { return tick{} })
+	dt := frame
+	if t.g != nil && len(t.g.Going) > 0 {
+		dt = clearFrame
+	}
+	return t.App.Tick(dt, func(time.Time) tea.Msg { return tick{dt} })
 }
 
 func (t *Tetru) onMsg(msg tea.Msg) tea.Cmd {
-	if _, ok := msg.(tick); ok {
-		return t.step()
+	if m, ok := msg.(tick); ok {
+		return t.step(m.dt)
 	}
 	return nil
 }
 
-// step is a frame: the game in the Play mode goes on a frame, unless a
+// step is a frame, dt long: the game in the Play mode goes on dt, unless a
 // popup is over it or the terminal is too small to see it; the curtain
 // comes down whatever. The frames stop with nothing left to move.
-func (t *Tetru) step() tea.Cmd {
+func (t *Tetru) step(dt time.Duration) tea.Cmd {
 	t.ticking = false
 	switch {
 	case t.g == nil, t.done:
@@ -516,7 +524,7 @@ func (t *Tetru) step() tea.Cmd {
 		if t.g.Ended() {
 			return nil
 		}
-		t.g.Advance(frame)
+		t.g.Advance(dt)
 		if t.g.Ended() && t.topped {
 			// The curtain is down: the end is said now, not as the stack
 			// reaches the top, when the player may still be pressing Enter to
@@ -535,7 +543,7 @@ func (t *Tetru) step() tea.Cmd {
 		return nil
 	}
 	if !t.hidden() {
-		t.g.Advance(frame)
+		t.g.Advance(dt)
 		if t.g.Over {
 			return t.over()
 		}
