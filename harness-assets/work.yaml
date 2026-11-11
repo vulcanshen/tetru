@@ -58,7 +58,7 @@ tasks:
       Rotate r[i]ght（the falling piece, clockwise），選了就等於按那個鍵、回到 Play；PLAY MODE 的 h（move left）、l（move right）、j（down a row）、
       Enter（drop to the bottom）只顯示；[Esc] Pause；寫的都是 Settings 裡現在的鍵
       遊戲每 40 ms 一格，有任何 popup 開著（Space menu、?、confirm）或終端機比 42×30 小時不往前走，popup 關掉就接著走；有沒有 popup 是讀
-      tgo 的內部狀態（TODO(tgo)，spec 的 remark）
+      tgo 的內部狀態（TODO(tgo #3)，spec 的 remark）
       Esc 離開 Play（tgo Mode.OnExit）：遊戲停著，場地中間畫兩條 Lavender 的直槓；GAME 的 hint 是 Enter:resume；Space menu 是一般的：
       PANEL OPERATION 的 [Enter] Resume（this game, where it was）、[n]ew game、[x] End game，與 Global operation；Enter 回到 Play
       Tab、數字鍵在 Play 裡暫停（tgo Mode.Pause），tgo 跳 Info toast：Press [Esc] to leave Play first
@@ -79,7 +79,7 @@ tasks:
       每次整個檔重寫（先寫暫存檔再改名），目錄 0755、檔 0644
       一局結束時記一筆，一局只記一次：堆到頂、[x] End game、[n]ew game 結束還在玩的那一局、離開流程裡 Quit tetru? 按 Enter、
       main 在 tgo App.Run 結束後（連按兩次 Ctrl-C、關掉終端機）；0 分的不記
-      關掉終端機：main 攔下 SIGHUP、轉成 SIGTERM 送給自己，Run 結束後照樣記（TODO(tgo)，spec 的 remark）
+      關掉終端機：main 攔下 SIGHUP、轉成 SIGTERM 送給自己，Run 結束後照樣記（TODO(tgo #4)，spec 的 remark）
       記下時 App Log 記一筆 Success：Kept 12,340 points for vulcan；寫不進去開 error popup：Can't keep the score，檔案路徑與原因
       啟動時 scores.yaml 讀不了：tgo App.MoveAside 問要不要移成 scores.yaml.bak 重新開始；Enter 移開、從空的排行開始，Esc 離開
     test: [TestPathIsInTheDataDirectory, TestSaveThenLoad, TestLoadBroken, TestTopOutKeepsTheScore, TestNoPointsNotKept, TestFinishKeepsTheGameGoing, TestQuitWithAGameAsksAndKeeps, TestBrokenScoresAskToMoveAside]
@@ -111,7 +111,7 @@ tasks:
       Enter 結束、記下、灰幕開始；沒有一局時停用
       0 分時 confirm 寫 This game has no points yet: nothing is kept.
       離開流程（tgo App.QuitFlow）：有一局沒結束時開 confirm QUIT：說出會記下什麼，Quit tetru?，Enter:quit Esc:cancel；Enter 記下分數，
-      等 confirm 收完再離開（TODO(tgo)，spec 的 remark）；沒有一局時直接離開；離開流程中再按一次 Ctrl-C 由 tgo 立刻離開
+      等 confirm 收完再離開（TODO(tgo #5)，spec 的 remark）；沒有一局時直接離開；離開流程中再按一次 Ctrl-C 由 tgo 立刻離開
     test: [TestEndGameAsksAndKeeps, TestNewGameAsksThenAsksTheName, TestQuitWithAGameAsksAndKeeps, TestQuitWithNoGameLeaves, TestNoPointsNotKept]
   - id: 11
     spec: 1

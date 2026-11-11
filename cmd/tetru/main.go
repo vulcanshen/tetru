@@ -55,7 +55,7 @@ func command(arg string, out, errOut io.Writer) int {
 // (SIGHUP), so that Run returns and the game going keeps its score (user,
 // 2026-11-11: leaving keeps the score as it is then).
 //
-// TODO(tgo): terminu-go's Run ends on SIGTERM (bubbletea's) but not on
+// TODO(tgo #4): terminu-go's Run ends on SIGTERM (bubbletea's) but not on
 // SIGHUP, which kills the program before anything after Run.
 func endOnHangup() {
 	hup := make(chan os.Signal, 1)

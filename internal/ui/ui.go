@@ -361,7 +361,7 @@ func (t *Tetru) quit() tea.Cmd {
 	return t.App.Confirm(terminu.Ask{Title: "Quit", Question: "Quit tetru?", Verb: "quit", Details: []string{t.keeping()}},
 		func() tea.Cmd {
 			t.Finish()
-			// TODO(tgo): leave once the confirm has closed (tdp F2: 9
+			// TODO(tgo #5): leave once the confirm has closed (tdp F2: 9
 			// frames of 32ms): tdptest cannot settle a confirm of the app's
 			// whose accept quits while it closes; the lib's own quit
 			// confirm does not have it.

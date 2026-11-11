@@ -90,8 +90,8 @@ tasks:
     remark:
       - 'Play 裡按 Space 開 Play 模式的 Space menu（tdp K11、menu.4）：ITEM OPERATION 是對落下中的方塊的 Rotat[e] left、Rotate r[i]ght（照使用者設的鍵）；PLAY MODE 列移動、往下、落到底（只顯示）與 [Esc] Pause。menu 開著遊戲就停，Esc 或 Space 關掉就接著玩'
       - '遊戲只在 Play 裡、沒有任何 popup、終端機不比最低尺寸小時才走；toast 不是 popup，不擋'
-      - note: 'tgo 沒有公開「現在有沒有 popup 開著」，遊戲停不停只能靠讀 tgo 內部的 popup 疊（TODO(tgo)），測試守住它跟 tgo 的行為一致；等 tgo 給 API 再改'
-        issue: 待回報 terminu-go
+      - note: 'tgo 沒有公開「現在有沒有 popup 開著」，遊戲停不停只能靠讀 tgo 內部的 popup 疊（TODO(tgo #3)），測試守住它跟 tgo 的行為一致；等 tgo 給 API 再改'
+        issue: tgo #3
       - 'Esc 離開 Play＝暫停（tdp K4：Esc 是安全的出口，不會丟掉這一局）：場地中間畫暫停記號，兩條直槓（Lavender）；GAME 的 hint 換成 Enter:resume；Enter 回到 Play。原本想寫 PAUSE 的像素字，五個字 19 像素寬，比場地寬'
       - '暫停時 GAME 的 Space menu 是一般的（tdp M2）：PANEL OPERATION 的 [Enter] Resume、[n]ew game、[x] End game，與 Global operation（換畫面也在這裡）'
       - 'Tab、數字鍵在 Play 裡暫停（tdp K11），按了 tgo 跳 Info toast：Press [Esc] to leave Play first'
@@ -112,8 +112,8 @@ tasks:
       - '刪了就找不回來的紀錄是資料（tdp E3）：~/.tetru/scores.yaml，TETRU__DATA 覆寫（tdp E2）；檔案格式 app 可以自行決定（tdp P5）'
       - '格式：scores 底下一筆一個 {time, name, score}；time 是 RFC 3339，照記下的順序附在最後'
       - '什麼時候記：堆到頂結束、[x] End game、[n]ew game 結束還在玩的那一局、離開 app 時有一局還沒結束（q、Ctrl-C，連按兩次 Ctrl-C 也一樣，關掉終端機也一樣）'
-      - note: 'tgo 的 Run 收到 SIGHUP（關掉終端機）時不會結束，程式直接被殺，Run 之後的收尾跑不到；main 暫時攔下 SIGHUP、轉成 SIGTERM 送給自己（bubbletea 收到 SIGTERM 會正常結束 Run）（TODO(tgo)）'
-        issue: 待回報 terminu-go
+      - note: 'tgo 的 Run 收到 SIGHUP（關掉終端機）時不會結束，程式直接被殺，Run 之後的收尾跑不到；main 暫時攔下 SIGHUP、轉成 SIGTERM 送給自己（bubbletea 收到 SIGTERM 會正常結束 Run）（TODO(tgo #4)）'
+        issue: tgo #4
       - '分數是 0 的那一局不記：一行都沒消、沒有往下或落到底，排行上只會多一列 0'
       - '記下時在 App Log 記一筆（tdp note.7）；寫不進去開 error popup（tdp F5）；讀不了時照 tdp E3 問要不要移開（tgo MoveAside）'
   - id: 8
@@ -142,8 +142,8 @@ tasks:
       - '[x] End game（save this score and stop）與 [n]ew game（start over from level 1）是 GAME 的 panel operation（tdp M2、M3）；n、x 是領域熱鍵（tdp P5），不佔移動的字母'
       - '有一局還沒結束時兩個都先 confirm（tdp F6：哪些要確認 app 可以自行決定），說出會記下的分數；沒有一局在玩時 [x] End game 停用（tdp M6）'
       - '離開流程（tdp K9）：有一局還沒結束時先 confirm Quit tetru?，說出會記下的分數；沒有就直接離開'
-      - note: 'app 自己開的 confirm 在 Enter 時回 tea.Quit，tdptest 會卡在 confirm 收起的動畫（tgo 自己的 Quit confirm 沒有這個問題）；暫時等 confirm 收完（tdp F2 的 288 ms）再離開（TODO(tgo)）'
-        issue: 待回報 terminu-go
+      - note: 'app 自己開的 confirm 在 Enter 時回 tea.Quit，tdptest 會卡在 confirm 收起的動畫（tgo 自己的 Quit confirm 沒有這個問題）；暫時等 confirm 收完（tdp F2 的 288 ms）再離開（TODO(tgo #5)）'
+        issue: tgo #5
   - id: 11
     spec: 1
     request: '跟家族其他 app 一樣有 splash、version、help'
@@ -170,7 +170,7 @@ tasks:
       - '設定是 app 自己的選項（tdp E3）：~/.config/tetru/config.yaml（$XDG_CONFIG_HOME/tetru），TETRU__CONFIG 覆寫（tdp E2）；keys 底下 move_left、move_right、down、rotate_left、rotate_right、drop。沒寫的照預設；設定檔裡其他的 key 寫回時留著（tdp E3）。改了在 App Log 記一筆（tdp note.7）'
       - '設定檔讀不了（格式錯、鍵不能用、兩個動作同一個鍵）時照 tdp E3 問要不要移開（tgo MoveAside），移開就用預設的鍵；排行的檔也讀不了時接著問它'
       - note: 'tgo MoveAside 找 .bak 名字的迴圈（asideName）只在 Lstat 回「不存在」時停；路徑的上一層是檔案（ENOTDIR）或目錄不能進（EACCES）時一直轉，app 啟動就卡住（TETRU__CONFIG、TETRU__DATA 指錯時會遇到）。不常見，暫時沒有繞過'
-        issue: 待回報 terminu-go
+        issue: tgo #6
       - '改了馬上生效：Play 的鍵、footer、Space menu、? 與 MANUAL 寫的都是現在的鍵'
   - id: 14
     spec: 3
