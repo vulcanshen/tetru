@@ -50,12 +50,12 @@ tasks:
       Enter 在 GAME 上（Play 外）：沒有一局在暫停時開新的一局（task 6），有就繼續（task 5）；hint Enter:play，暫停時 Enter:resume
     test: [TestPlay, TestSpaceMenuRotates, TestTheGameFalls, TestSettingsSetAKey]
   - id: 5
-    spec: 12
+    spec: 14
     implementation: |
       Play 裡按 Space：tgo 開 Play 的 Space menu，標題 [1] GAME：ITEM OPERATION 的 [d] Rotate left（the falling piece, counterclockwise）、
       [k] Rotate right（the falling piece, clockwise），選了就等於按那個鍵、回到 Play；PLAY MODE 的 h（move left）、l（move right）、j（down a row）、
       Enter（drop to the bottom）只顯示；[r]estart（start over from level 1）、[s]ave（keep this game and quit; it goes on next time）；[Esc] Pause；
-      寫的都是 Settings 裡現在的鍵（TODO(tdp #7)：使用者要的是只列 restart、save）
+      寫的都是 Settings 裡現在的鍵
       Play 模式的 r：跟 GAME 的 n 一樣（有分數先開 NEW GAME 問誰玩的，0 分直接開新的一局）；s：存檔並離開（task 16）；footer 是
       Space:menu ?:help d:rotate left k:rotate right r:restart s:save Esc:pause，60 欄時 tgo 收掉 r:restart s:save
       遊戲每 40 ms 一格，有任何 popup 開著（Space menu、?、confirm）或終端機比 42×31 小時不往前走，popup 關掉就接著走；有沒有 popup 是問

@@ -427,9 +427,9 @@ func (t *Tetru) setModeKeys() {
 		{Key: k[keys.RotateLeft], Keys: k.Keys(keys.RotateLeft), Desc: "rotate left", Item: true, Label: keys.RotateLeft.Label(), MenuDesc: keys.RotateLeft.Desc(), Do: t.do(keys.RotateLeft)},
 		{Key: k[keys.RotateRight], Keys: k.Keys(keys.RotateRight), Desc: "rotate right", Item: true, Label: keys.RotateRight.Label(), MenuDesc: keys.RotateRight.Desc(), Do: t.do(keys.RotateRight)},
 		{Key: k[keys.Drop], Keys: k.Keys(keys.Drop), Desc: "drop to the bottom", NoFooter: true, Do: t.do(keys.Drop)},
-		// TODO(tdp #7): the user wants the mode's Space menu to have Restart
-		// and Save alone (2026-11-11), not the keys above; tdp menu.4 lists a
-		// mode's keys there, so they are the mode's too, for now.
+		// Restart and Save are the mode's too (user, 2026-11-11), in its Space
+		// menu with the keys above: tdp menu.4 lists a mode's keys there (the
+		// user, 2026-11-11: they are the mode's keys, as they should be).
 		{Key: "r", Desc: "restart", Label: "Restart", MenuDesc: "start over from level 1", Do: func(string) tea.Cmd { return t.newGame() }},
 		{Key: "s", Desc: "save", Label: "Save", MenuDesc: saveDesc, Do: func(string) tea.Cmd { return t.saveGame() }},
 	}
