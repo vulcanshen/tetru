@@ -2,7 +2,6 @@ package ui
 
 import (
 	"fmt"
-	"slices"
 	"strconv"
 	"strings"
 
@@ -39,20 +38,18 @@ const (
 	inkNone uint8 = iota
 	inkGround
 	inkPiece // inkPiece + p is piece p's
-	inkWhite = inkPiece + 7
-	inkFrame = inkWhite + 1
+	inkFrame = inkPiece + 7
 )
 
 // inks are the colours of the inks, locku's: the ground surface0, the
 // pieces in the colours they usually have in catppuccin-mocha's (the long
-// one sky, the square yellow, T mauve, S green, Z red, J blue, L peach), a
-// row going white, the curtain overlay1.
+// one sky, the square yellow, T mauve, S green, Z red, J blue, L peach),
+// the curtain overlay1.
 var inks = []terminu.Color{
 	{},
 	terminu.Hex("#313244"),
 	terminu.Hex("#89dceb"), terminu.Hex("#f9e2af"), terminu.Hex("#cba6f7"), terminu.Hex("#a6e3a1"),
 	terminu.Hex("#f38ba8"), terminu.Hex("#89b4fa"), terminu.Hex("#fab387"),
-	terminu.Hex("#ffffff"),
 	terminu.Hex("#7f849c"),
 }
 
@@ -77,7 +74,9 @@ func (s *scene) put(x, y int, ink uint8) {
 }
 
 // picture is the scene of g, nil before the first game: the ground and the
-// boxes, the stack, the rows going, the piece falling, the pieces to come;
+// boxes, the stack, the piece falling (or waiting at the top while rows
+// go), the pieces to come; the rows going are not in it, they slide out
+// over it (slideRows);
 // at the end the pieces grey as far as the curtain is down. A pause and the
 // end are said by popups, not drawn here (user, 2026-11-11: locku draws
 // them as it has no popups; tetru does).
@@ -103,19 +102,13 @@ func picture(g *game.Game) scene {
 		preview(&s, p, queueX, i*(boxH+1))
 	}
 	for y := range game.Rows {
-		going := slices.Contains(g.Going, y)
 		for x := range game.Cols {
-			c := g.Cell(x, y)
-			switch {
-			case c == 0:
-			case !going:
+			if c := g.Cell(x, y); c != 0 {
 				s.put(x, y, inkPiece+c-1)
-			case g.Flashing() || !g.Wiped(x):
-				s.put(x, y, inkWhite)
 			}
 		}
 	}
-	if g.Live() {
+	if !g.Over {
 		for _, b := range g.Blocks() {
 			if b[1] >= 0 {
 				s.put(b[0], b[1], inkPiece+uint8(g.Cur))
@@ -128,7 +121,7 @@ func picture(g *game.Game) scene {
 		grey := min(sceneH, int(float64(sceneH)*g.CurtainDone()+0.999))
 		for y := range grey {
 			for x := range sceneW {
-				if s.px[y][x] >= inkPiece && s.px[y][x] <= inkWhite {
+				if s.px[y][x] >= inkPiece && s.px[y][x] < inkFrame {
 					s.px[y][x] = inkFrame
 				}
 			}
@@ -161,9 +154,75 @@ func (f *field) Draw(w, h int, focused bool) []string {
 	if t.narrow() {
 		row := t.statsRow()
 		cols := max(2*sceneW, terminu.Width(row))
-		return middle(append([]string{row, ""}, pixels(&sc, 0, sceneW, 0, sceneH, 1)...), cols, w, h)
+		lines := append([]string{row, ""}, pixels(&sc, 0, sceneW, 0, sceneH, 1)...)
+		out := middle(lines, cols, w, h)
+		slideRows(out, t.g, &sc, w, 1, max(0, (w-cols)/2), max(0, (h-len(lines))/2)+2)
+		return out
 	}
-	return middle(pixels(&sc, 0, fieldW, 0, sceneH, t.scale), 2*fieldW*t.scale, w, h)
+	k := t.scale
+	lines := pixels(&sc, 0, fieldW, 0, sceneH, k)
+	out := middle(lines, 2*fieldW*k, w, h)
+	slideRows(out, t.g, &sc, w, k, max(0, (w-2*fieldW*k)/2), max(0, (h-len(lines))/2))
+	return out
+}
+
+// slideRows draws the rows going over out, w wide, where the scene sc is
+// drawn from its column 0, every pixel k × k glyphs, at column left and
+// line top: each row slides out to the left as far as it has gone, the
+// bottom one first, over the blank left of the field and out past GAME's
+// frame (user, 2026-11-11), the ground showing where it was.
+func slideRows(out []string, g *game.Game, sc *scene, w, k, left, top int) {
+	if g == nil {
+		return
+	}
+	cell := pixelGlyph + strings.Repeat(" ", max(0, 2-terminu.IconWidth()))
+	// lead is the glyphs left of the field, the first of them half cut
+	// off when left is odd.
+	lead := (left + 1) / 2
+	strip := game.Cols * k
+	for i, r := range g.Going {
+		f := g.Slid(i)
+		if f >= 1 {
+			continue
+		}
+		from := -int(f*float64(lead+strip) + 0.5) // the row's first glyph, the field's first being 0
+		var b strings.Builder
+		u := -lead
+		if left%2 == 1 {
+			b.WriteString(" ")
+			u++
+		}
+		ink, n := inkNone, 0
+		flush := func() {
+			if ink == inkNone {
+				b.WriteString(strings.Repeat("  ", n))
+			} else {
+				b.WriteString(terminu.Fg(inks[ink]).Render(strings.Repeat(cell, n)))
+			}
+			n = 0
+		}
+		for ; u < len(sc.px[r.Y])*k; u++ {
+			c := inkNone
+			switch {
+			case u >= from && u < from+strip:
+				c = inkPiece + r.Cells[(u-from)/k] - 1
+			case u >= 0:
+				c = sc.px[r.Y][u/k]
+			}
+			if c != ink {
+				flush()
+				ink = c
+			}
+			n++
+		}
+		flush()
+		line := terminu.Pad(b.String(), w)
+		for j := range k {
+			if l := top + r.Y*k + j; l >= 0 && l < len(out) {
+				out[l] = line
+			}
+		}
+	}
 }
 
 // stats are the level, the rows cleared and the score, of the game or of

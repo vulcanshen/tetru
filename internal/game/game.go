@@ -28,10 +28,14 @@ const (
 	// moving or turning it starts the wait again, LockResets times at most.
 	LockDelay  = 500 * time.Millisecond
 	LockResets = 15
-	// Flash and Wipe are the clear, as locku's: the rows going white, then
-	// going from the middle out to both ends.
-	Flash = 280 * time.Millisecond
-	Wipe  = 400 * time.Millisecond
+	// Slide, Stagger and Settle are the clear (user, 2026-11-11): the full
+	// rows slide out to the left, the bottom one first, each taking Slide
+	// and the one over it starting Stagger after it; then the stack over
+	// them comes down a row every Settle till the rows they left are
+	// filled.
+	Slide   = 360 * time.Millisecond
+	Stagger = 120 * time.Millisecond
+	Settle  = 40 * time.Millisecond
 	// Curtain is the end: the pieces going grey from the top.
 	Curtain = 5 * time.Second
 )
@@ -112,6 +116,18 @@ var clearScores = [5]int{0, 100, 300, 500, 800}
 // a y under 0 is over the field.
 type Spot struct{ Turn, X, Y int }
 
+// Row is a full row going: where it was and its blocks, as Cell's.
+type Row struct {
+	Y     int
+	Cells [Cols]uint8
+}
+
+// ClearTime is how long a clear of n rows takes, from the slide to the
+// stack down.
+func ClearTime(n int) time.Duration {
+	return Slide + time.Duration(n-1)*Stagger + time.Duration(n)*Settle
+}
+
 // Game is one game in progress, or ended.
 type Game struct {
 	rng   *rand.Rand
@@ -124,9 +140,10 @@ type Game struct {
 
 	Level, Lines, Score int
 
-	// Going are the rows full and going, top first, while the clear is
-	// under way.
-	Going []int
+	// Going are the rows full and going, the bottom first, while the clear
+	// is under way: they are out of the stack already, sliding out, the
+	// stack over them coming down after; the next piece is in, waiting.
+	Going []Row
 	// Over is the game ended: the stack reached the top, or the player
 	// ended it.
 	Over bool
@@ -135,6 +152,7 @@ type Game struct {
 	lock   time.Duration // time the piece has lain on the stack
 	resets int           // times moving or turning started the lock again
 	fx     time.Duration // time into the clear, or into the end
+	gaps   []int         // the rows the clear left empty, top first, while the stack comes down
 }
 
 // New is a game from its first piece. The same seed is the same game.
@@ -160,6 +178,15 @@ func (g *Game) deal() int {
 // come brings the next piece in, in the middle, its top row the field's
 // top row. One that has no room there is the end.
 func (g *Game) come() {
+	g.bring()
+	if !g.fits(g.At) {
+		g.end()
+	}
+}
+
+// bring brings the next piece in, in the middle, its top row the field's
+// top row, room or not.
+func (g *Game) bring() {
 	g.Cur, g.Next = g.Next[0], append(g.Next[1:], g.deal())
 	blocks := turns[g.Cur][0]
 	lo, hi, top := blocks[0][0], blocks[0][0], blocks[0][1]
@@ -168,9 +195,6 @@ func (g *Game) come() {
 	}
 	g.At = Spot{0, (Cols-(hi-lo+1))/2 - lo, -top}
 	g.fall, g.lock, g.resets = 0, 0, 0
-	if !g.fits(g.At) {
-		g.end()
-	}
 }
 
 // Put sets block x, y of the stack to piece p's, a stack to start from (a
@@ -307,8 +331,8 @@ func (g *Game) set() {
 		g.end()
 		return
 	}
-	if g.Going = g.full(); len(g.Going) > 0 {
-		g.fx = 0
+	if full := g.full(); len(full) > 0 {
+		g.clearRows(full)
 		return
 	}
 	g.come()
@@ -329,25 +353,60 @@ func (g *Game) full() []int {
 	return out
 }
 
-// clear takes the rows that went out, every row over them down as far;
-// scores them at the level they were cleared at, and the level goes up a
-// level every ten rows, up to the last; and brings the next piece in.
-func (g *Game) clear() {
-	out := make([]uint8, len(g.cells))
-	y := Rows - 1
-	for from := Rows - 1; from >= 0; from-- {
-		if slices.Contains(g.Going, from) {
-			continue
-		}
-		copy(out[y*Cols:(y+1)*Cols], g.cells[from*Cols:(from+1)*Cols])
-		y--
+// clearRows starts the clear of the full rows, top first: they go out of the
+// stack and start going, the bottom one first; they score at once, at the
+// level they were cleared at, and the level goes up a level every ten rows,
+// up to the last; the next piece comes in and waits at the top for the
+// clear to end.
+func (g *Game) clearRows(full []int) {
+	g.Going, g.gaps, g.fx = nil, full, 0
+	for i := len(full) - 1; i >= 0; i-- {
+		r := Row{Y: full[i]}
+		copy(r.Cells[:], g.cells[r.Y*Cols:(r.Y+1)*Cols])
+		clear(g.cells[r.Y*Cols : (r.Y+1)*Cols])
+		g.Going = append(g.Going, r)
 	}
-	g.cells = out
-	g.Lines += len(g.Going)
-	g.Score += clearScores[min(len(g.Going), 4)] * g.Level
+	g.Lines += len(full)
+	g.Score += clearScores[min(len(full), 4)] * g.Level
 	g.Level = min(MaxLevel, 1+g.Lines/LinesPerLevel)
-	g.Going, g.fx = nil, 0
-	g.come()
+	g.bring()
+}
+
+// settle steps the clear on to fx: once the rows have slid out, the stack
+// over the lowest row left empty comes down a row every Settle; with none
+// left the clear ends, and the piece waiting falls, or, with no room, it is
+// the end.
+func (g *Game) settle() {
+	out := Slide + time.Duration(len(g.Going)-1)*Stagger
+	for n := len(g.Going) - len(g.gaps); len(g.gaps) > 0 && g.fx >= out+time.Duration(n+1)*Settle; n++ {
+		y := g.gaps[len(g.gaps)-1]
+		copy(g.cells[Cols:(y+1)*Cols], g.cells[:y*Cols])
+		clear(g.cells[:Cols])
+		g.gaps = g.gaps[:len(g.gaps)-1]
+		for i := range g.gaps {
+			g.gaps[i]++
+		}
+	}
+	if len(g.gaps) == 0 {
+		g.Going, g.fx = nil, 0
+		if !g.fits(g.At) {
+			g.end()
+		}
+	}
+}
+
+// Slid is how far row i of Going has slid out to the left, 0 to 1: slow at
+// first, faster as it goes.
+func (g *Game) Slid(i int) float64 {
+	k := g.fx - time.Duration(i)*Stagger
+	if k <= 0 {
+		return 0
+	}
+	if k >= Slide {
+		return 1
+	}
+	f := float64(k) / float64(Slide)
+	return f * f
 }
 
 // End ends the game where it is: the player ended it.
@@ -357,7 +416,7 @@ func (g *Game) End() {
 	}
 }
 
-func (g *Game) end() { g.Over, g.Going, g.fx = true, nil, 0 }
+func (g *Game) end() { g.Over, g.Going, g.gaps, g.fx = true, nil, nil, 0 }
 
 // Advance steps the game on by dt: the end's curtain, or the clear, or the
 // piece falling at the level's speed and, once it lies on the stack long
@@ -367,9 +426,8 @@ func (g *Game) Advance(dt time.Duration) {
 	case g.Over:
 		g.fx = min(g.fx+dt, Curtain)
 	case len(g.Going) > 0:
-		if g.fx += dt; g.fx >= Flash+Wipe {
-			g.clear()
-		}
+		g.fx += dt
+		g.settle()
 	case g.falls():
 		g.lock = 0
 		g.fall += dt
@@ -387,23 +445,6 @@ func (g *Game) Advance(dt time.Duration) {
 	}
 }
 
-// Flashing says whether the rows going are still white, not yet going
-// out.
-func (g *Game) Flashing() bool { return len(g.Going) > 0 && g.fx < Flash }
-
-// Wiped says whether block x of a row going is gone by now: the row goes
-// from the middle of the field out, the blocks the same distance from the
-// ends at once, after the flash.
-func (g *Game) Wiped(x int) bool {
-	k := g.fx - Flash
-	if len(g.Going) == 0 || k < 0 {
-		return false
-	}
-	rings := (Cols-1)/2 + 1
-	gone := int((int64(rings)*int64(k) + int64(Wipe) - 1) / int64(Wipe))
-	return min(x, Cols-1-x) >= rings-gone
-}
-
 // CurtainDone is how far the end has gone, 0 to 1: the share of the field,
 // from the top, whose pieces are grey.
 func (g *Game) CurtainDone() float64 {
@@ -413,5 +454,5 @@ func (g *Game) CurtainDone() float64 {
 	return float64(g.fx) / float64(Curtain)
 }
 
-// Ended says whether the end's curtain is all down: END is lettered.
+// Ended says whether the end's curtain is all down.
 func (g *Game) Ended() bool { return g.Over && g.fx >= Curtain }

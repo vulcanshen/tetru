@@ -45,8 +45,8 @@ func TestSameSeedSameGame(t *testing.T) {
 		}
 		a.Drop()
 		b.Drop()
-		a.Advance(Flash + Wipe)
-		b.Advance(Flash + Wipe)
+		a.Advance(ClearTime(4))
+		b.Advance(ClearTime(4))
 	}
 }
 
@@ -195,10 +195,10 @@ func TestClearScoresAtTheLevelAndGoesUp(t *testing.T) {
 	}
 	score := g.Score
 	fell := g.Drop()
-	if len(g.Going) != 4 || !g.Flashing() {
-		t.Fatalf("rows going: %v", g.Going)
+	if len(g.Going) != 4 || g.Going[0].Y != Rows-1 || g.Going[3].Y != Rows-4 {
+		t.Fatalf("rows going, the bottom first: %v", g.Going)
 	}
-	g.Advance(Flash + Wipe)
+	g.Advance(ClearTime(4))
 	if got := g.Score - score; got != 800*3+2*fell {
 		t.Fatalf("four rows at level 3 scored %d", got)
 	}
@@ -212,22 +212,46 @@ func TestClearScoresAtTheLevelAndGoesUp(t *testing.T) {
 	}
 }
 
-func TestTheWipeGoesFromTheMiddleOut(t *testing.T) {
-	g := with(1)
-	g.Going = []int{Rows - 1}
-	g.fx = Flash
-	if g.Wiped(0) || g.Wiped(4) {
-		t.Fatal("blocks gone before the wipe began")
+func TestClearSlidesThenTheStackComesDown(t *testing.T) {
+	g := with(I)
+	g.fill(Rows-1, Cols-1)
+	g.fill(Rows-3, Cols-1)
+	g.Put(0, Rows-2, 1) // a block between the rows going
+	g.Put(0, Rows-4, 1) // and one over them
+	g.Rotate(1)         // upright, in the last column: rows Rows-1 and Rows-3 fill
+	for g.Move(1) {
 	}
-	g.fx = Flash + Wipe/2
-	if !g.Wiped(4) || !g.Wiped(5) || g.Wiped(0) || g.Wiped(9) {
-		t.Fatal("halfway through, the middle is not gone while the ends stay")
+	next := g.Next[0]
+	lines := g.Lines
+	g.Drop()
+	if len(g.Going) != 2 || g.Going[0].Y != Rows-1 || g.Going[1].Y != Rows-3 || g.Going[0].Cells[0] == 0 {
+		t.Fatalf("rows going, the bottom first, with their blocks: %v", g.Going)
 	}
-	g.fx = Flash + Wipe
-	for x := range Cols {
-		if !g.Wiped(x) {
-			t.Fatalf("block %d not gone at the wipe's end", x)
-		}
+	if g.Cell(0, Rows-1) != 0 || g.Cell(0, Rows-3) != 0 || g.Lines != lines+2 {
+		t.Fatal("the rows going are still in the stack, or not counted at once")
+	}
+	if g.Cur != next || g.Live() || g.Move(-1) || g.Rotate(1) || g.Down() || g.Drop() != 0 {
+		t.Fatal("the next piece is not in, or it can be played while the rows go")
+	}
+	at := g.At
+	g.Advance(Stagger)
+	if g.Slid(0) <= 0 || g.Slid(1) != 0 {
+		t.Fatal("the bottom row does not slide first")
+	}
+	g.Advance(Slide)
+	if g.Slid(0) != 1 || g.Slid(1) != 1 || g.Cell(0, Rows-2) == 0 {
+		t.Fatal("the rows have not slid out, or the stack came down first")
+	}
+	g.Advance(Settle)
+	if g.Cell(0, Rows-1) == 0 || g.Cell(0, Rows-2) != 0 || g.Cell(0, Rows-3) == 0 || g.Live() {
+		t.Fatal("the stack did not come down a row")
+	}
+	g.Advance(Settle)
+	if g.Cell(0, Rows-1) == 0 || g.Cell(0, Rows-2) == 0 || g.Cell(0, Rows-3) != 0 || len(g.Going) != 0 || !g.Live() {
+		t.Fatal("the stack did not come down the second row, or the clear did not end")
+	}
+	if g.At != at {
+		t.Fatal("the piece waiting came down with the stack")
 	}
 }
 
@@ -245,7 +269,7 @@ func TestTheSpeedStopsAtTheLastLevel(t *testing.T) {
 	for g.Move(1) {
 	}
 	g.Drop()
-	g.Advance(Flash + Wipe)
+	g.Advance(ClearTime(1))
 	if g.Level != MaxLevel {
 		t.Fatalf("level %d past the last", g.Level)
 	}

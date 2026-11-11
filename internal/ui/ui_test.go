@@ -7,6 +7,7 @@ import (
 	"testing"
 	"time"
 
+	terminu "github.com/vulcanshen/terminu-go"
 	"github.com/vulcanshen/terminu-go/tdptest"
 
 	"github.com/vulcanshen/tetru/internal/game"
@@ -684,7 +685,7 @@ func TestFinishKeepsTheGameGoing(t *testing.T) {
 	}
 }
 
-func TestLineClearFlashesThenGoes(t *testing.T) {
+func TestLineClearSlidesOutToTheLeft(t *testing.T) {
 	tt, d := open(t, 60, 32)
 	play(d)
 	g := tt.g
@@ -704,22 +705,52 @@ func TestLineClearFlashesThenGoes(t *testing.T) {
 			g.Put(x, game.Rows-1, 1)
 		}
 	}
+	g.Put(0, game.Rows-2, 1) // a block over the row: it comes down after
+	next := g.Next[0]
 	d.Press("Enter")
-	if len(g.Going) != 1 {
-		t.Fatalf("rows going %v", g.Going)
+	if len(g.Going) != 1 || g.Lines != 1 || !d.Has("Lines: 1") {
+		t.Fatalf("rows going %v, %d lines", g.Going, g.Lines)
 	}
+	if g.Cur != next {
+		t.Fatal("the next piece is not in at the top")
+	}
+	at := g.At
+	for _, k := range []string{"h", "l", "j", "d", "k", "Enter"} {
+		d.Press(k)
+	}
+	if g.At != at || !tt.playing() {
+		t.Fatal("the piece was played while the row goes")
+	}
+	// At 60 × 32 GAME's body is 35 × 27, the field 24 columns in its middle:
+	// at column 5 of the body, screen column 6; row y of it on screen row
+	// 4 + y.
 	y := game.Rows - 1
-	if picture(g).px[y][0] != inkWhite {
-		t.Fatal("the row going is not white first")
+	first := func() int {
+		r := []rune(row(d, 4+y))
+		for i, c := range r {
+			if string(c) == pixelGlyph {
+				return terminu.Width(string(r[:i]))
+			}
+		}
+		return -1
 	}
-	d.Advance(game.Flash + game.Wipe/2)
-	half := picture(g)
-	if half.px[y][game.Cols/2] == inkWhite || half.px[y][0] != inkWhite {
-		t.Fatal("halfway, the middle is not gone while the ends stay")
+	if first() != 6 {
+		t.Fatalf("the row going starts at column %d, not in place", first())
 	}
-	d.Advance(game.Wipe)
-	if g.Lines != 1 || len(g.Going) != 0 || !d.Has("Lines: 1") {
-		t.Fatal("the row did not go")
+	d.Advance(game.Slide * 3 / 4)
+	if c := first(); c < 0 || c >= 6 {
+		t.Fatalf("the row going is not out left of the field: column %d", c)
+	}
+	d.Advance(game.Slide / 4)
+	if first() != 6 || g.Cell(0, game.Rows-2) == 0 {
+		t.Fatal("the row did not slide out, or the stack came down before it had")
+	}
+	d.Advance(game.ClearTime(1))
+	if len(g.Going) != 0 || !g.Live() || g.Cell(0, game.Rows-1) == 0 || g.Cell(0, game.Rows-2) != 0 {
+		t.Fatal("the stack did not come down after the row")
+	}
+	if g.At != at {
+		t.Fatal("the piece came down with the stack")
 	}
 }
 
