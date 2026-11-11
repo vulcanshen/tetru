@@ -1,36 +1,33 @@
 tasks:
   - id: 1
-    spec: 6
+    spec: 8
     implementation: |
       三個畫面（tgo Screen，Name、Key、Desc）：Tetru（T，the game）、Rank（R，the scores, best first）、Settings（S，the keys to play with）；
       tgo 畫最上面的畫面 chip 列與下面的線，T、R、S 是 global 熱鍵，global operation popup 裡也列出來
       Tetru 畫面四個 panel，tgo Screen.Layout：左邊 [1] GAME（task 2）；右邊一欄由上而下 [2] NEXT 1、[3] NEXT 2（task 2）、[4] INFO（task 14）
       右邊那一欄寬是整個寬度的三分之一、至少 23 欄（INFO 的字與框），GAME 拿剩下的（60 欄 37｜23、77 欄 52｜25、150 欄 100｜50）；
-      NEXT 1、NEXT 2 各是一格的高加框（32 列時 7 列），INFO 拿剩下的；一個像素多大由 layout 算（task 2）
+      NEXT 1、NEXT 2 各 6 列（放大時 10 列），INFO 拿剩下的
       Level、Lines、Score 在 INFO 上面那一段（task 14）；GAME 裡只有場地；沒有 statusbar
       啟動時（tgo App.Start）用 tgo App.Focus 把 focus 放到 [1] GAME
       最低尺寸 42×29（tgo App.MinWidth、MinHeight）；比它小時 tgo 只畫名稱、needs a terminal of at least 42×29、Press [Ctrl-C] twice to quit
       窄寬的門檻 60（tgo Screen.NarrowBelow）：42–59 欄只畫有 focus 的 panel；玩的時候 focus 在 GAME，NEXT 與 INFO 收掉、GAME 自己在場地上面寫一行
       Level: 1   Lines: 0  Score: 0（Level 補到 2 格），場地右邊畫接下來的方塊（task 2）；Tab 依序只畫 NEXT 1、NEXT 2、INFO
       tdptest 在每一格畫面量每一列等於終端機寬度（tdp L4）；版面的測試在 icon 與 powerline 符號 1/1、2/1、2/2 格下各跑一次（tdp E5）
-    test: [TestTetruScreen, TestScreensSwitchOnTRS, TestNarrowShowsTheFocusedPanelOnly, TestLeastSizeIsTheGameAlone, TestPixelsFillGame, TestStatsInInfo, TestFirstLaunch]
+    test: [TestTetruScreen, TestScreensSwitchOnTRS, TestNarrowShowsTheFocusedPanelOnly, TestLeastSizeIsTheGameAlone, TestPictureGrowsTwiceOnALargeTerminal, TestStatsInInfo, TestFirstLaunch]
   - id: 2
-    spec: 6
+    spec: 8
     implementation: |
-      GAME 與 NEXT 1、NEXT 2 的 body 自己畫（tgo Body），從同一張 17×20 像素的圖切出來
-      圖：場地 10×20，沒有框，空的地方是 #313244（locku 的底）；隔一個像素是一欄兩格，各 6×4 像素的底、沒有框，兩格之間隔一個像素；
+      GAME 與 NEXT 1、NEXT 2 的 body 自己畫（tgo Body），從同一張 17×20 像素的圖切出來；一個像素是 nf-fa-square（U+F0C8），icon 佔一格時後面補一個空白，所以一個像素 2 欄 × 1 列
+      圖：場地 10×20，沒有框，空的地方畫像素，#313244（locku 的底）；隔一個像素是一欄兩格，各 6×4 像素的底、沒有框，兩格之間隔一個像素；
       每格置中畫一個接下來的方塊，一個方塊一個像素，第一格是下一個（game.Queue 是 2）
-      方塊的顏色：I #89dceb、O #f9e2af、T #cba6f7、S #a6e3a1、Z #f38ba8、J #89b4fa、L #fab387；隔一個像素暗一點（顏色乘 0.82），深淺交錯像棋盤
-      一個像素的大小（tgo Screen.Layout 裡算）：高是 1/8 列的偶數倍，盡量填滿 GAME 裡的高；寬是讓它接近正方形的欄數（高 ÷ 8 × 2.2，四捨五入，
-      至少 2 欄），不超過 GAME 裡的寬；兩個 NEXT 的格子一樣大，右邊那一欄放不下兩格與 INFO 時一起縮小（至少一列高）
-      例：77×32、150×32 時 1.25 列 × 3 欄，場地 25 列 × 30 欄；150×52 時 2.25 列 × 5 欄；60×29 時 1 列 × 2 欄
-      每個像素是實心的方塊（█，前景色）；像素的邊落在一列中間的那一格，用 ▁▂▃▄▅▆▇ 裡對應的那一個，前景是下面的像素、背景是上面的像素
-      GAME 畫場地、NEXT 1、NEXT 2 各畫自己那一格，各自置中在自己的 panel 裡
-      窄寬（42–59 欄，只畫有 focus 的 panel）時一個像素一列 × 2 欄：GAME 上面一行 Level 等、下面是場地，右邊隔一個像素是兩格；Tab 到 NEXT 時各畫自己那一格
+      方塊的顏色：I #89dceb、O #f9e2af、T #cba6f7、S #a6e3a1、Z #f38ba8、J #89b4fa、L #fab387
+      GAME 畫場地（左邊 10 像素）；NEXT 1、NEXT 2 各畫自己那一格（右邊 6 像素、4 像素高）；各自置中在自己的 panel 裡
+      窄寬（42–59 欄，只畫有 focus 的 panel）時 GAME 畫整張圖，場地右邊隔一個像素是兩格；Tab 到 NEXT 1、NEXT 2 時各畫自己那一格
+      GAME 裡放得下 40 欄、40 列，右邊那一欄放得下 24 欄、終端機的高放得下右邊那一欄時，GAME 與兩個 NEXT 一起把一個像素畫成 2×2，NEXT 的高跟著變兩倍；不然都不放大
       還沒玩過時畫空的場地與空的兩格
-      顏色用 tgo 的 Style（Fg、Bg）上色；失焦或被 popup 蓋住時由 tgo 淡化（前景與背景都淡化）；玩的時候（Play 模式裡）NEXT 1、NEXT 2、INFO 標成串流內容（tgo Panel.Stream），
-      失焦也不淡化，暫停、結束、還沒玩時拿掉
-    test: [TestPictureIsLockus, TestPixelsFillGame, TestFitKeepsAPixelSquareAndInside, TestSolidSplitsARowBetweenTwoPixels, TestTetruScreen, TestNarrowShowsTheFocusedPanelOnly, TestNextStaysBrightWhilePlaying, TestPopupsOverTheGameAtEveryWidth]
+      顏色用 tgo 的 Fg 上色；失焦或被 popup 蓋住時由 tgo 淡化；玩的時候（Play 模式裡）NEXT 1、NEXT 2、INFO 標成串流內容（tgo Panel.Stream），失焦也不淡化，
+      暫停、結束、還沒玩時拿掉
+    test: [TestPictureIsLockus, TestTetruScreen, TestNarrowShowsTheFocusedPanelOnly, TestPictureGrowsTwiceOnALargeTerminal, TestNextStaysBrightWhilePlaying, TestPopupsOverTheGameAtEveryWidth]
   - id: 3
     spec: 1
     implementation: |

@@ -34,7 +34,7 @@ const (
 	// cell's margin each side; high enough for the chip row, its rule and
 	// the footer, and the column at GAME's right: NEXT 1 and NEXT 2 and INFO,
 	// each with its frame.
-	minW, minH = 42, 3 + 2*(boxH+2) + infoRows + 2 // a pixel a row
+	minW, minH = 42, 3 + 2*(boxH+2) + infoRows + 2
 	// narrowBelow is the width under which only the focused panel is drawn
 	// (tdp screen.5's most).
 	narrowBelow = 60
@@ -65,7 +65,7 @@ type Tetru struct {
 	next2P *terminu.Panel
 	infoP  *terminu.Panel
 	play   *terminu.Mode
-	cw, e  int // a pixel of GAME and the NEXT panels: columns wide, eighths of a row high
+	scale  int // what a pixel of GAME and the NEXT panels is grown by
 
 	g     *game.Game // the game, nil before the first
 	saved bool       // its score is kept (or it was not worth keeping)
@@ -81,7 +81,7 @@ func New() *terminu.App { return NewTetru().App }
 // NewTetru is tetru with its game, for main to keep the score of a game
 // still going when the program ends (Finish).
 func NewTetru() *Tetru {
-	t := &Tetru{App: terminu.New("tetru"), path: scores.Path(), cfg: keys.Path(), seed: rand.Uint64, cw: colsFor(rowE), e: rowE}
+	t := &Tetru{App: terminu.New("tetru"), path: scores.Path(), cfg: keys.Path(), seed: rand.Uint64, scale: 1}
 	t.all, t.loadErr = scores.Load(t.path)
 	if t.keys, t.cfgErr = keys.Load(t.cfg); t.cfgErr != nil {
 		t.keys = keys.Default()
@@ -161,19 +161,16 @@ func (t *Tetru) moveAside() tea.Cmd {
 // layout is the Tetru screen: GAME at the left, and at its right a column
 // of NEXT 1, NEXT 2 and INFO under one another (user, 2026-11-11), the
 // column a third of the width and INFO's at least, the NEXT panels as
-// high as a box. A pixel is as large as GAME takes, the boxes the same.
+// high as a box. GAME and the boxes are grown twice when GAME and the
+// column both have room for it.
 func (t *Tetru) layout(w, h int) []terminu.Rect {
 	rw := max(sideW, w/3)
 	gw := w - rw
-	// The pixel as large as GAME takes, then smaller till the boxes fit at
-	// the right too, INFO under them.
-	cw, e := fit(fieldW, sceneH, gw-2, h-2)
-	for e > rowE && (cw*boxW > rw-2 || 2*(rowsFor(boxH, e)+2)+infoRows+2 > h) {
-		e -= 2
-		cw = min(cw, colsFor(e))
+	t.scale = 1
+	if gw-2 >= 2*2*fieldW && h-2 >= 2*sceneH && rw-2 >= 2*2*boxW && h >= 2*(2*boxH+2)+infoRows+2 {
+		t.scale = 2
 	}
-	t.cw, t.e = cw, e
-	nh := rowsFor(boxH, e) + 2
+	nh := boxH*t.scale + 2
 	return []terminu.Rect{
 		{W: gw, H: h},
 		{X: gw, W: rw, H: nh},

@@ -1,9 +1,9 @@
-id: 7
-from: v1.2.2
+id: 8
+from: v1.2.3
 to: v1.2.3
 tasks:
   - id: 1
-    spec: 6
+    spec: 8
     request: '一個直的空間玩遊戲，右邊是接下來的方塊；排行不在遊戲旁邊，改成另一個分頁：[T]etru、[R]ank、[S]ettings；遊戲的右邊由上而下是 Next 1、Next 2，最下面一個 panel 分上下兩段，上面 Level、Lines、Score、下面操作方式（不叫 Manual）；終端機窄的時候，排行優先收掉；遊戲太小，GAME 的 panel 就是遊戲，不要遊戲自己的外框，縮小上下；空間要用滿，遊戲區域不能這麼小'
     tdp: [tdp terms.2, tdp terms.3, tdp screen.1, tdp screen.2, tdp screen.3, tdp screen.5, tdp screen.7, tdp M4, tdp L1, tdp L2, tdp L3, tdp L4, tdp E5, tdp panel.1, tdp panel.4, tdp K1, tdp K2, tdp P5]
     remark:
@@ -44,23 +44,21 @@ tasks:
       - '三個畫面（tdp terms.2：一組同時顯示的 panel；多畫面用 global operation 切換）：[T]etru 是遊戲、[R]ank 是排行（task 8）、[S]ettings 是按鍵（task 13）。最上面一列是畫面 chip（tdp screen.3），chip 列下面一條全寬的線。T、R、S 是 global 熱鍵（tdp M4：沒有 popup 開著時在 panel 上也能直接按；模式裡不作用，玩的時候要先 Esc），大寫是 Shift，跟家族的多畫面 app（sshu、webu）一樣用大寫字母。第一版的 [G]ame 用不了：G 在 tdp K12 保留給「到最底下」'
       - 'Tetru 畫面四個 panel：左邊 [1] GAME（task 2），右邊一欄由上而下 [2] NEXT 1、[3] NEXT 2（task 2）、[4] INFO（task 14）。panel 怎麼拆，app 可以自行決定（tdp L1）；編號照由左到右、由上到下。啟動時 focus 在 [1] GAME：打開 app 就是要玩'
       - '寬度：右邊那一欄是整個寬度的三分之一，至少放得下 INFO（23 欄），GAME 拿剩下的：60 欄 37｜23、77 欄 52｜25、150 欄 100｜50。三分之一照 tdp L1 自己舉的 1:2；遊戲在左邊、佔大半，第一版排行在寬的終端機上佔了七成（使用者 2026-11-11：比例太糟糕）'
-      - '高度：NEXT 1、NEXT 2 各是一個框的高（4 列加 panel 的框，6 列），INFO 拿剩下的'
+      - '高度：NEXT 1、NEXT 2 各是一格的高（4 列加 panel 的框，6 列；放大時 10 列），INFO 拿剩下的'
       - 'Level、Lines、Score 在 INFO 上面那一段，一行一個（使用者 2026-11-11：GAME 裡只放場地）；不再有 statusbar（tdp screen.4：要不要有，app 可以自行決定；多畫面時它會在 chip 列的右邊，離遊戲很遠）。label Overlay0、值 Lavender（現在玩到哪，同 statusbar）。沒有在玩時寫上一局最後的值，還沒玩過寫第 1 關、0 行、0 分'
-      - '遊戲太小、空間要用滿（使用者 2026-11-11，150×32 與 77×32 的終端機）：GAME 裡只有場地，場地填滿 GAME 的高（task 2 的畫法）：32 列時 GAME 裡 27 列，一格 1.25 列高、3 欄寬，場地 25 列 × 30 欄；終端機越大，格子跟著變大'
+      - '遊戲太小、空間要用滿（使用者 2026-11-11，150×32 與 77×32 的終端機）：GAME 裡只有場地（Level 等在 INFO）、場地沒有自己的框。一格方塊是 locku 的方塊 icon，一格只能一列高：32 列時 GAME 裡 27 列，場地 20 列；GAME 裡有 40 列（45 列的終端機）起放大成兩倍。曾經改成實心方塊、一格 1.25 列高填滿 GAME，使用者看了要換回原本的方塊 icon（2026-11-11）'
       - '最低尺寸 42×29（tdp L1：可以調低）：寬是 GAME 自己（場地與兩個框 34 欄、上面一行 Level 等 38 欄、panel 的框與左右各一格）；高是 chip 列與線 2 列、footer 1 列，加上右邊那一欄：NEXT 1、NEXT 2 各 6 列、INFO 12 列與框。窄寬的門檻 60（tdp screen.5 的上限）：42–59 欄只畫有 focus 的 panel、佔滿寬度；玩的時候 focus 在 GAME，NEXT 與 INFO 收掉，所以這時 GAME 自己在場地上面寫一行 Level、Lines、Score，場地右邊畫兩個接下來的方塊（task 2）'
   - id: 2
-    spec: 6
-    request: '顯示方式沿用 locku 的 tetromino：一樣的方塊、一樣的顏色；接下來的方塊在 Next 1、Next 2 兩個 panel，每個只放一個；場地與 Next 都不要自己的外框；遊戲區域要用滿空間'
+    spec: 8
+    request: '顯示方式沿用 locku 的 tetromino：一樣的方塊 icon、一樣的顏色；接下來的方塊在 Next 1、Next 2 兩個 panel，每個只放一個；場地與 Next 都不要自己的外框'
     tdp: [tdp P5, tdp P4, tdp F1, tdp T2, tdp F8, tdp screen.5]
     remark:
-      - '顏色照 locku 的 tetromino 螢幕保護（internal/saver/tetromino.go）：一格方塊一個像素；場地 10×20，空的地方畫 locku 的底；接下來的方塊一個一格，6×4 像素的底、一個方塊一個像素、置中'
-      - '一個像素填多大，看 GAME 有多大（使用者 2026-11-11：空間明明很大，為什麼不全用；遊戲區域這麼小不對勁）：高是列的 1/8 的偶數倍、至少一列，盡量填滿 GAME 的高；寬是讓它看起來接近正方形的欄數（一格大約高是寬的 2.2 倍），至少 2 欄，不超過 GAME 的寬；NEXT 的格子跟 GAME 一樣大，放不下右邊那一欄時一起縮小'
-      - '畫法：每個像素是實心的方塊；像素的邊落在一列中間時，那一格用下半部的方塊字（▁▂▃▄▅▆▇），前景是下面的像素、背景是上面的像素。locku 那種帶縫的小方塊字一格只能一列高，GAME 大部分都空著（第一版的樣子）；改成實心之後，相鄰的像素一深一淺交錯（像棋盤），每一格照樣分得出來。像素的高取偶數個 1/8 列，場地（20 格）與一格（4 格）剛好結束在列的邊上'
+      - '照 locku 的 tetromino 螢幕保護（internal/saver/tetromino.go）：一個像素是 locku 的方塊 icon（nf-fa-square），2 欄 × 1 列；一格方塊一個像素；場地 10×20，空的地方畫 locku 的底；接下來的方塊一個一格，6×4 像素的底、一個方塊一個像素、置中'
+      - '放大：GAME 與右邊那一欄都放得下兩倍時（GAME 裡 40 欄、40 列，右邊 24 欄），GAME 與兩個 NEXT 一起把一個像素畫成 2×2（4 欄 × 2 列），照 locku 的 fitScene；NEXT 的高跟著變兩倍'
       - '場地與接下來的方塊都沒有自己的灰框（使用者 2026-11-11：GAME 的 panel 就是遊戲本身，NEXT 也有自己的 panel，panel 的框就是它們的框）'
       - 'GAME 畫場地；NEXT 1、NEXT 2 各畫一格（6×4 像素），各放一個接下來的方塊（使用者 2026-11-11：每個 Next 只放一個）；圖各自置中在自己的 panel 裡。接下來的方塊只看兩個（第一版是四個）'
       - '窄寬時只畫 GAME（tdp screen.5），這時 GAME 把兩格畫在場地右邊、隔一個像素，兩格之間也隔一個像素；玩的時候照樣看得到接下來的方塊。Tab 到 NEXT 1、NEXT 2 時各畫自己的一格'
       - '方塊的顏色照 locku（catppuccin-mocha）：I sky、O yellow、T mauve、S green、Z red、J blue、L peach。內容本身的顏色是領域的，app 可以自行決定（tdp P5）；不碰介面元素用的意義（tdp P4）'
-      - '窄寬時（GAME 單獨畫）一個像素一列高、2 欄寬'
       - '場地與接下來的方塊是 panel 內容自己畫的，不是 popup（tdp F1）。GAME 失焦時照 tdp T2 跟著淡化。玩的時候兩個 NEXT 與 INFO 是串流內容、不淡化（tdp T2：接下來的方塊與分數一直在換，玩家眼睛在場地上、用餘光看它）；暫停、結束、還沒玩時沒有東西在流，照常淡化'
   - id: 3
     spec: 1
