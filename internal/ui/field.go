@@ -14,11 +14,14 @@ import (
 // The field is drawn as locku's tetromino saver draws its board (user,
 // 2026-11-11): a pixel is a square glyph two columns wide and a row high, a
 // block a pixel; the ground lit too, in surface0, as locku's board is; the
-// pieces to come a box of ground each. Neither has a frame of its own: the
-// panel's is it (user, 2026-11-11: the panel is the game; NEXT has a panel
-// of its own). The field is GAME's and each box a NEXT panel's (user,
-// 2026-11-11: Next 1 and Next 2 at the right); narrow, where GAME is drawn
-// alone, GAME draws the boxes too, a pixel from the field, a pixel apart.
+// pieces to come a box of ground each. The field has no frame of its own:
+// GAME's is it (user, 2026-11-11: the panel is the game). GAME is the only
+// panel (user, 2026-11-11: NEXT 1, NEXT 2 and INFO with no [N], never
+// focused): at its right are three boxes of its own, framed as content is
+// (tdp F1: a frame a panel's content draws is content, how it is drawn
+// the app's), Next 1 and Next 2 and INFO (user, 2026-11-11: at the
+// right); narrow, GAME draws the boxes with no frames, a pixel from the
+// field, a pixel apart, and no INFO.
 // A box is 6 pixels wide and 4 high (user, 2026-11-11: 4 × 6, after 5 × 5).
 const (
 	boxW, boxH = 6, 4
@@ -56,16 +59,10 @@ var inks = []terminu.Color{
 	terminu.Hex("#7f849c"),
 }
 
-// field is the GAME panel's body: the level, the rows and the score over
-// the field of t's game; the boxes beside the field too when GAME is drawn
-// alone.
+// field is the GAME panel's body: the field of t's game and, at its right,
+// the boxes of the pieces to come and INFO; narrow, the level, the rows and
+// the score over the field and the boxes beside it.
 type field struct{ t *Tetru }
-
-// next is a NEXT panel's body: box i, the piece i+1 to come.
-type next struct {
-	t *Tetru
-	i int
-}
 
 // scene is the picture, a pixel an ink.
 type scene struct{ px [sceneH][sceneW]uint8 }
@@ -147,10 +144,11 @@ func preview(s *scene, p, x, y int) {
 	}
 }
 
-// Draw is the field in the middle of w × h cells, at the scale the NEXT
-// panels are drawn at (user, 2026-11-11: the field alone, the level, the
-// rows and the score in INFO); narrow, where GAME is alone, the level, the
-// rows and the score over the field and the boxes beside it.
+// Draw is the field in the middle of the left of w × h cells and the
+// column of boxes at the right, at the scale split gives (user,
+// 2026-11-11: the field alone, the level, the rows and the score in
+// INFO); narrow, the level, the rows and the score over the field and the
+// boxes beside it.
 func (f *field) Draw(w, h int, focused bool) []string {
 	t := f.t
 	sc := picture(t.g)
@@ -159,22 +157,66 @@ func (f *field) Draw(w, h int, focused bool) []string {
 		cols := max(2*sceneW, terminu.Width(row))
 		lines := append([]string{row, ""}, pixels(&sc, 0, sceneW, 0, sceneH, 1)...)
 		out := middle(lines, cols, w, h)
-		slideRows(out, t.g, &sc, w, 1, max(0, (w-cols)/2), max(0, (h-len(lines))/2)+2)
+		slideRows(out, t.g, &sc, w, 1, sceneW, max(0, (w-cols)/2), max(0, (h-len(lines))/2)+2)
 		return out
 	}
-	k := t.scale
+	fw, cw, k := split(w, h)
 	lines := pixels(&sc, 0, fieldW, 0, sceneH, k)
-	out := middle(lines, 2*fieldW*k, w, h)
-	slideRows(out, t.g, &sc, w, k, max(0, (w-2*fieldW*k)/2), max(0, (h-len(lines))/2))
+	out := middle(lines, 2*fieldW*k, fw, h)
+	slideRows(out, t.g, &sc, fw, k, fieldW, max(0, (fw-2*fieldW*k)/2), max(0, (h-len(lines))/2))
+	for i, c := range t.column(&sc, cw, h, k) {
+		out[i] += c + " "
+	}
 	return out
 }
 
+// split parts GAME's body, w × h, in the field's share, fw wide, and the
+// column of boxes at its right, cw wide with their frames and a cell from
+// GAME's frame, a third of the screen or INFO's least; and gives the scale
+// both are drawn at: twice where both have the room.
+func split(w, h int) (fw, cw, k int) {
+	side := max(sideW+1, (w+2)/3)
+	fw, cw, k = w-side, side-1, 1
+	if fw >= 2*2*fieldW && h >= 2*sceneH && cw-2 >= 2*2*boxW && h >= 2*(2*boxH+2)+infoRows+2 {
+		k = 2
+	}
+	return fw, cw, k
+}
+
+// column is the boxes at GAME's right, cw wide and h high, every pixel k ×
+// k glyphs: Next 1 and Next 2, a box each in the middle of its frame, and
+// INFO under them down to the bottom.
+func (t *Tetru) column(sc *scene, cw, h, k int) []string {
+	nh := boxH*k + 2
+	var out []string
+	for i, title := range []string{"Next 1", "Next 2"} {
+		y0 := i * (boxH + 1)
+		out = append(out, framed(title, middle(pixels(sc, queueX, sceneW, y0, y0+boxH, k), 2*boxW*k, cw-2, nh-2), cw)...)
+	}
+	return append(out, framed("Info", (&info{t}).Draw(cw-2, h-2*nh-2), cw)...)
+}
+
+// framed is body in a frame w wide, the title upper case after the frame's
+// top left corner and a line, as a panel's are kept apart from its corners
+// (tdp panel.1); the frame in Surface2 as an unfocused panel's, thin, the
+// title in Overlay0, as quiet text: the boxes are to read, never focused.
+func framed(title string, body []string, w int) []string {
+	line := terminu.Fg(terminu.Surface2)
+	name := " " + strings.ToUpper(title) + " "
+	out := []string{line.Render("┌─") + terminu.Fg(terminu.Overlay0).Render(name) + line.Render(strings.Repeat("─", max(0, w-3-terminu.Width(name)))+"┐")}
+	for _, b := range body {
+		out = append(out, line.Render("│")+terminu.Pad(b, w-2)+line.Render("│"))
+	}
+	return append(out, line.Render("└"+strings.Repeat("─", max(0, w-2))+"┘"))
+}
+
 // slideRows draws the rows going over out, w wide, where the scene sc is
-// drawn from its column 0, every pixel k × k glyphs, at column left and
-// line top: each row, white, slides out to the left as far as it has gone,
-// the bottom one first, over the blank left of the field and out past
-// GAME's frame (user, 2026-11-11), the ground showing where it was.
-func slideRows(out []string, g *game.Game, sc *scene, w, k, left, top int) {
+// drawn from its column 0 to its column x1, every pixel k × k glyphs, at
+// column left and line top: each row, white, slides out to the left as far
+// as it has gone, the bottom one first, over the blank left of the field
+// and out past GAME's frame (user, 2026-11-11), the ground showing where
+// it was.
+func slideRows(out []string, g *game.Game, sc *scene, w, k, x1, left, top int) {
 	if g == nil {
 		return
 	}
@@ -204,7 +246,7 @@ func slideRows(out []string, g *game.Game, sc *scene, w, k, left, top int) {
 			}
 			n = 0
 		}
-		for ; u < len(sc.px[y])*k; u++ {
+		for ; u < x1*k; u++ {
 			c := inkNone
 			switch {
 			case u >= from && u < from+strip:
@@ -254,18 +296,6 @@ func (t *Tetru) statsRow() string {
 	st := t.stats()
 	q, v := terminu.Fg(terminu.Overlay0), terminu.Fg(terminu.Lavender)
 	return q.Render("Level: ") + v.Render(fmt.Sprintf("%-2d", level)) + "  " + st[1] + "  " + st[2]
-}
-
-// Draw is the box in the middle of w × h cells, at GAME's scale.
-func (n *next) Draw(w, h int, focused bool) []string {
-	t := n.t
-	sc := picture(t.g)
-	k := t.scale
-	if t.narrow() {
-		k = 1
-	}
-	y0 := n.i * (boxH + 1)
-	return middle(pixels(&sc, queueX, sceneW, y0, y0+boxH, k), 2*boxW*k, w, h)
 }
 
 // pixels are columns x0 to x1 of rows y0 to y1 of sc, every pixel k × k
@@ -323,15 +353,3 @@ func (f *field) Scroll() string { return "" }
 
 // MoveKeys are none out of the mode: nothing moves.
 func (f *field) MoveKeys() []terminu.KeyRow { return nil }
-
-// Key takes nothing: a NEXT panel has nothing to do.
-func (n *next) Key(string, tea.KeyMsg) (bool, tea.Cmd) { return false, nil }
-
-// HasItem is false: a NEXT panel has no cursor.
-func (n *next) HasItem() bool { return false }
-
-// Scroll is nothing: the box always fits.
-func (n *next) Scroll() string { return "" }
-
-// MoveKeys are none: nothing moves.
-func (n *next) MoveKeys() []terminu.KeyRow { return nil }

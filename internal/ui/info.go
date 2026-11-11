@@ -3,15 +3,14 @@ package ui
 import (
 	"strings"
 
-	tea "github.com/charmbracelet/bubbletea"
 	terminu "github.com/vulcanshen/terminu-go"
 
 	"github.com/vulcanshen/tetru/internal/keys"
 )
 
-// info is the INFO panel's body, two parts (user, 2026-11-11: under Next 1
-// and Next 2; the level, the rows and the score at the top, out of GAME so
-// that GAME is the field; the controls under them): the level, the rows and
+// info is what the INFO box in GAME shows, two parts (user, 2026-11-11:
+// under Next 1 and Next 2; the level, the rows and the score at the top,
+// beside the field, not over it; the controls under them): the level, the rows and
 // the score, then, under a dashed line as a menu's sections are parted
 // (tdp menu), the keys the player has set and what they do, a key a row,
 // the keys in Blue as a hint's (tdp M5).
@@ -42,8 +41,8 @@ func (m *info) keyRows() [][2]string {
 	}
 }
 
-// Draw is the rows from the top, a cell from the frame.
-func (m *info) Draw(w, h int, focused bool) []string {
+// Draw is the rows from the top, a cell from the box's frame.
+func (m *info) Draw(w, h int) []string {
 	var rows []string
 	for _, s := range m.t.stats() {
 		rows = append(rows, " "+s)
@@ -62,15 +61,3 @@ func (m *info) Draw(w, h int, focused bool) []string {
 	}
 	return out
 }
-
-// Key takes nothing: INFO is to read.
-func (m *info) Key(string, tea.KeyMsg) (bool, tea.Cmd) { return false, nil }
-
-// HasItem is false: INFO has no cursor.
-func (m *info) HasItem() bool { return false }
-
-// Scroll is nothing: the rows fit at tetru's least size.
-func (m *info) Scroll() string { return "" }
-
-// MoveKeys are none: nothing moves.
-func (m *info) MoveKeys() []terminu.KeyRow { return nil }

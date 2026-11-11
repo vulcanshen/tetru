@@ -34,14 +34,14 @@ const (
 	// enough for GAME alone (narrow), the field and the boxes, 38 columns,
 	// the level, the rows and the score over them, 38, its frame and a
 	// cell's margin each side; high enough for the chip row, its rule and
-	// the footer, and the column at GAME's right: NEXT 1 and NEXT 2 and INFO,
-	// each with its frame.
-	minW, minH = 42, 3 + 2*(boxH+2) + infoRows + 2
-	// narrowBelow is the width under which only the focused panel is drawn
-	// (tdp screen.5's most).
+	// the footer, GAME's frame and the column in it at the right: Next 1
+	// and Next 2 and INFO, each with its frame.
+	minW, minH = 42, 3 + 2 + 2*(boxH+2) + infoRows + 2
+	// narrowBelow is the width under which GAME draws the boxes with no
+	// frames and no INFO (tdp screen.5's most).
 	narrowBelow = 60
-	// sideW is the least the column at GAME's right is given: INFO's rows
-	// and its frame.
+	// sideW is the least a box at GAME's right is: INFO's rows and its
+	// frame.
 	sideW = infoW + 2
 	// frame is a step of the game: the pace of the clear, as locku's.
 	frame = 40 * time.Millisecond
@@ -63,14 +63,10 @@ type Tetru struct {
 	stashErr error          // why it could not be read, at start
 	rmErr    error          // why it could not be removed once taken up, at start
 
-	list   *terminu.List
-	rankP  *terminu.Panel
-	gameP  *terminu.Panel
-	next1P *terminu.Panel
-	next2P *terminu.Panel
-	infoP  *terminu.Panel
-	play   *terminu.Mode
-	scale  int // what a pixel of GAME and the NEXT panels is grown by
+	list  *terminu.List
+	rankP *terminu.Panel
+	gameP *terminu.Panel
+	play  *terminu.Mode
 
 	g      *game.Game // the game, nil before the first
 	saved  bool       // its score is kept (or it was not worth keeping, or it is saved to go on with)
@@ -87,7 +83,7 @@ func New() *terminu.App { return NewTetru().App }
 // NewTetru is tetru with its game, for main to keep the score of a game
 // still going when the program ends (Finish).
 func NewTetru() *Tetru {
-	t := &Tetru{App: terminu.New("tetru"), path: scores.Path(), cfg: keys.Path(), stash: saved.Path(), seed: rand.Uint64, scale: 1}
+	t := &Tetru{App: terminu.New("tetru"), path: scores.Path(), cfg: keys.Path(), stash: saved.Path(), seed: rand.Uint64}
 	t.all, t.loadErr = scores.Load(t.path)
 	// A game saved is taken up again, paused, and its file removed (user,
 	// 2026-11-11: Save keeps it and quits; the next start goes on with it).
@@ -117,24 +113,19 @@ func NewTetru() *Tetru {
 	}
 	t.rankP = &terminu.Panel{Label: "Rank", Body: t.list}
 	t.gameP = &terminu.Panel{Label: "Game", Body: &field{t}, OnEsc: func() tea.Cmd { return nil }}
-	t.next1P = &terminu.Panel{Label: "Next 1", Body: &next{t, 0}}
-	t.next2P = &terminu.Panel{Label: "Next 2", Body: &next{t, 1}}
-	t.infoP = &terminu.Panel{Label: "Info", Body: &info{t}}
 	keysP := &terminu.Panel{Label: "Keys", Body: &terminu.Values{Header: [2]string{"Action", "Key"}, Fields: t.keyFields()}}
 	t.play = &terminu.Mode{Name: "Play", Exit: "pause", Pause: true, OnExit: t.pause}
 	t.setModeKeys()
 	t.setActions()
 	t.setRows("")
-	// TODO(tdp #6): NEXT 1, NEXT 2 and INFO only show; the user wants them
-	// with no [N] and the focus never on them (2026-11-11), which tdp K1 and
-	// K2 do not allow yet.
+	// GAME is the screen's only panel: Next 1, Next 2 and INFO are boxes
+	// it draws, with no [N], the focus never on them (user, 2026-11-11).
 	a.AddScreen(&terminu.Screen{
 		Name:        "Tetru",
 		Key:         "T",
 		Desc:        "the game",
-		Panels:      []*terminu.Panel{t.gameP, t.next1P, t.next2P, t.infoP},
+		Panels:      []*terminu.Panel{t.gameP},
 		NarrowBelow: narrowBelow,
-		Layout:      t.layout,
 	})
 	a.AddScreen(&terminu.Screen{Name: "Rank", Key: "R", Desc: "the scores, best first", Panels: []*terminu.Panel{t.rankP}})
 	a.AddScreen(&terminu.Screen{Name: "Settings", Key: "S", Desc: "the keys to play with", Panels: []*terminu.Panel{keysP}})
@@ -184,28 +175,8 @@ func (t *Tetru) moveAside() tea.Cmd {
 	return nil
 }
 
-// layout is the Tetru screen: GAME at the left, and at its right a column
-// of NEXT 1, NEXT 2 and INFO under one another (user, 2026-11-11), the
-// column a third of the width and INFO's at least, the NEXT panels as
-// high as a box. GAME and the boxes are grown twice when GAME and the
-// column both have room for it.
-func (t *Tetru) layout(w, h int) []terminu.Rect {
-	rw := max(sideW, w/3)
-	gw := w - rw
-	t.scale = 1
-	if gw-2 >= 2*2*fieldW && h-2 >= 2*sceneH && rw-2 >= 2*2*boxW && h >= 2*(2*boxH+2)+infoRows+2 {
-		t.scale = 2
-	}
-	nh := boxH*t.scale + 2
-	return []terminu.Rect{
-		{W: gw, H: h},
-		{X: gw, W: rw, H: nh},
-		{X: gw, Y: nh, W: rw, H: nh},
-		{X: gw, Y: 2 * nh, W: rw, H: h - 2*nh},
-	}
-}
-
-// narrow says whether only the focused panel is drawn (tdp screen.5).
+// narrow says whether GAME draws the boxes with no frames and no INFO
+// (tdp screen.5's width).
 func (t *Tetru) narrow() bool {
 	w, _ := t.App.Size()
 	return t.App.ForceNarrow || w < narrowBelow
@@ -231,11 +202,7 @@ func (t *Tetru) paused() bool { return t.going() && t.gameP.InMode() != t.play }
 
 // setActions are GAME's actions as the game stands: Enter plays a new
 // game, or goes on with the one paused (tdp K3); New game and End game.
-// While playing, the NEXT panels and INFO are streaming content (tdp T2):
-// the pieces to come, the level, the rows and the score change as the
-// player plays on GAME, read from the corner of an eye.
 func (t *Tetru) setActions() {
-	t.next1P.Stream, t.next2P.Stream, t.infoP.Stream = t.playing(), t.playing(), t.playing()
 	enter := terminu.Action{Key: "Enter", Label: "Play", Desc: "a new game", Scope: terminu.PanelScope, Hint: "play", Disabled: t.waiting, Do: t.enter}
 	switch {
 	case t.playing(), t.waiting():

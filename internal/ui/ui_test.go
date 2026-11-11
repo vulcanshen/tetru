@@ -110,21 +110,22 @@ func widest(d *tdptest.Driver) int {
 
 func TestTetruScreen(t *testing.T) {
 	tdptest.EachIconWidth(t, func(t *testing.T) {
-		tt, d := open(t, 60, 32)
+		_, d := open(t, 60, 32)
 		if r := row(d, 0); !strings.Contains(r, "[T]ETRU") || !strings.Contains(r, "[R]ANK") || !strings.Contains(r, "[S]ETTINGS") {
 			t.Fatalf("chips %q", r)
 		}
-		if r := row(d, 2); !strings.HasPrefix(r, "┏") || !strings.Contains(r, "[1] GAME") || !strings.Contains(r, "[2] NEXT 1") {
-			t.Fatalf("not GAME, focused, and NEXT 1 at its right: %q", r)
+		if r := row(d, 2); !strings.HasPrefix(r, "┏") || !strings.Contains(r, "[1] GAME") || !strings.HasSuffix(r, "┓") {
+			t.Fatalf("not GAME alone, focused, the whole width: %q", r)
 		}
-		if !d.Has("[3] NEXT 2") || !d.Has("[4] INFO") || !d.Has("Tab|1–4:panels") {
-			t.Fatal("no NEXT 2 or INFO")
+		if r := row(d, 3); !strings.Contains(r, "┌─ NEXT 1 ─") || !strings.HasSuffix(r, "┐ ┃") {
+			t.Fatalf("NEXT 1 is not a box in GAME at its right: %q", r)
 		}
-		for _, c := range []struct{ w, g, r int }{{60, 37, 23}, {77, 52, 25}, {150, 100, 50}} {
-			got := tt.layout(c.w, 29)
-			nh := boxH + 2
-			if got[0].W != c.g || got[1].X != c.g || got[1].W != c.r || got[1].H != nh || got[2].Y != nh || got[3].Y != 2*nh || got[3].H != 29-2*nh {
-				t.Fatalf("at %d columns: %+v", c.w, got)
+		if !d.Has("┌─ NEXT 2 ─") || !d.Has("┌─ INFO ─") || d.Has("[2]") || d.Has("[3]") || d.Has("[4]") {
+			t.Fatal("no NEXT 2 or INFO box, or a box numbered")
+		}
+		for _, c := range []struct{ w, f, c int }{{58, 34, 23}, {75, 50, 24}, {148, 98, 49}} {
+			if f, cw, k := split(c.w, 27); f != c.f || cw != c.c || k != 1 {
+				t.Fatalf("GAME's body %d wide: the field's %d, the column %d, %d times", c.w, f, cw, k)
 			}
 		}
 		if !d.Has("Enter:play") {
@@ -133,40 +134,26 @@ func TestTetruScreen(t *testing.T) {
 	})
 }
 
-func TestNarrowShowsTheFocusedPanelOnly(t *testing.T) {
-	_, d := open(t, 50, 31)
-	if d.Has("NEXT") || d.Has("INFO") || !d.Has("[1] GAME") || !d.Has("Level: 1   Lines: 0  Score: 0") {
-		t.Fatal("narrow, another panel shows beside the game")
+func TestTheBoxesAreNeverFocused(t *testing.T) {
+	_, d := open(t, 77, 32)
+	if d.Has("Tab|1–4:panels") || d.Has("Tab:") {
+		t.Fatal("the footer has keys to other panels")
 	}
-	if got := widest(d); got != fieldW+boxW {
-		t.Fatalf("narrow, GAME draws %d pixels a row, not the field and the boxes", got)
-	}
-	for _, p := range []string{"[2] NEXT 1", "[3] NEXT 2", "[4] INFO"} {
-		d.Press("Tab")
-		if r := row(d, 2); !strings.Contains(r, p) || strings.Contains(r, "GAME") {
-			t.Fatalf("Tab did not show %s alone: %q", p, r)
+	for _, k := range []string{"Tab", "2", "3", "4"} {
+		d.Press(k)
+		if r := row(d, 2); !strings.HasPrefix(r, "┏") || !strings.Contains(r, "[1] GAME") {
+			t.Fatalf("%s took the focus off GAME: %q", k, r)
 		}
 	}
 }
 
-func TestNextStaysBrightWhilePlaying(t *testing.T) {
-	tt, d := open(t, 77, 32)
-	streams := func() bool { return tt.next1P.Stream && tt.next2P.Stream && tt.infoP.Stream }
-	if tt.next1P.Stream || tt.next2P.Stream || tt.infoP.Stream {
-		t.Fatal("NEXT is streaming with no game")
+func TestNarrowDrawsTheBoxesWithNoFrames(t *testing.T) {
+	_, d := open(t, 50, 31)
+	if d.Has("NEXT") || d.Has("INFO") || !d.Has("[1] GAME") || !d.Has("Level: 1   Lines: 0  Score: 0") {
+		t.Fatal("narrow, the boxes are framed, or the level, the rows and the score are not over the field")
 	}
-	play(d)
-	if !streams() {
-		t.Fatal("the NEXT panels dim while playing")
-	}
-	d.Press("Esc")
-	if tt.next1P.Stream || tt.next2P.Stream || tt.infoP.Stream {
-		t.Fatal("NEXT is streaming with the game paused")
-	}
-	d.Press("Enter")
-	topOut(t, tt, d)
-	if tt.next1P.Stream || tt.next2P.Stream || tt.infoP.Stream {
-		t.Fatal("NEXT is streaming with the game over")
+	if got := widest(d); got != fieldW+boxW {
+		t.Fatalf("narrow, GAME draws %d pixels a row, not the field and the boxes", got)
 	}
 }
 
@@ -175,23 +162,41 @@ func TestLeastSizeIsTheGameAlone(t *testing.T) {
 	if d.Has("needs a terminal") {
 		t.Fatalf("%d×%d is under the least size", minW, minH)
 	}
+	if r := row(d, minH-2); !strings.HasPrefix(r, "┗") {
+		t.Fatalf("GAME's frame is not right over the footer: %q", r)
+	}
+	if got := strings.Count(strings.Join(d.Screen(), ""), pixelGlyph); got != fieldW*sceneH+2*boxW*boxH {
+		t.Fatalf("narrow, at the least size, %d pixels, not all of the field and the boxes", got)
+	}
 	d.Resize(minW-1, minH)
-	if !d.Has("needs a terminal of at least 42×29") {
+	if !d.Has("needs a terminal of at least 42×31") {
 		t.Fatal("no size message under the least size")
+	}
+	d.Resize(narrowBelow, minH)
+	if !d.Has("Esc    pause") {
+		t.Fatal("wide, at the least height, INFO's last row is cut")
 	}
 }
 
 func TestPictureGrowsTwiceOnALargeTerminal(t *testing.T) {
-	tt, d := open(t, 150, 54)
-	if tt.scale != 2 || widest(d) != 2*(fieldW+boxW) {
-		t.Fatalf("150×54: GAME and NEXT %d times, %d pixels a row", tt.scale, widest(d))
+	_, d := open(t, 150, 54)
+	if _, _, k := split(148, 49); k != 2 || widest(d) != 2*(fieldW+boxW) {
+		t.Fatalf("150×54: %d times, %d pixels a row", k, widest(d))
 	}
-	if got := tt.layout(150, 51); got[1].H != 2*boxH+2 {
-		t.Fatalf("NEXT 1 is %d high, twice", got[1].H)
+	at := func(s string) int {
+		for i, r := range d.Screen() {
+			if strings.Contains(r, s) {
+				return i
+			}
+		}
+		return -1
+	}
+	if got := at("NEXT 2") - at("NEXT 1"); got != 2*boxH+2 {
+		t.Fatalf("NEXT 1 is %d high, not twice", got)
 	}
 	d.Resize(150, 40)
-	if tt.scale != 1 || widest(d) != fieldW+boxW {
-		t.Fatalf("150×40, too low for twice: %d times, %d pixels a row", tt.scale, widest(d))
+	if _, _, k := split(148, 35); k != 1 || widest(d) != fieldW+boxW {
+		t.Fatalf("150×40, too low for twice: %d times, %d pixels a row", k, widest(d))
 	}
 }
 
@@ -722,9 +727,9 @@ func TestLineClearSlidesOutToTheLeft(t *testing.T) {
 	if g.At != at || !tt.playing() {
 		t.Fatal("the piece was played while the row goes")
 	}
-	// At 60 × 32 GAME's body is 35 × 27, the field 24 columns in its middle:
-	// at column 5 of the body, screen column 6; row y of it on screen row
-	// 4 + y.
+	// At 60 × 32 GAME's body is 58 × 27, the field 24 columns in the middle
+	// of its 34 at the left: at column 5 of the body, screen column 6; row
+	// y of it on screen row 4 + y.
 	y := game.Rows - 1
 	first := func() int {
 		r := []rune(row(d, 4+y))
@@ -738,7 +743,7 @@ func TestLineClearSlidesOutToTheLeft(t *testing.T) {
 	if first() != 6 {
 		t.Fatalf("the row going starts at column %d, not in place", first())
 	}
-	white := func() bool { return strings.Contains(tt.gameP.Body.Draw(35, 27, true)[1+y], "255;255;255") }
+	white := func() bool { return strings.Contains(tt.gameP.Body.Draw(58, 27, true)[1+y], "255;255;255") }
 	d.Advance(game.Flash / 2)
 	if first() != 6 || !white() {
 		t.Fatal("the row going is not white in place first")

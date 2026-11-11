@@ -1,33 +1,32 @@
 tasks:
   - id: 1
-    spec: 12
+    spec: 13
     implementation: |
       三個畫面（tgo Screen，Name、Key、Desc）：Tetru（T，the game）、Rank（R，the scores, best first）、Settings（S，the keys to play with）；
       tgo 畫最上面的畫面 chip 列與下面的線，T、R、S 是 global 熱鍵，global operation popup 裡也列出來
-      Tetru 畫面四個 panel，tgo Screen.Layout：左邊 [1] GAME（task 2）；右邊一欄由上而下 [2] NEXT 1、[3] NEXT 2（task 2）、[4] INFO（task 14）
-      右邊那一欄寬是整個寬度的三分之一、至少 23 欄（INFO 的字與框），GAME 拿剩下的（60 欄 37｜23、77 欄 52｜25、150 欄 100｜50）；
-      NEXT 1、NEXT 2 各 6 列（放大時 10 列），INFO 拿剩下的
-      Level、Lines、Score 在 INFO 上面那一段（task 14）；GAME 裡只有場地；沒有 statusbar
+      Tetru 畫面只有一個 panel [1] GAME，佔滿 panel 區（沒有 Screen.Layout）；右邊一欄由上而下 NEXT 1、NEXT 2（task 2）、INFO（task 14）是 GAME 的 body 畫的框（task 15）
+      GAME 裡分成左邊場地那一塊與右邊那一欄：右邊那一欄是 (GAME 裡的寬 + 2) / 3、至少 24 欄（INFO 的框 23 欄與離 GAME 的框一格），場地那一塊拿剩下的
+      （GAME 裡 58 欄 34｜24、75 欄 50｜25、148 欄 98｜50）；NEXT 1、NEXT 2 的框各 6 列（放大時 10 列），從 GAME 裡第一列起，INFO 的框拿剩下的到最後一列
+      Level、Lines、Score 在 INFO 上面那一段（task 14）；場地那一塊裡只有場地；沒有 statusbar
       啟動時（tgo App.Start）用 tgo App.Focus 把 focus 放到 [1] GAME
-      最低尺寸 42×29（tgo App.MinWidth、MinHeight）；比它小時 tgo 只畫名稱、needs a terminal of at least 42×29、Press [Ctrl-C] twice to quit
-      窄寬的門檻 60（tgo Screen.NarrowBelow）：42–59 欄只畫有 focus 的 panel；玩的時候 focus 在 GAME，NEXT 與 INFO 收掉、GAME 自己在場地上面寫一行
-      Level: 1   Lines: 0  Score: 0（Level 補到 2 格），場地右邊畫接下來的方塊（task 2）；Tab 依序只畫 NEXT 1、NEXT 2、INFO
+      最低尺寸 42×31（tgo App.MinWidth、MinHeight）；比它小時 tgo 只畫名稱、needs a terminal of at least 42×31、Press [Ctrl-C] twice to quit
+      窄寬的門檻 60（tgo Screen.NarrowBelow）：42–59 欄 GAME 不畫右邊那一欄，自己在場地上面寫一行
+      Level: 1   Lines: 0  Score: 0（Level 補到 2 格），場地右邊畫接下來的方塊、沒有框（task 2）
       tdptest 在每一格畫面量每一列等於終端機寬度（tdp L4）；版面的測試在 icon 與 powerline 符號 1/1、2/1、2/2 格下各跑一次（tdp E5）
-    test: [TestTetruScreen, TestScreensSwitchOnTRS, TestNarrowShowsTheFocusedPanelOnly, TestLeastSizeIsTheGameAlone, TestPictureGrowsTwiceOnALargeTerminal, TestStatsInInfo, TestFirstLaunch]
+    test: [TestTetruScreen, TestScreensSwitchOnTRS, TestNarrowDrawsTheBoxesWithNoFrames, TestLeastSizeIsTheGameAlone, TestPictureGrowsTwiceOnALargeTerminal, TestStatsInInfo, TestFirstLaunch]
   - id: 2
-    spec: 12
+    spec: 13
     implementation: |
-      GAME 與 NEXT 1、NEXT 2 的 body 自己畫（tgo Body），從同一張 19×24 像素的圖切出來；一個像素是 nf-fa-square（U+F0C8），icon 佔一格時後面補一個空白，所以一個像素 2 欄 × 1 列
+      GAME 的 body 自己畫（tgo Body），場地與兩格從同一張 19×24 像素的圖切出來；一個像素是 nf-fa-square（U+F0C8），icon 佔一格時後面補一個空白，所以一個像素 2 欄 × 1 列
       圖：場地 12×24（task 3），沒有框，空的地方畫像素，#313244（locku 的底）；隔一個像素是一欄兩格，各寬 6、高 4 像素的底、沒有框，兩格之間隔一個像素；
       每格置中畫一個接下來的方塊（三格寬的放不正中，偏左），一個方塊一個像素，第一格是下一個（game.Queue 是 2）
       方塊的顏色：I #89dceb、O #f9e2af、T #cba6f7、S #a6e3a1、Z #f38ba8、J #89b4fa、L #fab387
-      GAME 畫場地（左邊 12 像素）；NEXT 1、NEXT 2 各畫自己那一格（右邊 6 像素、4 像素高）；各自置中在自己的 panel 裡
-      窄寬（42–59 欄，只畫有 focus 的 panel）時 GAME 畫整張圖，場地右邊隔一個像素是兩格；Tab 到 NEXT 1、NEXT 2 時各畫自己那一格
-      GAME 裡放得下 48 欄、48 列，右邊那一欄放得下 24 欄、終端機的高放得下右邊那一欄時，GAME 與兩個 NEXT 一起把一個像素畫成 2×2，NEXT 的高跟著變兩倍；不然都不放大
+      GAME 畫場地（左邊 12 像素），置中在場地那一塊；右邊那一欄的 NEXT 1、NEXT 2 框裡各畫自己那一格（右邊 6 像素、4 像素高），置中（task 15）
+      窄寬（42–59 欄）時 GAME 畫整張圖，場地右邊隔一個像素是兩格，沒有框
+      場地那一塊放得下 48 欄、GAME 裡放得下 48 列、框裡放得下 24 欄、GAME 裡的高放得下右邊那一欄時，場地與兩格一起把一個像素畫成 2×2，NEXT 的框跟著變高；不然都不放大
       還沒玩過時畫空的場地與空的兩格
-      顏色用 tgo 的 Fg 上色；失焦或被 popup 蓋住時由 tgo 淡化；玩的時候（Play 模式裡）NEXT 1、NEXT 2、INFO 標成串流內容（tgo Panel.Stream），失焦也不淡化，
-      暫停、結束、還沒玩時拿掉
-    test: [TestPictureIsLockus, TestTetruScreen, TestNarrowShowsTheFocusedPanelOnly, TestPictureGrowsTwiceOnALargeTerminal, TestNextStaysBrightWhilePlaying, TestPopupsOverTheGameAtEveryWidth]
+      顏色用 tgo 的 Fg 上色；被 popup 蓋住時由 tgo 淡化（GAME 是唯一的 panel，一直有 focus）
+    test: [TestPictureIsLockus, TestTetruScreen, TestNarrowDrawsTheBoxesWithNoFrames, TestPictureGrowsTwiceOnALargeTerminal, TestPopupsOverTheGameAtEveryWidth]
   - id: 3
     spec: 9
     implementation: |
@@ -59,7 +58,7 @@ tasks:
       寫的都是 Settings 裡現在的鍵（TODO(tdp #7)：使用者要的是只列 restart、save）
       Play 模式的 r：跟 GAME 的 n 一樣（有分數先開 NEW GAME 問誰玩的，0 分直接開新的一局）；s：存檔並離開（task 16）；footer 是
       Space:menu ?:help d:rotate left k:rotate right r:restart s:save Esc:pause，60 欄時 tgo 收掉 r:restart s:save
-      遊戲每 40 ms 一格，有任何 popup 開著（Space menu、?、confirm）或終端機比 42×29 小時不往前走，popup 關掉就接著走；有沒有 popup 是問
+      遊戲每 40 ms 一格，有任何 popup 開著（Space menu、?、confirm）或終端機比 42×31 小時不往前走，popup 關掉就接著走；有沒有 popup 是問
       tgo App.Covered()（收起動畫播到一半、splash 開著也算）
       Esc 離開 Play（tgo Mode.OnExit）：遊戲停著，開 tgo App.Confirm：標題 RESUME，內容 Paused: level 1, 0 lines, 0 points.，問句 Go on with the game?，
       Enter:resume 回到 Play，Esc:cancel 留在暫停；場地上不畫東西（第一版畫的兩條直槓拿掉了）
@@ -157,15 +156,23 @@ tasks:
       Esc 離開；排行的檔也讀不了時接著問它
     test: [TestDefaultIsTheUsersKeys, TestArrowsGoWithTheirLetters, TestUsedBySaysWhoHasAKey, TestPathIsInTheConfigDirectory, TestSaveThenLoadKeepsOtherKeys, TestLoadBadKeys, TestSettingsSetAKey, TestSettingsThatCantBeKept, TestBrokenSettingsAskToMoveAside, TestPauseIsAlwaysSpace, TestAKeyInUseIsRefused]
   - id: 14
-    spec: 5
+    spec: 13
     implementation: |
-      [4] INFO 的 body 自己畫（tgo Body）：從上面一列一列寫，離框一格
+      INFO 是 GAME 的 body 在右下畫的框（task 15）：框裡從上面一列一列寫，離框一格
       上面一段：Level: 1 / Lines: 0 / Score: 12,340 一行一個，label Overlay0、值 Lavender；沒在玩時是上一局的值，還沒玩過是 1、0、0
       一條 ╌ 的虛線（Overlay0），寬到離框一格
       下面一段：鍵一欄 5 格（Blue），空兩格，說明：h move left、l move right、j down a row、d rotate left、k rotate right、Enter drop（都照 Settings 現在的鍵）、
       Space pause, menu、Esc pause
-      沒有 cursor、沒有鍵；玩的時候是串流內容（task 2），其他時候失焦由 tgo 淡化
-    test: [TestStatsInInfo, TestInfoShowsTheKeys, TestSettingsSetAKey, TestNextStaysBrightWhilePlaying]
+      沒有 cursor、沒有鍵、拿不到 focus（task 15）
+    test: [TestStatsInInfo, TestInfoShowsTheKeys, TestSettingsSetAKey, TestLeastSizeIsTheGameAlone]
+  - id: 15
+    spec: 13
+    implementation: |
+      Tetru 畫面的 Panels 只有 [1] GAME；NEXT 1、NEXT 2、INFO 是 GAME 的 body（tgo Body）在右邊那一欄畫的框，不是 tgo Panel：沒有 [N]，Tab、2–9 到不了，focus 一直在 GAME
+      footer 由 tgo 寫只有一個 panel 的那一種：Space:menu ?:help !:log q:quit（沒有 Tab|1–N）
+      框：細線 ┌─┐│└┘，Surface2；上框 ┌─ NEXT 1 ───┐（名字大寫、前後空一格、Overlay0）；寬是右邊那一欄的寬，右邊離 GAME 的框一格
+      窄寬（42–59 欄）時不畫框與 INFO（task 2）
+    test: [TestTheBoxesAreNeverFocused, TestTetruScreen]
   - id: 16
     spec: 12
     implementation: |

@@ -15,8 +15,8 @@ with the player's name and the time, and ranks them, the best first.
 
 ## Features
 
-- **Drawn as locku's falling blocks**: the same square pixels and colours. The well at the left; at its right the
-  next two pieces, a panel each, and INFO: the level, the rows and the score, and the keys to play with.
+- **Drawn as locku's falling blocks**: the same square pixels and colours. The well at the left; at its right, in the same
+  panel, the next two pieces, a box each, and INFO: the level, the rows and the score, and the keys to play with.
 - **Your keys**: every key you play with but `Space` can be changed on the Settings screen.
 - **Ten levels of speed**: a level every ten rows, from a row a second to ten a second; past the tenth the speed stays.
 - **Every game kept**: the time, the name and the score, the best first on the Rank screen. You play first and say who
@@ -34,7 +34,7 @@ with the player's name and the time, and ranks them, the best first.
 - macOS or Linux (WSL too).
 - A [Nerd Font](https://www.nerdfonts.com) terminal profile: the blocks and the frames are Nerd Font glyphs.
 - A truecolor (24-bit) terminal: the faded colours and the layer colours cannot be told apart in 256 colours.
-- A terminal at least 42 columns wide and 29 rows high. Under 60 columns the well shows alone; from 60 on, the pieces
+- A terminal at least 42 columns wide and 31 rows high. Under 60 columns the well shows alone; from 60 on, the pieces
   to come and INFO show beside it. In a
   smaller one tetru shows only its name, the size it needs and how to quit, and comes back as it was once the terminal
   grows: the game waits meanwhile.
@@ -129,7 +129,7 @@ Playing (the game in the `Play` mode), with the keys as they first are:
 | `Esc` | Pause, out of the game, where it stands in a box; `Enter` goes on |
 
 On the Settings screen, `Enter` on an action lists the keys: the small letters, `Enter` and `Space`. The one chosen is
-the key from then on, and the INFO panel beside the well shows it; one that already does something while playing
+the key from then on, and INFO beside the well shows it; one that already does something while playing
 (another action's, `Space`, `q`, `r`, `s`) is refused with a warning saying what has it. An arrow does what its letter does
 (`h|j|k|l` are `←|↓|↑|→`, `u|d` are `PgUp|PgDn`): set left to another letter and `←` does nothing. `Space` always pauses.
 
@@ -152,7 +152,6 @@ The keys every family app shares:
 | `Space` | What you can do here: on this item, on this panel, and for the whole app |
 | `?` | Every key that works here |
 | `!` | The App Log: what was done, newest last; here, the scores kept |
-| `Tab`, `1`–`9` | The next panel; jump to a panel by its number. While playing, `Esc` first |
 | `j\|k`, `gg\|G` | On Rank and Settings: move, to the top, to the bottom |
 | `Esc` | Close the popup on top, one at a time; it never leaves tetru |
 | `q` | Quit; with a game going, after asking, its score kept for ANON |
