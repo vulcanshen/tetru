@@ -1,29 +1,29 @@
 tasks:
   - id: 1
-    spec: 11
+    spec: 12
     implementation: |
       三個畫面（tgo Screen，Name、Key、Desc）：Tetru（T，the game）、Rank（R，the scores, best first）、Settings（S，the keys to play with）；
       tgo 畫最上面的畫面 chip 列與下面的線，T、R、S 是 global 熱鍵，global operation popup 裡也列出來
       Tetru 畫面四個 panel，tgo Screen.Layout：左邊 [1] GAME（task 2）；右邊一欄由上而下 [2] NEXT 1、[3] NEXT 2（task 2）、[4] INFO（task 14）
       右邊那一欄寬是整個寬度的三分之一、至少 23 欄（INFO 的字與框），GAME 拿剩下的（60 欄 37｜23、77 欄 52｜25、150 欄 100｜50）；
-      NEXT 1、NEXT 2 各 7 列（放大時 12 列），INFO 拿剩下的
+      NEXT 1、NEXT 2 各 6 列（放大時 10 列），INFO 拿剩下的
       Level、Lines、Score 在 INFO 上面那一段（task 14）；GAME 裡只有場地；沒有 statusbar
       啟動時（tgo App.Start）用 tgo App.Focus 把 focus 放到 [1] GAME
-      最低尺寸 42×31（tgo App.MinWidth、MinHeight）；比它小時 tgo 只畫名稱、needs a terminal of at least 42×31、Press [Ctrl-C] twice to quit
+      最低尺寸 42×29（tgo App.MinWidth、MinHeight）；比它小時 tgo 只畫名稱、needs a terminal of at least 42×29、Press [Ctrl-C] twice to quit
       窄寬的門檻 60（tgo Screen.NarrowBelow）：42–59 欄只畫有 focus 的 panel；玩的時候 focus 在 GAME，NEXT 與 INFO 收掉、GAME 自己在場地上面寫一行
       Level: 1   Lines: 0  Score: 0（Level 補到 2 格），場地右邊畫接下來的方塊（task 2）；Tab 依序只畫 NEXT 1、NEXT 2、INFO
       tdptest 在每一格畫面量每一列等於終端機寬度（tdp L4）；版面的測試在 icon 與 powerline 符號 1/1、2/1、2/2 格下各跑一次（tdp E5）
     test: [TestTetruScreen, TestScreensSwitchOnTRS, TestNarrowShowsTheFocusedPanelOnly, TestLeastSizeIsTheGameAlone, TestPictureGrowsTwiceOnALargeTerminal, TestStatsInInfo, TestFirstLaunch]
   - id: 2
-    spec: 11
+    spec: 12
     implementation: |
-      GAME 與 NEXT 1、NEXT 2 的 body 自己畫（tgo Body），從同一張 18×24 像素的圖切出來；一個像素是 nf-fa-square（U+F0C8），icon 佔一格時後面補一個空白，所以一個像素 2 欄 × 1 列
-      圖：場地 12×24（task 3），沒有框，空的地方畫像素，#313244（locku 的底）；隔一個像素是一欄兩格，各 5×5 像素的底、沒有框，兩格之間隔一個像素；
-      每格置中畫一個接下來的方塊（放不正中時偏左、偏上），一個方塊一個像素，第一格是下一個（game.Queue 是 2）
+      GAME 與 NEXT 1、NEXT 2 的 body 自己畫（tgo Body），從同一張 19×24 像素的圖切出來；一個像素是 nf-fa-square（U+F0C8），icon 佔一格時後面補一個空白，所以一個像素 2 欄 × 1 列
+      圖：場地 12×24（task 3），沒有框，空的地方畫像素，#313244（locku 的底）；隔一個像素是一欄兩格，各寬 6、高 4 像素的底、沒有框，兩格之間隔一個像素；
+      每格置中畫一個接下來的方塊（三格寬的放不正中，偏左），一個方塊一個像素，第一格是下一個（game.Queue 是 2）
       方塊的顏色：I #89dceb、O #f9e2af、T #cba6f7、S #a6e3a1、Z #f38ba8、J #89b4fa、L #fab387
-      GAME 畫場地（左邊 12 像素）；NEXT 1、NEXT 2 各畫自己那一格（右邊 5 像素、5 像素高）；各自置中在自己的 panel 裡
+      GAME 畫場地（左邊 12 像素）；NEXT 1、NEXT 2 各畫自己那一格（右邊 6 像素、4 像素高）；各自置中在自己的 panel 裡
       窄寬（42–59 欄，只畫有 focus 的 panel）時 GAME 畫整張圖，場地右邊隔一個像素是兩格；Tab 到 NEXT 1、NEXT 2 時各畫自己那一格
-      GAME 裡放得下 48 欄、48 列，右邊那一欄放得下 20 欄、終端機的高放得下右邊那一欄時，GAME 與兩個 NEXT 一起把一個像素畫成 2×2，NEXT 的高跟著變兩倍；不然都不放大
+      GAME 裡放得下 48 欄、48 列，右邊那一欄放得下 24 欄、終端機的高放得下右邊那一欄時，GAME 與兩個 NEXT 一起把一個像素畫成 2×2，NEXT 的高跟著變兩倍；不然都不放大
       還沒玩過時畫空的場地與空的兩格
       顏色用 tgo 的 Fg 上色；失焦或被 popup 蓋住時由 tgo 淡化；玩的時候（Play 模式裡）NEXT 1、NEXT 2、INFO 標成串流內容（tgo Panel.Stream），失焦也不淡化，
       暫停、結束、還沒玩時拿掉
@@ -51,20 +51,23 @@ tasks:
       Enter 在 GAME 上（Play 外）：沒有一局在暫停時開新的一局（task 6），有就繼續（task 5）；hint Enter:play，暫停時 Enter:resume
     test: [TestPlay, TestSpaceMenuRotates, TestTheGameFalls, TestSettingsSetAKey]
   - id: 5
-    spec: 10
+    spec: 12
     implementation: |
       Play 裡按 Space：tgo 開 Play 的 Space menu，標題 [1] GAME：ITEM OPERATION 的 [d] Rotate left（the falling piece, counterclockwise）、
       [k] Rotate right（the falling piece, clockwise），選了就等於按那個鍵、回到 Play；PLAY MODE 的 h（move left）、l（move right）、j（down a row）、
-      Enter（drop to the bottom）只顯示；[Esc] Pause；寫的都是 Settings 裡現在的鍵
-      遊戲每 40 ms 一格，有任何 popup 開著（Space menu、?、confirm）或終端機比 42×30 小時不往前走，popup 關掉就接著走；有沒有 popup 是問
+      Enter（drop to the bottom）只顯示；[r]estart（start over from level 1）、[s]ave（keep this game and quit; it goes on next time）；[Esc] Pause；
+      寫的都是 Settings 裡現在的鍵（TODO(tdp #7)：使用者要的是只列 restart、save）
+      Play 模式的 r：跟 GAME 的 n 一樣（有分數先開 NEW GAME 問誰玩的，0 分直接開新的一局）；s：存檔並離開（task 16）；footer 是
+      Space:menu ?:help d:rotate left k:rotate right r:restart s:save Esc:pause，60 欄時 tgo 收掉 r:restart s:save
+      遊戲每 40 ms 一格，有任何 popup 開著（Space menu、?、confirm）或終端機比 42×29 小時不往前走，popup 關掉就接著走；有沒有 popup 是問
       tgo App.Covered()（收起動畫播到一半、splash 開著也算）
       Esc 離開 Play（tgo Mode.OnExit）：遊戲停著，開 tgo App.Confirm：標題 RESUME，內容 Paused: level 1, 0 lines, 0 points.，問句 Go on with the game?，
       Enter:resume 回到 Play，Esc:cancel 留在暫停；場地上不畫東西（第一版畫的兩條直槓拿掉了）
       暫停時 GAME 的 hint 是 Enter:resume；Space menu 是一般的：
-      PANEL OPERATION 的 [Enter] Resume（this game, where it was）、[n]ew game、[x] End game，與 Global operation；Enter 回到 Play
+      PANEL OPERATION 的 [Enter] Resume（this game, where it was）、[n]ew game、[x] End game、[s]ave（task 16），與 Global operation；Enter 回到 Play
       Tab、數字鍵在 Play 裡暫停（tgo Mode.Pause），tgo 跳 Info toast：Press [Esc] to leave Play first
       Settings 的 Pause 一列寫 Space、停用：Enter 不開 select
-    test: [TestTheGameStopsUnderAPopup, TestEscPausesEnterResumes, TestTabInPlaySaysToPauseFirst, TestSpaceMenuRotates, TestPauseIsAlwaysSpace]
+    test: [TestTheGameStopsUnderAPopup, TestEscPausesEnterResumes, TestTabInPlaySaysToPauseFirst, TestSpaceMenuRotates, TestPauseIsAlwaysSpace, TestRestartFromThePlayModesSpaceMenu, TestPlay]
   - id: 6
     spec: 10
     implementation: |
@@ -82,7 +85,7 @@ tasks:
       分數存在 TETRU__DATA 或 ~/.tetru 底下的 scores.yaml：scores 底下一筆一個 {time, name, score}，time 是 RFC 3339、到秒，照記下的順序；
       每次整個檔重寫（先寫暫存檔再改名），目錄 0755、檔 0644
       一局結束、問了誰玩的之後（按 q 離開的直接記成 ANON）記一筆（task 6、10），一局只記一次；main 在 tgo App.Run 結束後（連按兩次 Ctrl-C、關掉終端機），
-      還沒記的那一局記成 ANON；0 分的不記
+      還沒記的那一局記成 ANON；0 分的不記；存了離開的（task 16）不記
       關掉終端機（SIGHUP）：tgo 的 Run 正常回來，main 在 Run 之後照樣記
       記下時 App Log 記一筆 Success：Kept 12,340 points for vulcan；寫不進去開 error popup：Can't keep the score，檔案路徑與原因
       啟動時 scores.yaml 讀不了：tgo App.MoveAside 問要不要移成 scores.yaml.bak 重新開始；Enter 移開、從空的排行開始，Esc 離開
@@ -98,10 +101,10 @@ tasks:
       沒有 Enter 與其他動作；j|k、gg|G 由 tgo 移動
     test: [TestScoresBestFirst, TestTopOutKeepsTheScore, TestScreensSwitchOnTRS]
   - id: 9
-    spec: 11
+    spec: 12
     implementation: |
       消行：方塊落定、湊滿的那一刻，滿的那幾行離開堆疊，行數與分數馬上加（關卡跟著升），下一個方塊同時出現在最上面等著
-      滿的那幾行從最下面那一行開始往左滑：一行 360 ms，先慢後快（滑的距離照時間的平方），上面那一行在下面那一行開始 120 ms 後跟著滑；
+      滿的那幾行整行畫成 #ffffff，200 ms 之後白色的從最下面那一行開始往左滑：一行 360 ms，先慢後快（滑的距離照時間的平方），上面那一行在下面那一行開始 120 ms 後跟著滑；
       滑的那一行一次往左移一個 icon（2 欄），畫過場地左邊的空白、超過 GAME 的框就不畫了，滑走的地方畫底；窄寬時一樣從 GAME 的左邊滑出去
       全部滑出去之後，最下面那個空行上面的整片每 40 ms 往下降一列像素，一列一列補到沒有空行；最上面補空的格子；等著的方塊不跟著降
       這段期間 Play 模式的鍵按了沒反應，方塊也不往下掉；降完方塊才開始掉，放不進去就結束（堆到頂）；有 popup 蓋著時動畫停著
@@ -127,7 +130,7 @@ tasks:
     implementation: |
       docs/icon.svg：U 框照 tdp principle/icon.svg（#205090），金色（#f2b753）的字在框裡上排 T、E，下排 T、R，一個字 5×7 格；註解依序 U、T、E、T、R
       internal/ui/icon.svg 是它的副本，embed 給 tgo 的 splash（tgo NewSplash：tetru、internal/version 的 Display()、A falling-block game for the terminal）
-      命令列：tetru version、-v、--version 印 Display()；tetru help、-h、--help 印用法（含分數的位置）；其他字印 unknown command 與用法，exit 2
+      命令列：tetru version、-v、--version 印 Display()；tetru help、-h、--help 印用法（含分數與存檔的位置）；其他字印 unknown command 與用法，exit 2
     test: [TestSplashIsTheIcon, TestVersionAndHelp, TestFirstLaunch]
   - id: 12
     spec: 1
@@ -139,18 +142,18 @@ tasks:
     test:
       - check: repo
   - id: 13
-    spec: 10
+    spec: 12
     implementation: |
       Settings 畫面只有 [1] KEYS，tgo Values（一列一個值）：表頭 ACTION、KEY；MOVE LEFT h、MOVE RIGHT l、DOWN A ROW j、ROTATE LEFT d、ROTATE RIGHT k、
       DROP Enter，最後 PAUSE Space（tgo Field.Disabled）；每一列有說明（tgo Field.Desc，? 的「每一列」）；hint Enter:edit
       Enter 在一列上開 tgo Select：標題 KEY: Rotate left，選項是 a 到 z、Enter、Space，現在的鍵選著
-      選到 Play 裡已經有作用的鍵（別的動作的鍵、它的方向鍵、Space、q）：不寫檔、鍵不變，tgo 跳 Warning toast：
-      Can't use k for Rotate left: it is Rotate right's key（Space 是 it pauses and opens the Space menu，q 是 it quits）
+      選到 Play 裡已經有作用的鍵（別的動作的鍵、它的方向鍵、Space、q、r、s）：不寫檔、鍵不變，tgo 跳 Warning toast：
+      Can't use k for Rotate left: it is Rotate right's key（Space 是 it pauses and opens the Space menu，q 是 it quits，r 是 it restarts，s 是 it saves and quits）
       其他的 Enter 確定時（tgo Select.Commit）寫進設定檔，寫不進去 popup 不關、tgo 開 error popup，鍵不變；寫進去之後 Play 的鍵、footer、Space menu、
       ? 與 INFO 跟著換，App Log 記一筆 Success：Rotate left is now a
       設定檔：TETRU__CONFIG，不然 $XDG_CONFIG_HOME/tetru，不然 ~/.config/tetru 底下的 config.yaml；keys 底下 move_left、move_right、down、
       rotate_left、rotate_right、drop；沒寫的照預設；寫回時檔裡其他的 key 照留；先寫暫存檔再改名，目錄 0755、檔 0644
-      啟動時設定檔讀不了（YAML 錯、鍵不是小寫字母或 Enter、是 q 或 Space、兩個動作同一個鍵）：tgo App.MoveAside 問要不要移成 config.yaml.bak，Enter 移開、用預設的鍵，
+      啟動時設定檔讀不了（YAML 錯、鍵不是小寫字母或 Enter、是 q、Space、r 或 s、兩個動作同一個鍵）：tgo App.MoveAside 問要不要移成 config.yaml.bak，Enter 移開、用預設的鍵，
       Esc 離開；排行的檔也讀不了時接著問它
     test: [TestDefaultIsTheUsersKeys, TestArrowsGoWithTheirLetters, TestUsedBySaysWhoHasAKey, TestPathIsInTheConfigDirectory, TestSaveThenLoadKeepsOtherKeys, TestLoadBadKeys, TestSettingsSetAKey, TestSettingsThatCantBeKept, TestBrokenSettingsAskToMoveAside, TestPauseIsAlwaysSpace, TestAKeyInUseIsRefused]
   - id: 14
@@ -163,3 +166,17 @@ tasks:
       Space pause, menu、Esc pause
       沒有 cursor、沒有鍵；玩的時候是串流內容（task 2），其他時候失焦由 tgo 淡化
     test: [TestStatsInInfo, TestInfoShowsTheKeys, TestSettingsSetAKey, TestNextStaysBrightWhilePlaying]
+  - id: 16
+    spec: 12
+    implementation: |
+      存檔：TETRU__DATA 或 ~/.tetru 底下的 game.yaml（internal/saved），level、lines、score 與 stack（24 列，一列 12 個字，# 有方塊、. 沒有，由上往下）；
+      整個檔寫（先寫暫存檔再改名），目錄 0755、檔 0644
+      存的 stack 是 game.Stack()：落地的格子，消行還沒做完時是做完之後的樣子；正在掉的方塊、接下來的方塊不存
+      Save：Play 模式的 s（Space menu 的 [s]ave）與暫停時 GAME 的 panel operation [s]ave（沒有一局在玩時停用）；不問，寫好就回 tea.Quit 離開，
+      這一局標成不用記（main 的 Finish 不記成 ANON）；App Log 記一筆 Success：Saved the game: level 1, 134 points；
+      寫不進去：tgo App.Error 開 CAN'T SAVE THE GAME，路徑與原因，不離開
+      啟動時讀到 game.yaml：game.Resume 接著那一局（關卡、行數、分數照存的；地上的格子是 game.Kept，畫成 #ffffff；方塊從新的一袋來），
+      停在暫停（GAME 的 hint Enter:resume，INFO 寫存的分數）；讀進來就刪掉 game.yaml；App Log 記一筆 Info：Took up the game saved: level 1, 134 points
+      game.yaml 讀不了（YAML 錯、不是 24 列、一列不是 12 個 # 或 .、關卡不在 1–10、行數或分數是負的）：tgo App.MoveAside 問要不要移成 game.yaml.bak，
+      排在設定、排行的檔後面問；Enter 移開、沒有存檔，Esc 離開；讀進來之後刪不掉：tgo App.Error 開 CAN'T REMOVE THE GAME SAVED，說下次啟動還會再接一次
+    test: [TestPathIsBesideTheScores, TestSaveLoadRemove, TestLoadBroken, TestStackIsWhatASaveKeepsAndResumeTakesUp, TestSaveQuitsAndTheNextStartGoesOn, TestSaveFromThePanelWhenPaused, TestBrokenSaveAsksToMoveAside]

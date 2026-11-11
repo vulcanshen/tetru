@@ -41,6 +41,8 @@ func TestUsedBySaysWhoHasAKey(t *testing.T) {
 		"i":     "",
 		"Space": "it pauses and opens the Space menu",
 		"q":     "it quits",
+		"r":     "it restarts",
+		"s":     "it saves and quits",
 		"a":     "",
 		"Enter": "", // its own key
 	} {
@@ -81,7 +83,7 @@ func TestSaveThenLoadKeepsOtherKeys(t *testing.T) {
 	if err != nil || s[RotateLeft] != "a" || s[Left] != "h" {
 		t.Fatalf("partial file: %v %v", s, err)
 	}
-	s[Drop] = "s"
+	s[Drop] = "f"
 	if err := Save(path, s); err != nil {
 		t.Fatal(err)
 	}

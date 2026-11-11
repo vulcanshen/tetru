@@ -19,9 +19,9 @@ import (
 // of its own). The field is GAME's and each box a NEXT panel's (user,
 // 2026-11-11: Next 1 and Next 2 at the right); narrow, where GAME is drawn
 // alone, GAME draws the boxes too, a pixel from the field, a pixel apart.
-// A box is 5 × 5 pixels, a square (user, 2026-11-11).
+// A box is 6 pixels wide and 4 high (user, 2026-11-11: 4 × 6, after 5 × 5).
 const (
-	boxW, boxH = 5, 5
+	boxW, boxH = 6, 4
 	// fieldW and sceneH are the field; queueX is where the column of boxes
 	// starts beside it; sceneW is the two side by side, in pixels.
 	fieldW = game.Cols
@@ -37,19 +37,22 @@ var pixelGlyph = string(rune(0xf0c8))
 const (
 	inkNone uint8 = iota
 	inkGround
-	inkPiece // inkPiece + p is piece p's
-	inkFrame = inkPiece + 7
+	inkPiece                // inkPiece + p is piece p's
+	inkWhite = inkPiece + 7 // game.Kept's too: inkPiece + game.Kept - 1
+	inkFrame = inkWhite + 1
 )
 
 // inks are the colours of the inks, locku's: the ground surface0, the
 // pieces in the colours they usually have in catppuccin-mocha's (the long
-// one sky, the square yellow, T mauve, S green, Z red, J blue, L peach),
-// the curtain overlay1.
+// one sky, the square yellow, T mauve, S green, Z red, J blue, L peach), a
+// row going and a block of a game saved and taken up white (user,
+// 2026-11-11), the curtain overlay1.
 var inks = []terminu.Color{
 	{},
 	terminu.Hex("#313244"),
 	terminu.Hex("#89dceb"), terminu.Hex("#f9e2af"), terminu.Hex("#cba6f7"), terminu.Hex("#a6e3a1"),
 	terminu.Hex("#f38ba8"), terminu.Hex("#89b4fa"), terminu.Hex("#fab387"),
+	terminu.Hex("#ffffff"),
 	terminu.Hex("#7f849c"),
 }
 
@@ -168,9 +171,9 @@ func (f *field) Draw(w, h int, focused bool) []string {
 
 // slideRows draws the rows going over out, w wide, where the scene sc is
 // drawn from its column 0, every pixel k × k glyphs, at column left and
-// line top: each row slides out to the left as far as it has gone, the
-// bottom one first, over the blank left of the field and out past GAME's
-// frame (user, 2026-11-11), the ground showing where it was.
+// line top: each row, white, slides out to the left as far as it has gone,
+// the bottom one first, over the blank left of the field and out past
+// GAME's frame (user, 2026-11-11), the ground showing where it was.
 func slideRows(out []string, g *game.Game, sc *scene, w, k, left, top int) {
 	if g == nil {
 		return
@@ -180,7 +183,7 @@ func slideRows(out []string, g *game.Game, sc *scene, w, k, left, top int) {
 	// off when left is odd.
 	lead := (left + 1) / 2
 	strip := game.Cols * k
-	for i, r := range g.Going {
+	for i, y := range g.Going {
 		f := g.Slid(i)
 		if f >= 1 {
 			continue
@@ -201,13 +204,13 @@ func slideRows(out []string, g *game.Game, sc *scene, w, k, left, top int) {
 			}
 			n = 0
 		}
-		for ; u < len(sc.px[r.Y])*k; u++ {
+		for ; u < len(sc.px[y])*k; u++ {
 			c := inkNone
 			switch {
 			case u >= from && u < from+strip:
-				c = inkPiece + r.Cells[(u-from)/k] - 1
+				c = inkWhite
 			case u >= 0:
-				c = sc.px[r.Y][u/k]
+				c = sc.px[y][u/k]
 			}
 			if c != ink {
 				flush()
@@ -218,7 +221,7 @@ func slideRows(out []string, g *game.Game, sc *scene, w, k, left, top int) {
 		flush()
 		line := terminu.Pad(b.String(), w)
 		for j := range k {
-			if l := top + r.Y*k + j; l >= 0 && l < len(out) {
+			if l := top + y*k + j; l >= 0 && l < len(out) {
 				out[l] = line
 			}
 		}

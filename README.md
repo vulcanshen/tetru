@@ -24,6 +24,8 @@ with the player's name and the time, and ranks them, the best first.
   keeps the score it had then, for ANON.
 - **Pause whenever**: `Space` pauses and shows what you can do; `Esc` pauses and leaves the game where it is, a box
   saying the level, the rows and the score, `Enter` to go on.
+- **Save and go on later**: Save keeps the game, its score and the blocks on the ground, and quits; the next start
+  goes on with it, the blocks on the ground white.
 
 ## Install
 
@@ -32,7 +34,7 @@ with the player's name and the time, and ranks them, the best first.
 - macOS or Linux (WSL too).
 - A [Nerd Font](https://www.nerdfonts.com) terminal profile: the blocks and the frames are Nerd Font glyphs.
 - A truecolor (24-bit) terminal: the faded colours and the layer colours cannot be told apart in 256 colours.
-- A terminal at least 42 columns wide and 31 rows high. Under 60 columns the well shows alone; from 60 on, the pieces
+- A terminal at least 42 columns wide and 29 rows high. Under 60 columns the well shows alone; from 60 on, the pieces
   to come and INFO show beside it. In a
   smaller one tetru shows only its name, the size it needs and how to quit, and comes back as it was once the terminal
   grows: the game waits meanwhile.
@@ -69,7 +71,8 @@ No sudo: it installs to `~/.local/bin`.
 ### The first start
 
 tetru opens on the Tetru screen with the focus on the well, ready to play. It writes nothing until a game with points
-ends, then `~/.tetru/scores.yaml`, or until a key is changed, then `~/.config/tetru/config.yaml`.
+ends, then `~/.tetru/scores.yaml`, or until a key is changed, then `~/.config/tetru/config.yaml`, or until a game is
+saved, then `~/.tetru/game.yaml`.
 
 ### Uninstall
 
@@ -120,12 +123,14 @@ Playing (the game in the `Play` mode), with the keys as they first are:
 | `d`, `PgDn` | Turn it left (counterclockwise) |
 | `k`, `↑` | Turn it right (clockwise) |
 | `Enter` | Drop it to the bottom and set it there: two points a row |
+| `r` | Restart: a new game; with points, after asking who played this one, its score kept |
+| `s` | Save this game and quit; the next start goes on with it |
 | `Space` | Pause, and show what you can do; close it to go on |
 | `Esc` | Pause, out of the game, where it stands in a box; `Enter` goes on |
 
 On the Settings screen, `Enter` on an action lists the keys: the small letters, `Enter` and `Space`. The one chosen is
 the key from then on, and the INFO panel beside the well shows it; one that already does something while playing
-(another action's, `Space`, `q`) is refused with a warning saying what has it. An arrow does what its letter does
+(another action's, `Space`, `q`, `r`, `s`) is refused with a warning saying what has it. An arrow does what its letter does
 (`h|j|k|l` are `←|↓|↑|→`, `u|d` are `PgUp|PgDn`): set left to another letter and `←` does nothing. `Space` always pauses.
 
 Clearing 1, 2, 3 or 4 rows at once scores 100, 300, 500 or 800 times the level. A piece that lies on the stack is set half
@@ -138,6 +143,7 @@ On the GAME panel, out of the game:
 | `Enter` | Play a new game at once, or go on with the one paused |
 | `n` | A new game; with one going, after asking who played it, its score kept |
 | `x` | End the game going, after asking who played it, its score kept |
+| `s` | Save the game paused and quit; the next start goes on with it |
 
 The keys every family app shares:
 
@@ -156,9 +162,10 @@ The keys every family app shares:
 | What | Where | To move it |
 |---|---|---|
 | The scores | `~/.tetru/scores.yaml` | `TETRU__DATA` |
+| The game saved, till the next start takes it up | `~/.tetru/game.yaml` | `TETRU__DATA` |
 | The keys to play with | `~/.config/tetru/config.yaml` (`$XDG_CONFIG_HOME/tetru`) | `TETRU__CONFIG` |
 
-A game with no points is not kept. tetru uses none of the family's shared setting keys.
+A game with no points is not kept. A game saved is kept once it ends after it is taken up again. tetru uses none of the family's shared setting keys.
 
 ## Limits
 

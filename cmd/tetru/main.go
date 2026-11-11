@@ -17,8 +17,9 @@ Usage:
   tetru version    print the version (-v, --version)
   tetru help       print this help (-h, --help)
 
-Scores are kept in ~/.tetru/scores.yaml (TETRU__DATA to move it), the keys
-to play with in ~/.config/tetru/config.yaml (TETRU__CONFIG to move it).
+Scores are kept in ~/.tetru/scores.yaml and a game saved in ~/.tetru/game.yaml
+(TETRU__DATA to move them), the keys to play with in
+~/.config/tetru/config.yaml (TETRU__CONFIG to move it).
 `
 
 func main() {

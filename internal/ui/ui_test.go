@@ -176,7 +176,7 @@ func TestLeastSizeIsTheGameAlone(t *testing.T) {
 		t.Fatalf("%d×%d is under the least size", minW, minH)
 	}
 	d.Resize(minW-1, minH)
-	if !d.Has("needs a terminal of at least 42×31") {
+	if !d.Has("needs a terminal of at least 42×29") {
 		t.Fatal("no size message under the least size")
 	}
 }
@@ -218,8 +218,8 @@ func TestStatsInInfo(t *testing.T) {
 }
 
 func TestPictureIsLockus(t *testing.T) {
-	if boxW != 5 || boxH != 5 {
-		t.Fatalf("a box is %d × %d, not 5 × 5 (user, 2026-11-11)", boxW, boxH)
+	if boxW != 6 || boxH != 4 {
+		t.Fatalf("a box is %d wide and %d high, not 6 and 4 (user, 2026-11-11)", boxW, boxH)
 	}
 	s := picture(nil)
 	if s.px[0][0] != inkGround || s.px[sceneH-1][fieldW-1] != inkGround || s.px[0][fieldW] != inkNone {
@@ -263,6 +263,7 @@ func TestPlay(t *testing.T) {
 		if !tt.playing() || !strings.Contains(row(d, 2), "Play") {
 			t.Fatal("not in the Play mode")
 		}
+		// 60 columns leave r:restart and s:save out of the footer.
 		if r := row(d, 31); !strings.HasPrefix(r, "Space:menu ?:help d:rotate left k:rotate right Esc:pause") {
 			t.Fatalf("footer %q", r)
 		}
@@ -331,7 +332,7 @@ func TestTheGameStopsUnderAPopup(t *testing.T) {
 	tt, d := open(t, 60, 32)
 	play(d)
 	d.Press("Space")
-	for _, s := range []string{"ITEM OPERATION", "[d] Rotate left", "[k] Rotate right", "PLAY MODE", "move left", "drop to the bottom", "[Esc] Pause"} {
+	for _, s := range []string{"ITEM OPERATION", "[d] Rotate left", "[k] Rotate right", "PLAY MODE", "move left", "drop to the bottom", "[r]estart", "[s]ave", "[Esc] Pause"} {
 		if !d.Has(s) {
 			t.Fatalf("the Play mode's Space menu has no %q", s)
 		}
@@ -737,8 +738,13 @@ func TestLineClearSlidesOutToTheLeft(t *testing.T) {
 	if first() != 6 {
 		t.Fatalf("the row going starts at column %d, not in place", first())
 	}
-	d.Advance(game.Slide * 3 / 4)
-	if c := first(); c < 0 || c >= 6 {
+	white := func() bool { return strings.Contains(tt.gameP.Body.Draw(35, 27, true)[1+y], "255;255;255") }
+	d.Advance(game.Flash / 2)
+	if first() != 6 || !white() {
+		t.Fatal("the row going is not white in place first")
+	}
+	d.Advance(game.Flash/2 + game.Slide*3/4)
+	if c := first(); c < 0 || c >= 6 || !white() {
 		t.Fatalf("the row going is not out left of the field: column %d", c)
 	}
 	d.Advance(game.Slide / 4)
@@ -751,6 +757,118 @@ func TestLineClearSlidesOutToTheLeft(t *testing.T) {
 	}
 	if g.At != at {
 		t.Fatal("the piece came down with the stack")
+	}
+}
+
+func TestRestartFromThePlayModesSpaceMenu(t *testing.T) {
+	tt, d := open(t, 80, 32)
+	play(d)
+	d.Press("j")
+	g := tt.g
+	d.Press("Space")
+	d.Press("r")
+	if !d.Has("NEW GAME") || !d.Has("1 points: who played?") {
+		t.Fatal("Restart did not ask who played the game going")
+	}
+	d.Press("Enter")
+	if all := kept(t); len(all) != 1 || tt.g == g || !tt.playing() {
+		t.Fatalf("Restart kept %+v, or no new game going", all)
+	}
+	d.Press("r")
+	if tt.g.Score != 0 || !tt.playing() || d.Has("NEW GAME") {
+		t.Fatal("r in the Play mode with no points did not start over at once")
+	}
+}
+
+func TestSaveQuitsAndTheNextStartGoesOn(t *testing.T) {
+	dir := t.TempDir()
+	t.Setenv("TETRU__DATA", dir)
+	t.Setenv("TETRU__CONFIG", t.TempDir())
+	tt := NewTetru()
+	d := tdptest.Start(t, tt.App, 80, 32)
+	play(d)
+	d.Press("j")
+	tt.g.Put(0, game.Rows-1, 3)
+	tt.g.Put(1, game.Rows-1, 4)
+	level, lines, score := tt.g.Level, tt.g.Lines, tt.g.Score
+	d.Press("Space")
+	d.Press("s")
+	if !d.Quit() {
+		t.Fatal("Save did not quit")
+	}
+	tt.Finish()
+	if len(kept(t)) != 0 {
+		t.Fatal("a game saved was kept in the rank")
+	}
+	path := filepath.Join(dir, "game.yaml")
+	if _, err := os.Stat(path); err != nil {
+		t.Fatal("no game saved")
+	}
+
+	tt = NewTetru()
+	d = tdptest.Start(t, tt.App, 80, 32)
+	g := tt.g
+	if g == nil || g.Level != level || g.Lines != lines || g.Score != score || !tt.paused() || !d.Has("Enter:resume") || !d.Has("Score: 1") {
+		t.Fatal("the next start did not take the game saved up, paused")
+	}
+	if g.Cell(0, game.Rows-1) != game.Kept || g.Cell(1, game.Rows-1) != game.Kept || g.Cell(2, game.Rows-1) != 0 {
+		t.Fatal("the stack saved is not back, its blocks Kept")
+	}
+	if p := picture(g); p.px[game.Rows-1][0] != inkWhite || p.px[game.Rows-1][1] != inkWhite {
+		t.Fatal("the blocks of the game saved are not white")
+	}
+	if _, err := os.Stat(path); !os.IsNotExist(err) {
+		t.Fatal("the game saved was not removed once taken up")
+	}
+	d.Press("Enter")
+	if !tt.playing() {
+		t.Fatal("Enter did not go on with it")
+	}
+	d.Press("Esc")
+	d.Press("Esc") // the popup: paused
+	d.Press("x")
+	d.Type("amy")
+	d.Press("Enter")
+	if all := kept(t); len(all) != 1 || all[0].Score != score {
+		t.Fatalf("the game taken up and ended kept %+v", all)
+	}
+}
+
+func TestSaveFromThePanelWhenPaused(t *testing.T) {
+	tt, d := open(t, 80, 32)
+	if a := tt.gameP.Actions[3]; a.Key != "s" || !a.Disabled() {
+		t.Fatal("Save is not GAME's, disabled with no game")
+	}
+	play(d)
+	d.Press("Esc")
+	d.Press("Esc") // the popup: paused
+	d.Press("s")
+	if !d.Quit() {
+		t.Fatal("s on GAME, paused, did not save and quit")
+	}
+	if _, err := os.Stat(filepath.Join(os.Getenv("TETRU__DATA"), "game.yaml")); err != nil {
+		t.Fatal("no game saved")
+	}
+}
+
+func TestBrokenSaveAsksToMoveAside(t *testing.T) {
+	dir := t.TempDir()
+	t.Setenv("TETRU__DATA", dir)
+	t.Setenv("TETRU__CONFIG", t.TempDir())
+	path := filepath.Join(dir, "game.yaml")
+	os.WriteFile(path, []byte("level: [nope"), 0o644)
+	tt := NewTetru()
+	d := tdptest.Start(t, tt.App, 60, 32)
+	if !d.Has("MOVE ASIDE") || !d.Has("game.yaml.bak") || tt.g != nil {
+		t.Fatal("a broken game saved did not ask to move it aside")
+	}
+	d.Press("Enter")
+	if _, err := os.Stat(path + ".bak"); err != nil {
+		t.Fatal("the broken file was not moved aside")
+	}
+	play(d)
+	if !tt.playing() {
+		t.Fatal("no game after starting fresh")
 	}
 }
 

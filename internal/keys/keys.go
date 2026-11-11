@@ -71,9 +71,10 @@ func (s Set) Keys(a Action) []string {
 	return []string{s[a]}
 }
 
-// core are the core keys among the keys offered, and what each does in the
-// Play mode (tdp K11): a key the player can't have.
-var core = map[string]string{"Space": "it pauses and opens the Space menu", "q": "it quits"}
+// core are the keys offered that the Play mode keeps for itself, and what
+// each does there (tdp K11): the core keys, and Restart and Save (user,
+// 2026-11-11). A key the player can't have.
+var core = map[string]string{"Space": "it pauses and opens the Space menu", "q": "it quits", "r": "it restarts", "s": "it saves and quits"}
 
 // Choices are the keys offered to the player for an action: the small
 // letters, Enter, and Space (tdp K11: which keys the player may choose is

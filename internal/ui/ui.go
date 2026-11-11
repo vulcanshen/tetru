@@ -17,6 +17,7 @@ import (
 
 	"github.com/vulcanshen/tetru/internal/game"
 	"github.com/vulcanshen/tetru/internal/keys"
+	"github.com/vulcanshen/tetru/internal/saved"
 	"github.com/vulcanshen/tetru/internal/scores"
 	"github.com/vulcanshen/tetru/internal/version"
 )
@@ -30,7 +31,7 @@ var icon []byte
 
 const (
 	// minW, minH are tetru's least size (tdp L1, lower than 60 × 32): wide
-	// enough for GAME alone (narrow), the field and the boxes, 36 columns,
+	// enough for GAME alone (narrow), the field and the boxes, 38 columns,
 	// the level, the rows and the score over them, 38, its frame and a
 	// cell's margin each side; high enough for the chip row, its rule and
 	// the footer, and the column at GAME's right: NEXT 1 and NEXT 2 and INFO,
@@ -52,12 +53,15 @@ const (
 type Tetru struct {
 	App *terminu.App
 
-	path    string         // the scores' file
-	all     []scores.Score // the records, as kept
-	loadErr error          // why the file could not be read, at start
-	cfg     string         // the settings file
-	keys    keys.Set       // the keys to play with
-	cfgErr  error          // why the settings could not be read, at start
+	path     string         // the scores' file
+	all      []scores.Score // the records, as kept
+	loadErr  error          // why the file could not be read, at start
+	cfg      string         // the settings file
+	keys     keys.Set       // the keys to play with
+	cfgErr   error          // why the settings could not be read, at start
+	stash    string         // the game saved to go on with
+	stashErr error          // why it could not be read, at start
+	rmErr    error          // why it could not be removed once taken up, at start
 
 	list   *terminu.List
 	rankP  *terminu.Panel
@@ -69,7 +73,7 @@ type Tetru struct {
 	scale  int // what a pixel of GAME and the NEXT panels is grown by
 
 	g      *game.Game // the game, nil before the first
-	saved  bool       // its score is kept (or it was not worth keeping)
+	saved  bool       // its score is kept (or it was not worth keeping, or it is saved to go on with)
 	topped bool       // it ended reaching the top: a popup says so once the curtain is down
 
 	ticking bool          // a frame is on its way
@@ -83,8 +87,16 @@ func New() *terminu.App { return NewTetru().App }
 // NewTetru is tetru with its game, for main to keep the score of a game
 // still going when the program ends (Finish).
 func NewTetru() *Tetru {
-	t := &Tetru{App: terminu.New("tetru"), path: scores.Path(), cfg: keys.Path(), seed: rand.Uint64, scale: 1}
+	t := &Tetru{App: terminu.New("tetru"), path: scores.Path(), cfg: keys.Path(), stash: saved.Path(), seed: rand.Uint64, scale: 1}
 	t.all, t.loadErr = scores.Load(t.path)
+	// A game saved is taken up again, paused, and its file removed (user,
+	// 2026-11-11: Save keeps it and quits; the next start goes on with it).
+	var sg *saved.Game
+	if sg, t.stashErr = saved.Load(t.stash); sg != nil {
+		t.g = game.Resume(t.seed(), sg.Level, sg.Lines, sg.Score, sg.Stack)
+		t.rmErr = saved.Remove(t.stash)
+		t.App.Log(terminu.Info, "Took up the game saved: level "+strconv.Itoa(sg.Level)+", "+comma(sg.Score)+" points")
+	}
 	if t.keys, t.cfgErr = keys.Load(t.cfg); t.cfgErr != nil {
 		t.keys = keys.Default()
 	}
@@ -140,7 +152,8 @@ func (t *Tetru) start() tea.Cmd {
 }
 
 // moveAside asks to move aside a file that could not be read (tdp E3), one
-// after the other: the settings, then the scores.
+// after the other: the settings, the scores, the game saved; then says a
+// game saved and taken up could not be removed.
 func (t *Tetru) moveAside() tea.Cmd {
 	switch {
 	case t.cfgErr != nil:
@@ -157,8 +170,16 @@ func (t *Tetru) moveAside() tea.Cmd {
 		return t.App.MoveAside(t.path, err, func() tea.Cmd {
 			t.all = nil
 			t.setRows("")
-			return nil
+			return t.moveAside()
 		})
+	case t.stashErr != nil:
+		err := t.stashErr
+		t.stashErr = nil
+		return t.App.MoveAside(t.stash, err, func() tea.Cmd { return nil })
+	case t.rmErr != nil:
+		err := t.rmErr
+		t.rmErr = nil
+		return t.App.Error("Can't remove the game saved", t.stash, err.Error(), "It is taken up again the next time tetru starts.")
 	}
 	return nil
 }
@@ -230,7 +251,29 @@ func (t *Tetru) setActions() {
 		{Key: "n", Label: "New game", Desc: "start over from level 1", Scope: terminu.PanelScope, Disabled: t.waiting, Do: t.newGame},
 		{Key: "x", Label: "End game", Desc: "keep this score and stop", Scope: terminu.PanelScope,
 			Disabled: func() bool { return !t.going() }, Do: t.endGame},
+		{Key: "s", Label: "Save", Desc: saveDesc, Scope: terminu.PanelScope,
+			Disabled: func() bool { return !t.going() }, Do: t.saveGame},
 	}
+}
+
+// saveDesc says what Save does.
+const saveDesc = "keep this game and quit; it goes on next time"
+
+// saveGame keeps the game going in the file of the game saved, its level,
+// rows, score and stack, and quits; it is not kept in the rank now, but
+// once it ends after it is taken up again (user, 2026-11-11: save and
+// quit).
+func (t *Tetru) saveGame() tea.Cmd {
+	if !t.going() {
+		return nil
+	}
+	g := t.g
+	if err := saved.Save(t.stash, saved.Game{Level: g.Level, Lines: g.Lines, Score: g.Score, Stack: g.Stack()}); err != nil {
+		return t.App.Error("Can't save the game", t.stash, err.Error())
+	}
+	t.saved, t.done = true, true
+	t.App.Log(terminu.Success, "Saved the game: level "+strconv.Itoa(g.Level)+", "+comma(g.Score)+" points")
+	return tea.Quit
 }
 
 // anon is the name a score is kept for when none is given (user,
@@ -417,6 +460,11 @@ func (t *Tetru) setModeKeys() {
 		{Key: k[keys.RotateLeft], Keys: k.Keys(keys.RotateLeft), Desc: "rotate left", Item: true, Label: keys.RotateLeft.Label(), MenuDesc: keys.RotateLeft.Desc(), Do: t.do(keys.RotateLeft)},
 		{Key: k[keys.RotateRight], Keys: k.Keys(keys.RotateRight), Desc: "rotate right", Item: true, Label: keys.RotateRight.Label(), MenuDesc: keys.RotateRight.Desc(), Do: t.do(keys.RotateRight)},
 		{Key: k[keys.Drop], Keys: k.Keys(keys.Drop), Desc: "drop to the bottom", NoFooter: true, Do: t.do(keys.Drop)},
+		// TODO(tdp #7): the user wants the mode's Space menu to have Restart
+		// and Save alone (2026-11-11), not the keys above; tdp menu.4 lists a
+		// mode's keys there, so they are the mode's too, for now.
+		{Key: "r", Desc: "restart", Label: "Restart", MenuDesc: "start over from level 1", Do: func(string) tea.Cmd { return t.newGame() }},
+		{Key: "s", Desc: "save", Label: "Save", MenuDesc: saveDesc, Do: func(string) tea.Cmd { return t.saveGame() }},
 	}
 }
 

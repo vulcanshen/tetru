@@ -195,7 +195,7 @@ func TestClearScoresAtTheLevelAndGoesUp(t *testing.T) {
 	}
 	score := g.Score
 	fell := g.Drop()
-	if len(g.Going) != 4 || g.Going[0].Y != Rows-1 || g.Going[3].Y != Rows-4 {
+	if len(g.Going) != 4 || g.Going[0] != Rows-1 || g.Going[3] != Rows-4 {
 		t.Fatalf("rows going, the bottom first: %v", g.Going)
 	}
 	g.Advance(ClearTime(4))
@@ -224,8 +224,8 @@ func TestClearSlidesThenTheStackComesDown(t *testing.T) {
 	next := g.Next[0]
 	lines := g.Lines
 	g.Drop()
-	if len(g.Going) != 2 || g.Going[0].Y != Rows-1 || g.Going[1].Y != Rows-3 || g.Going[0].Cells[0] == 0 {
-		t.Fatalf("rows going, the bottom first, with their blocks: %v", g.Going)
+	if len(g.Going) != 2 || g.Going[0] != Rows-1 || g.Going[1] != Rows-3 {
+		t.Fatalf("rows going, the bottom first: %v", g.Going)
 	}
 	if g.Cell(0, Rows-1) != 0 || g.Cell(0, Rows-3) != 0 || g.Lines != lines+2 {
 		t.Fatal("the rows going are still in the stack, or not counted at once")
@@ -234,6 +234,10 @@ func TestClearSlidesThenTheStackComesDown(t *testing.T) {
 		t.Fatal("the next piece is not in, or it can be played while the rows go")
 	}
 	at := g.At
+	g.Advance(Flash)
+	if g.Slid(0) != 0 {
+		t.Fatal("the row slides before it is white a while")
+	}
 	g.Advance(Stagger)
 	if g.Slid(0) <= 0 || g.Slid(1) != 0 {
 		t.Fatal("the bottom row does not slide first")
@@ -252,6 +256,38 @@ func TestClearSlidesThenTheStackComesDown(t *testing.T) {
 	}
 	if g.At != at {
 		t.Fatal("the piece waiting came down with the stack")
+	}
+}
+
+func TestStackIsWhatASaveKeepsAndResumeTakesUp(t *testing.T) {
+	g := with(I)
+	g.fill(Rows-1, Cols-1)
+	g.Put(0, Rows-2, 1)
+	g.Rotate(1) // upright, in the last column: the bottom row fills
+	for g.Move(1) {
+	}
+	g.Drop()
+	g.Advance(Flash) // the clear under way
+	s := g.Stack()
+	if !s[Rows-1][0] || s[Rows-2][0] || !s[Rows-1][Cols-1] || !s[Rows-3][Cols-1] || s[Rows-4][Cols-1] {
+		t.Fatal("the stack saved during a clear is not as it is once the clear is over")
+	}
+	if g.Cell(0, Rows-2) == 0 {
+		t.Fatal("Stack moved the stack itself")
+	}
+	r := Resume(2, 3, 25, 12340, s)
+	if r.Level != 3 || r.Lines != 25 || r.Score != 12340 || !r.Live() || r.Over {
+		t.Fatalf("taken up: level %d, %d lines, %d points", r.Level, r.Lines, r.Score)
+	}
+	for y := range Rows {
+		for x := range Cols {
+			if want := map[bool]uint8{true: Kept, false: 0}[s[y][x]]; r.Cell(x, y) != want {
+				t.Fatalf("block %d, %d is %d, not %d", x, y, r.Cell(x, y), want)
+			}
+		}
+	}
+	if r := Resume(2, 99, 0, 0, [Rows][Cols]bool{}); r.Level != MaxLevel {
+		t.Fatalf("level %d past the last", r.Level)
 	}
 }
 
