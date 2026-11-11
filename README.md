@@ -15,8 +15,8 @@ with the player's name and the time, and ranks them, the best first.
 
 ## Features
 
-- **Drawn as locku's falling blocks**: the same square pixels, colours and grey frame. The well with its level, rows
-  and score at the left; at its right the next two pieces, a box each, and the keys to play with.
+- **Drawn as locku's falling blocks**: the same square pixels and colours. The well at the left; at its right the
+  next two pieces, a panel each, and INFO: the level, the rows and the score, and the keys to play with.
 - **Your keys**: every key you play with but `Space` can be changed on the Settings screen.
 - **Ten levels of speed**: a level every ten rows, from a row a second to ten a second; past the tenth the speed stays.
 - **Every game kept**: the time, the name and the score, the best first on the Rank screen. You play first and say who
@@ -31,7 +31,7 @@ with the player's name and the time, and ranks them, the best first.
 - macOS or Linux (WSL too).
 - A [Nerd Font](https://www.nerdfonts.com) terminal profile: the blocks and the frames are Nerd Font glyphs.
 - A truecolor (24-bit) terminal: the faded colours and the layer colours cannot be told apart in 256 colours.
-- A terminal at least 42 columns wide and 28 rows high, the well alone; the pieces to come and the keys show beside it
+- A terminal at least 42 columns wide and 29 rows high, the well alone; the pieces to come and INFO show beside it
   from 60 columns on. In a
   smaller one tetru shows only its name, the size it needs and how to quit, and comes back as it was once the terminal
   grows: the game waits meanwhile.
@@ -123,7 +123,7 @@ Playing (the game in the `Play` mode), with the keys as they first are:
 | `Esc` | Pause, out of the game; `Enter` goes on |
 
 On the Settings screen, `Enter` on an action lists the keys it can have; the one chosen is the key from then on, and the
-MANUAL panel beside the well shows it. `←`, `→` and `↓` always move the piece too. `Space` always pauses.
+INFO panel beside the well shows it. `←`, `→` and `↓` always move the piece too. `Space` always pauses.
 
 Clearing 1, 2, 3 or 4 rows at once scores 100, 300, 500 or 800 times the level. A piece that lies on the stack is set half
 a second later; moving or turning it gives it the half second again, a few times.

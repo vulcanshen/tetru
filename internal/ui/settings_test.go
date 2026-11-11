@@ -30,11 +30,11 @@ func TestScreensSwitchOnTRS(t *testing.T) {
 	}
 }
 
-func TestManualShowsTheKeys(t *testing.T) {
+func TestInfoShowsTheKeys(t *testing.T) {
 	_, d := open(t, 60, 32)
 	for _, s := range []string{"h      move left", "l      move right", "j      down a row", "e      rotate left", "i      rotate right", "Enter  drop", "Space  pause, menu", "Esc    pause"} {
 		if !d.Has(s) {
-			t.Fatalf("MANUAL has no %q", s)
+			t.Fatalf("INFO has no %q", s)
 		}
 	}
 }
@@ -70,7 +70,7 @@ func TestSettingsSetAKey(t *testing.T) {
 	d.Press("Esc")
 	d.Press("T")
 	if !d.Has("a      rotate left") {
-		t.Fatal("MANUAL did not follow the new key")
+		t.Fatal("INFO did not follow the new key")
 	}
 	play(d)
 	turnable(tt, d)

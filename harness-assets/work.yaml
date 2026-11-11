@@ -1,32 +1,31 @@
 tasks:
   - id: 1
-    spec: 4
+    spec: 5
     implementation: |
       三個畫面（tgo Screen，Name、Key、Desc）：Tetru（T，the game）、Rank（R，the scores, best first）、Settings（S，the keys to play with）；
       tgo 畫最上面的畫面 chip 列與下面的線，T、R、S 是 global 熱鍵，global operation popup 裡也列出來
-      Tetru 畫面四個 panel，tgo Screen.Layout：左邊 [1] GAME（task 2）；右邊一欄由上而下 [2] NEXT 1、[3] NEXT 2（task 2）、[4] MANUAL（task 14）
-      右邊那一欄寬是整個寬度的三分之一、至少 23 欄（MANUAL 的字與框），GAME 拿剩下的（60 欄 37｜23、77 欄 52｜25、150 欄 100｜50）；
-      NEXT 1、NEXT 2 各 8 列（放大時 14 列），MANUAL 拿剩下的
-      Level、Lines、Score 畫在 GAME 裡、場地上面（task 2 的 GAME body）：Level: 1   Lines: 0 / Score: 0，再空一列；label Overlay0、值 Lavender，
-      Level 補到 2 格，分數每三位一個逗號（12,340）；沒在玩時是上一局的值，還沒玩過是 1、0、0；沒有 statusbar
+      Tetru 畫面四個 panel，tgo Screen.Layout：左邊 [1] GAME（task 2）；右邊一欄由上而下 [2] NEXT 1、[3] NEXT 2（task 2）、[4] INFO（task 14）
+      右邊那一欄寬是整個寬度的三分之一、至少 23 欄（INFO 的字與框），GAME 拿剩下的（60 欄 37｜23、77 欄 52｜25、150 欄 100｜50）；
+      NEXT 1、NEXT 2 各 6 列（放大時 10 列），INFO 拿剩下的
+      Level、Lines、Score 在 INFO 上面那一段（task 14）；GAME 裡只有場地；沒有 statusbar
       啟動時（tgo App.Start）用 tgo App.Focus 把 focus 放到 [1] GAME
-      最低尺寸 42×28（tgo App.MinWidth、MinHeight）；比它小時 tgo 只畫名稱、needs a terminal of at least 42×28、Press [Ctrl-C] twice to quit
-      窄寬的門檻 60（tgo Screen.NarrowBelow）：42–59 欄只畫有 focus 的 panel；玩的時候 focus 在 GAME，NEXT 與 MANUAL 收掉、GAME 自己畫接下來的方塊（task 2）；
-      Tab 依序只畫 NEXT 1、NEXT 2、MANUAL
+      最低尺寸 42×29（tgo App.MinWidth、MinHeight）；比它小時 tgo 只畫名稱、needs a terminal of at least 42×29、Press [Ctrl-C] twice to quit
+      窄寬的門檻 60（tgo Screen.NarrowBelow）：42–59 欄只畫有 focus 的 panel；玩的時候 focus 在 GAME，NEXT 與 INFO 收掉、GAME 自己在場地上面寫一行
+      Level: 1   Lines: 0  Score: 0（Level 補到 2 格），場地右邊畫接下來的方塊（task 2）；Tab 依序只畫 NEXT 1、NEXT 2、INFO
       tdptest 在每一格畫面量每一列等於終端機寬度（tdp L4）；版面的測試在 icon 與 powerline 符號 1/1、2/1、2/2 格下各跑一次（tdp E5）
-    test: [TestTetruScreen, TestScreensSwitchOnTRS, TestNarrowShowsTheFocusedPanelOnly, TestLeastSizeIsTheGameAlone, TestPictureGrowsTwiceOnALargeTerminal, TestStatsInGame, TestFirstLaunch]
+    test: [TestTetruScreen, TestScreensSwitchOnTRS, TestNarrowShowsTheFocusedPanelOnly, TestLeastSizeIsTheGameAlone, TestPictureGrowsTwiceOnALargeTerminal, TestStatsInInfo, TestFirstLaunch]
   - id: 2
-    spec: 4
+    spec: 5
     implementation: |
-      GAME 與 NEXT 1、NEXT 2 的 body 自己畫（tgo Body），從同一張 19×20 像素的圖切出來；一個像素是 nf-fa-square（U+F0C8），icon 佔一格時後面補一個空白，所以一個像素 2 欄 × 1 列
-      圖：場地 10×20，沒有框，空的地方畫像素，#313244（locku 的底）；隔一個像素是一欄 2 個框，框一個像素寬、#7f849c，框裡 6×4 像素，兩個框之間共用一條框線；
-      每個框置中畫一個接下來的方塊，一個方塊一個像素，第一個框是下一個（game.Queue 是 2）
+      GAME 與 NEXT 1、NEXT 2 的 body 自己畫（tgo Body），從同一張 17×20 像素的圖切出來；一個像素是 nf-fa-square（U+F0C8），icon 佔一格時後面補一個空白，所以一個像素 2 欄 × 1 列
+      圖：場地 10×20，沒有框，空的地方畫像素，#313244（locku 的底）；隔一個像素是一欄兩格，各 6×4 像素的底、沒有框，兩格之間隔一個像素；
+      每格置中畫一個接下來的方塊，一個方塊一個像素，第一格是下一個（game.Queue 是 2）
       方塊的顏色：I #89dceb、O #f9e2af、T #cba6f7、S #a6e3a1、Z #f38ba8、J #89b4fa、L #fab387
-      GAME 畫 Level 等兩列、空一列，再畫場地（左邊 10 像素）；NEXT 1、NEXT 2 各畫一個框與它的框線（右邊 8 像素、6 像素高）；各自置中在自己的 panel 裡
-      窄寬（42–59 欄，只畫有 focus 的 panel）時 GAME 畫整張圖，場地右邊隔一個像素是兩個框；Tab 到 NEXT 1、NEXT 2 時各畫自己的框
-      GAME 裡放得下 40 欄、43 列，右邊那一欄放得下 32 欄時，GAME 與兩個 NEXT 一起把一個像素畫成 2×2，NEXT 的高跟著變兩倍；不然都不放大
-      還沒玩過時畫空的場地與空的框
-      顏色用 tgo 的 Fg 上色；失焦或被 popup 蓋住時由 tgo 淡化；玩的時候（Play 模式裡）NEXT 1、NEXT 2 標成串流內容（tgo Panel.Stream），失焦也不淡化，
+      GAME 畫場地（左邊 10 像素）；NEXT 1、NEXT 2 各畫自己那一格（右邊 6 像素、4 像素高）；各自置中在自己的 panel 裡
+      窄寬（42–59 欄，只畫有 focus 的 panel）時 GAME 畫整張圖，場地右邊隔一個像素是兩格；Tab 到 NEXT 1、NEXT 2 時各畫自己那一格
+      GAME 裡放得下 40 欄、40 列，右邊那一欄放得下 24 欄、終端機的高放得下右邊那一欄時，GAME 與兩個 NEXT 一起把一個像素畫成 2×2，NEXT 的高跟著變兩倍；不然都不放大
+      還沒玩過時畫空的場地與空的兩格
+      顏色用 tgo 的 Fg 上色；失焦或被 popup 蓋住時由 tgo 淡化；玩的時候（Play 模式裡）NEXT 1、NEXT 2、INFO 標成串流內容（tgo Panel.Stream），失焦也不淡化，
       暫停、結束、還沒玩時拿掉
     test: [TestPictureIsLockus, TestTetruScreen, TestNarrowShowsTheFocusedPanelOnly, TestPictureGrowsTwiceOnALargeTerminal, TestNextStaysBrightWhilePlaying, TestPopupsOverTheGameAtEveryWidth]
   - id: 3
@@ -97,10 +96,10 @@ tasks:
       沒有 Enter 與其他動作；j|k、gg|G 由 tgo 移動
     test: [TestScoresBestFirst, TestTopOutKeepsTheScore, TestScreensSwitchOnTRS]
   - id: 9
-    spec: 4
+    spec: 5
     implementation: |
       消行：滿的那幾行先畫成 #ffffff 280 ms，再從場地中間往兩端一格一格變回底色，400 ms 消完，上面的掉下來，下一個方塊進來
-      結束：方塊與那幾行由上往下一列像素一列像素變成框的灰，5 秒蓋滿整張圖（場地與 NEXT 的框）；之後在場地正中間寫 END（locku 的小號像素字，
+      結束：方塊與那幾行由上往下一列像素一列像素變成框的灰，5 秒蓋滿整張圖（場地與兩格）；之後在場地正中間寫 END（locku 的小號像素字，
       E 窄一個像素，整個字 10 像素寬，#f38ba8），一直留著；堆到頂結束的，這時才問誰玩的（task 6）
       兩段動畫都由 tgo App.Tick 每 40 ms 推一格；灰幕不管有沒有 popup 都照走
     test: [TestLineClearFlashesThenGoes, TestTheWipeGoesFromTheMiddleOut, TestTopOutKeepsTheScore, TestTheStackAtTheTopEnds]
@@ -139,16 +138,19 @@ tasks:
       Enter 在一列上開 tgo Select：標題 KEY: Rotate left，選項是這個動作能用、沒有別的動作在用的鍵，現在的鍵選著（TODO(tdp #5)，spec 的 remark）：
       小寫字母，不含 q 與 j k u d g h l；左移、右移、往下另外有自己的 h、l、j；落到底另外有 Enter
       Enter 確定時（tgo Select.Commit）寫進設定檔，寫不進去 popup 不關、tgo 開 error popup，鍵不變；寫進去之後 Play 的鍵、footer、Space menu、
-      ? 與 MANUAL 跟著換，App Log 記一筆 Success：Rotate left is now a
+      ? 與 INFO 跟著換，App Log 記一筆 Success：Rotate left is now a
       設定檔：TETRU__CONFIG，不然 $XDG_CONFIG_HOME/tetru，不然 ~/.config/tetru 底下的 config.yaml；keys 底下 move_left、move_right、down、
       rotate_left、rotate_right、drop；沒寫的照預設；寫回時檔裡其他的 key 照留；先寫暫存檔再改名，目錄 0755、檔 0644
       啟動時設定檔讀不了（YAML 錯、鍵不能用、兩個動作同一個鍵）：tgo App.MoveAside 問要不要移成 config.yaml.bak，Enter 移開、用預設的鍵，
       Esc 離開；排行的檔也讀不了時接著問它
     test: [TestDefaultIsTheUsersKeys, TestChoicesKeepTdpsKeys, TestFreeLeavesOutTheOthersKeys, TestPathIsInTheConfigDirectory, TestSaveThenLoadKeepsOtherKeys, TestLoadBadKeys, TestSettingsSetAKey, TestSettingsThatCantBeKept, TestBrokenSettingsAskToMoveAside, TestPauseIsAlwaysSpace]
   - id: 14
-    spec: 3
+    spec: 5
     implementation: |
-      [4] MANUAL 的 body 自己畫（tgo Body）：從上面一列一列寫，離框一格；鍵一欄 5 格（Blue），空兩格，說明：
-      h move left、l move right、j down a row、e rotate left、i rotate right、Enter drop（都照 Settings 現在的鍵）、Space pause, menu、Esc pause
-      沒有 cursor、沒有鍵；失焦時由 tgo 淡化
-    test: [TestManualShowsTheKeys, TestSettingsSetAKey]
+      [4] INFO 的 body 自己畫（tgo Body）：從上面一列一列寫，離框一格
+      上面一段：Level: 1 / Lines: 0 / Score: 12,340 一行一個，label Overlay0、值 Lavender；沒在玩時是上一局的值，還沒玩過是 1、0、0
+      一條 ╌ 的虛線（Overlay0），寬到離框一格
+      下面一段：鍵一欄 5 格（Blue），空兩格，說明：h move left、l move right、j down a row、e rotate left、i rotate right、Enter drop（都照 Settings 現在的鍵）、
+      Space pause, menu、Esc pause
+      沒有 cursor、沒有鍵；玩的時候是串流內容（task 2），其他時候失焦由 tgo 淡化
+    test: [TestStatsInInfo, TestInfoShowsTheKeys, TestSettingsSetAKey, TestNextStaysBrightWhilePlaying]

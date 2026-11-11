@@ -19,6 +19,8 @@
 - 最上面的 Level、Lines、Score 放到遊戲的 panel 裡。
 - （2026-11-11 本地試玩之後）遊戲太小了，版面得重新分派。GAME 的 panel 裡面就是遊戲本身，不需要再有遊戲自己的外框，這樣可以
   縮小上下。
+- （2026-11-11）空間明明很大，要用滿。Next 也不需要外框，已經有自己的 panel。Level、Lines、Score 放到 Manual 那邊：那個 panel
+  分成上下兩段，上面放 Level、Lines、Score，下面放操作方式；那就不要用「Manual」這個詞。
 
 ## 操作
 

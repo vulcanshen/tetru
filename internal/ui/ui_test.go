@@ -93,12 +93,12 @@ func TestTetruScreen(t *testing.T) {
 		if r := row(d, 2); !strings.HasPrefix(r, "┏") || !strings.Contains(r, "[1] GAME") || !strings.Contains(r, "[2] NEXT 1") {
 			t.Fatalf("not GAME, focused, and NEXT 1 at its right: %q", r)
 		}
-		if !d.Has("[3] NEXT 2") || !d.Has("[4] MANUAL") || !d.Has("Tab|1–4:panels") {
-			t.Fatal("no NEXT 2 or MANUAL")
+		if !d.Has("[3] NEXT 2") || !d.Has("[4] INFO") || !d.Has("Tab|1–4:panels") {
+			t.Fatal("no NEXT 2 or INFO")
 		}
 		for _, c := range []struct{ w, g, r int }{{60, 37, 23}, {77, 52, 25}, {150, 100, 50}} {
 			got := tt.layout(c.w, 29)
-			nh := boxTall + 2
+			nh := boxH + 2
 			if got[0].W != c.g || got[1].X != c.g || got[1].W != c.r || got[1].H != nh || got[2].Y != nh || got[3].Y != 2*nh || got[3].H != 29-2*nh {
 				t.Fatalf("at %d columns: %+v", c.w, got)
 			}
@@ -111,13 +111,13 @@ func TestTetruScreen(t *testing.T) {
 
 func TestNarrowShowsTheFocusedPanelOnly(t *testing.T) {
 	_, d := open(t, 50, 31)
-	if d.Has("NEXT") || d.Has("MANUAL") || !d.Has("[1] GAME") {
+	if d.Has("NEXT") || d.Has("INFO") || !d.Has("[1] GAME") || !d.Has("Level: 1   Lines: 0  Score: 0") {
 		t.Fatal("narrow, another panel shows beside the game")
 	}
-	if got := widest(d); got != fieldW+queueW {
+	if got := widest(d); got != fieldW+boxW {
 		t.Fatalf("narrow, GAME draws %d pixels a row, not the field and the boxes", got)
 	}
-	for _, p := range []string{"[2] NEXT 1", "[3] NEXT 2", "[4] MANUAL"} {
+	for _, p := range []string{"[2] NEXT 1", "[3] NEXT 2", "[4] INFO"} {
 		d.Press("Tab")
 		if r := row(d, 2); !strings.Contains(r, p) || strings.Contains(r, "GAME") {
 			t.Fatalf("Tab did not show %s alone: %q", p, r)
@@ -127,8 +127,8 @@ func TestNarrowShowsTheFocusedPanelOnly(t *testing.T) {
 
 func TestNextStaysBrightWhilePlaying(t *testing.T) {
 	tt, d := open(t, 77, 32)
-	streams := func() bool { return tt.next1P.Stream && tt.next2P.Stream }
-	if tt.next1P.Stream || tt.next2P.Stream {
+	streams := func() bool { return tt.next1P.Stream && tt.next2P.Stream && tt.infoP.Stream }
+	if tt.next1P.Stream || tt.next2P.Stream || tt.infoP.Stream {
 		t.Fatal("NEXT is streaming with no game")
 	}
 	play(d)
@@ -136,12 +136,12 @@ func TestNextStaysBrightWhilePlaying(t *testing.T) {
 		t.Fatal("the NEXT panels dim while playing")
 	}
 	d.Press("Esc")
-	if tt.next1P.Stream || tt.next2P.Stream {
+	if tt.next1P.Stream || tt.next2P.Stream || tt.infoP.Stream {
 		t.Fatal("NEXT is streaming with the game paused")
 	}
 	d.Press("Enter")
 	topOut(t, tt, d)
-	if tt.next1P.Stream || tt.next2P.Stream {
+	if tt.next1P.Stream || tt.next2P.Stream || tt.infoP.Stream {
 		t.Fatal("NEXT is streaming with the game over")
 	}
 }
@@ -152,43 +152,41 @@ func TestLeastSizeIsTheGameAlone(t *testing.T) {
 		t.Fatalf("%d×%d is under the least size", minW, minH)
 	}
 	d.Resize(minW-1, minH)
-	if !d.Has("needs a terminal of at least 42×28") {
+	if !d.Has("needs a terminal of at least 42×29") {
 		t.Fatal("no size message under the least size")
 	}
 }
 
 func TestPictureGrowsTwiceOnALargeTerminal(t *testing.T) {
 	tt, d := open(t, 150, 52)
-	if tt.scale != 2 || widest(d) != 2*(fieldW+queueW) {
+	if tt.scale != 2 || widest(d) != 2*(fieldW+boxW) {
 		t.Fatalf("150×52: GAME and NEXT %d times, %d pixels a row", tt.scale, widest(d))
 	}
-	if got := tt.layout(150, 49); got[1].H != 2*boxTall+2 {
+	if got := tt.layout(150, 49); got[1].H != 2*boxH+2 {
 		t.Fatalf("NEXT 1 is %d high, twice", got[1].H)
 	}
 	d.Resize(150, 40)
-	if tt.scale != 1 || widest(d) != fieldW+queueW {
+	if tt.scale != 1 || widest(d) != fieldW+boxW {
 		t.Fatalf("150×40, too low for twice: %d times, %d pixels a row", tt.scale, widest(d))
 	}
 }
 
-func TestStatsInGame(t *testing.T) {
+func TestStatsInInfo(t *testing.T) {
 	tt, d := open(t, 60, 32)
-	at := -1
-	for i, r := range d.Screen() {
-		if strings.Contains(r, "Level: 1   Lines: 0") {
-			at = i
+	for _, s := range []string{"Level: 1", "Lines: 0", "Score: 0", "╌╌╌"} {
+		if !d.Has(s) {
+			t.Fatalf("INFO has no %q", s)
 		}
 	}
-	if at < 0 || !strings.Contains(row(d, at+1), "Score: 0") || strings.Count(row(d, at+3), pixelGlyph) == 0 {
-		t.Fatal("no level, rows and score over the field")
-	}
-	if strings.Contains(row(d, 0), "Level") {
-		t.Fatal("the level is still at the top")
+	for i, r := range d.Screen() {
+		if strings.Contains(r, "Level") && i < 3 {
+			t.Fatal("the level is still at the top")
+		}
 	}
 	play(d)
 	d.Press("Enter")
 	if !d.Has("Score: " + comma(tt.g.Score)) {
-		t.Fatal("the score is not GAME's")
+		t.Fatal("INFO does not follow the score")
 	}
 	if comma(1234567) != "1,234,567" || comma(12) != "12" {
 		t.Fatal("comma")
@@ -200,20 +198,21 @@ func TestPictureIsLockus(t *testing.T) {
 	if s.px[0][0] != inkGround || s.px[sceneH-1][fieldW-1] != inkGround || s.px[0][fieldW] != inkNone {
 		t.Fatal("the field is not the ground alone, unframed")
 	}
-	for i := 0; i <= game.Queue; i++ {
-		if s.px[i*(boxH+edge)][queueX+1] != inkFrame {
-			t.Fatalf("no line over box %d", i)
+	for i := range game.Queue {
+		y := i * (boxH + 1)
+		if s.px[y][queueX] != inkGround || s.px[y+boxH-1][sceneW-1] != inkGround {
+			t.Fatalf("box %d is not the ground alone, unframed", i)
 		}
 	}
-	if s.px[1][queueX] != inkFrame || s.px[1][sceneW-1] != inkFrame || s.px[1][queueX+1] != inkGround {
-		t.Fatal("a box is not ground framed in grey")
+	if s.px[boxH][queueX] != inkNone {
+		t.Fatal("no pixel between the boxes")
 	}
 	g := game.New(1)
 	s = picture(g, false)
 	for i, p := range g.Next {
 		found := false
-		for y := edge + i*(boxH+edge); y < edge+i*(boxH+edge)+boxH; y++ {
-			for x := queueX + edge; x < sceneW-1; x++ {
+		for y := i * (boxH + 1); y < i*(boxH+1)+boxH; y++ {
+			for x := queueX; x < sceneW; x++ {
 				found = found || s.px[y][x] == inkPiece+uint8(p)
 			}
 		}

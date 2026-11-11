@@ -15,27 +15,19 @@ import (
 // The field is drawn as locku's tetromino saver draws its board (user,
 // 2026-11-11): a pixel is a square glyph two columns wide and a row high, a
 // block a pixel; the ground lit too, in surface0, as locku's board is; the
-// pieces to come a box each, framed in grey a pixel thick. The field has no
-// frame of its own: GAME's is it (user, 2026-11-11: the panel is the game,
-// and the rows go to the field). The field is GAME's and each box a NEXT
-// panel's (user, 2026-11-11: Next 1 and Next 2 at the right); narrow, where
-// GAME is drawn alone, GAME draws the boxes too, a pixel from the field.
+// pieces to come a box of ground each. Neither has a frame of its own: the
+// panel's is it (user, 2026-11-11: the panel is the game; NEXT has a panel
+// of its own). The field is GAME's and each box a NEXT panel's (user,
+// 2026-11-11: Next 1 and Next 2 at the right); narrow, where GAME is drawn
+// alone, GAME draws the boxes too, a pixel from the field, a pixel apart.
 const (
-	edge       = 1 // a box's frame, in pixels
 	boxW, boxH = 6, 4
 	// fieldW and sceneH are the field; queueX is where the column of boxes
-	// starts beside it, queueW its width with its frame; sceneW is the two
-	// side by side, in pixels; boxTall is a box and its frame.
-	fieldW  = game.Cols
-	sceneH  = game.Rows
-	queueX  = fieldW + 1
-	queueW  = 2*edge + boxW
-	sceneW  = queueX + queueW
-	boxTall = boxH + 2*edge
-	// statsH is the rows over the field in GAME: the level and the rows
-	// cleared, the score, and a row between them and the field (user,
-	// 2026-11-11: in the game panel).
-	statsH = 3
+	// starts beside it; sceneW is the two side by side, in pixels.
+	fieldW = game.Cols
+	sceneH = game.Rows
+	queueX = fieldW + 1
+	sceneW = queueX + boxW
 )
 
 // pixelGlyph is a pixel: nf-fa-square, as locku's.
@@ -122,22 +114,19 @@ func picture(g *game.Game, paused bool) scene {
 			s.px[y][x] = inkGround
 		}
 	}
-	// The boxes: framed in grey, a line between two (locku).
-	bh := boxH + edge
-	for y := 0; y <= game.Queue*bh; y++ {
-		for x := queueX; x < sceneW; x++ {
-			ink := inkGround
-			if y%bh == 0 || x == queueX || x == sceneW-1 {
-				ink = inkFrame
+	// The boxes: ground, a pixel apart.
+	for i := range game.Queue {
+		for y := range boxH {
+			for x := range boxW {
+				s.put(queueX+x, i*(boxH+1)+y, inkGround)
 			}
-			s.put(x, y, ink)
 		}
 	}
 	if g == nil {
 		return s
 	}
 	for i, p := range g.Next {
-		preview(&s, p, queueX+edge, edge+i*bh)
+		preview(&s, p, queueX, i*(boxH+1))
 	}
 	for y := range game.Rows {
 		going := slices.Contains(g.Going, y)
@@ -180,7 +169,7 @@ func picture(g *game.Game, paused bool) scene {
 }
 
 // preview draws piece p as it comes in, in the middle of the box whose
-// inside's top left is x, y.
+// top left is x, y.
 func preview(s *scene, p, x, y int) {
 	blocks := game.Shape(p)
 	lx, hx, ly, hy := blocks[0][0], blocks[0][0], blocks[0][1], blocks[0][1]
@@ -193,34 +182,47 @@ func preview(s *scene, p, x, y int) {
 	}
 }
 
-// Draw is the level, the rows and the score over the field, in the middle
-// of w × h cells, at the scale the NEXT panels are drawn at; narrow, where
-// GAME is alone, the boxes beside the field.
+// Draw is the field in the middle of w × h cells, at the scale the NEXT
+// panels are drawn at (user, 2026-11-11: the field alone, the level, the
+// rows and the score in INFO); narrow, where GAME is alone, the level, the
+// rows and the score over the field and the boxes beside it.
 func (f *field) Draw(w, h int, focused bool) []string {
 	t := f.t
 	sc := picture(t.g, t.paused())
-	x1, k := fieldW, t.scale
 	if t.narrow() {
-		x1, k = sceneW, 1
+		row := t.statsRow()
+		cols := max(2*sceneW, terminu.Width(row))
+		return middle(append([]string{row, ""}, pixels(&sc, 0, sceneW, 0, sceneH, 1)...), cols, w, h)
 	}
-	cols := 2 * x1 * k
-	return middle(append(t.stats(cols), pixels(&sc, 0, x1, 0, sceneH, k)...), cols, w, h)
+	return middle(pixels(&sc, 0, fieldW, 0, sceneH, t.scale), 2*fieldW*t.scale, w, h)
 }
 
-// stats are the rows over the field, cols wide: the level and the rows
-// cleared, the score, of the game or of the last one, values in Lavender
-// (where the game is), the level a fixed width (tdp L2); a row blank.
-func (t *Tetru) stats(cols int) []string {
+// stats are the level, the rows cleared and the score, of the game or of
+// the last one, a line each: labels in Overlay0, values in Lavender (where
+// the game is), as a statusbar's (tdp screen.4).
+func (t *Tetru) stats() []string {
 	level, lines, score := 1, 0, 0
 	if t.g != nil {
 		level, lines, score = t.g.Level, t.g.Lines, t.g.Score
 	}
 	q, v := terminu.Fg(terminu.Overlay0), terminu.Fg(terminu.Lavender)
 	return []string{
-		terminu.Pad(q.Render("Level: ")+v.Render(fmt.Sprintf("%-2d", level))+q.Render("  Lines: ")+v.Render(strconv.Itoa(lines)), cols),
-		terminu.Pad(q.Render("Score: ")+v.Render(comma(score)), cols),
-		strings.Repeat(" ", cols),
+		q.Render("Level: ") + v.Render(strconv.Itoa(level)),
+		q.Render("Lines: ") + v.Render(strconv.Itoa(lines)),
+		q.Render("Score: ") + v.Render(comma(score)),
 	}
+}
+
+// statsRow is the stats on one line, two columns apart (tdp components.2),
+// the level a fixed width (tdp L2): narrow, over the field.
+func (t *Tetru) statsRow() string {
+	level := 1
+	if t.g != nil {
+		level = t.g.Level
+	}
+	st := t.stats()
+	q, v := terminu.Fg(terminu.Overlay0), terminu.Fg(terminu.Lavender)
+	return q.Render("Level: ") + v.Render(fmt.Sprintf("%-2d", level)) + "  " + st[1] + "  " + st[2]
 }
 
 // Draw is the box in the middle of w × h cells, at GAME's scale.
@@ -231,8 +233,8 @@ func (n *next) Draw(w, h int, focused bool) []string {
 	if t.narrow() {
 		k = 1
 	}
-	y0 := n.i * (boxH + edge)
-	return middle(pixels(&sc, queueX, sceneW, y0, y0+boxTall, k), 2*queueW*k, w, h)
+	y0 := n.i * (boxH + 1)
+	return middle(pixels(&sc, queueX, sceneW, y0, y0+boxH, k), 2*boxW*k, w, h)
 }
 
 // pixels are columns x0 to x1 of rows y0 to y1 of sc, every pixel k × k

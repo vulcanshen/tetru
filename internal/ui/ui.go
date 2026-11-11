@@ -1,6 +1,6 @@
 // Package ui is tetru's terminal UI on terminu-go: three screens (user,
-// 2026-11-11), Tetru with the GAME panel, the pieces to come and the
-// manual, Rank with the scores kept, Settings with the keys to play with;
+// 2026-11-11), Tetru with the GAME panel, the pieces to come and INFO,
+// Rank with the scores kept, Settings with the keys to play with;
 // the Play mode the game runs in.
 package ui
 
@@ -28,17 +28,19 @@ import (
 var icon []byte
 
 const (
-	// minW, minH are tetru's least size (tdp L1, lower than 60 × 32): GAME
-	// alone (narrow) drawing the field and the boxes, its frame and a cell's
-	// margin each side; the chip row, its rule and the footer, GAME's frame,
-	// the rows over the field and the picture.
-	minW, minH = 2*sceneW + 4, 3 + 2 + statsH + sceneH
+	// minW, minH are tetru's least size (tdp L1, lower than 60 × 32): wide
+	// enough for GAME alone (narrow), the field and the boxes, 34 columns,
+	// the level, the rows and the score over them, 38, its frame and a
+	// cell's margin each side; high enough for the chip row, its rule and
+	// the footer, and the column at GAME's right: NEXT 1 and NEXT 2 and INFO,
+	// each with its frame.
+	minW, minH = 42, 3 + 2*(boxH+2) + infoRows + 2
 	// narrowBelow is the width under which only the focused panel is drawn
 	// (tdp screen.5's most).
 	narrowBelow = 60
-	// sideW is the least the column at GAME's right is given: MANUAL's rows
+	// sideW is the least the column at GAME's right is given: INFO's rows
 	// and its frame.
-	sideW = manualW + 2
+	sideW = infoW + 2
 	// frame is a step of the game: the pace of the clear, as locku's.
 	frame = 40 * time.Millisecond
 	// nameLen is the most characters a name has.
@@ -61,6 +63,7 @@ type Tetru struct {
 	gameP  *terminu.Panel
 	next1P *terminu.Panel
 	next2P *terminu.Panel
+	infoP  *terminu.Panel
 	play   *terminu.Mode
 	scale  int // what a pixel of GAME and the NEXT panels is grown by
 
@@ -102,7 +105,7 @@ func NewTetru() *Tetru {
 	t.gameP = &terminu.Panel{Label: "Game", Body: &field{t}, OnEsc: func() tea.Cmd { return nil }}
 	t.next1P = &terminu.Panel{Label: "Next 1", Body: &next{t, 0}}
 	t.next2P = &terminu.Panel{Label: "Next 2", Body: &next{t, 1}}
-	manualP := &terminu.Panel{Label: "Manual", Body: &manual{t}}
+	t.infoP = &terminu.Panel{Label: "Info", Body: &info{t}}
 	keysP := &terminu.Panel{Label: "Keys", Body: &terminu.Values{Header: [2]string{"Action", "Key"}, Fields: t.keyFields()}}
 	t.play = &terminu.Mode{Name: "Play", Exit: "pause", Pause: true, OnExit: t.pause}
 	t.setModeKeys()
@@ -112,7 +115,7 @@ func NewTetru() *Tetru {
 		Name:        "Tetru",
 		Key:         "T",
 		Desc:        "the game",
-		Panels:      []*terminu.Panel{t.gameP, t.next1P, t.next2P, manualP},
+		Panels:      []*terminu.Panel{t.gameP, t.next1P, t.next2P, t.infoP},
 		NarrowBelow: narrowBelow,
 		Layout:      t.layout,
 	})
@@ -156,18 +159,18 @@ func (t *Tetru) moveAside() tea.Cmd {
 }
 
 // layout is the Tetru screen: GAME at the left, and at its right a column
-// of NEXT 1, NEXT 2 and MANUAL under one another (user, 2026-11-11), the
-// column a third of the width and MANUAL's at least, the NEXT panels as
+// of NEXT 1, NEXT 2 and INFO under one another (user, 2026-11-11), the
+// column a third of the width and INFO's at least, the NEXT panels as
 // high as a box. GAME and the boxes are grown twice when GAME and the
 // column both have room for it.
 func (t *Tetru) layout(w, h int) []terminu.Rect {
 	rw := max(sideW, w/3)
 	gw := w - rw
 	t.scale = 1
-	if gw-2 >= 2*2*fieldW && h-2 >= statsH+2*sceneH && rw-2 >= 2*2*queueW {
+	if gw-2 >= 2*2*fieldW && h-2 >= 2*sceneH && rw-2 >= 2*2*boxW && h >= 2*(2*boxH+2)+infoRows+2 {
 		t.scale = 2
 	}
-	nh := boxTall*t.scale + 2
+	nh := boxH*t.scale + 2
 	return []terminu.Rect{
 		{W: gw, H: h},
 		{X: gw, W: rw, H: nh},
@@ -202,11 +205,11 @@ func (t *Tetru) paused() bool { return t.going() && t.gameP.InMode() != t.play }
 
 // setActions are GAME's actions as the game stands: Enter plays a new
 // game, or goes on with the one paused (tdp K3); New game and End game.
-// While playing, the NEXT panels are streaming content (tdp T2): the pieces
-// to come change as the player plays on GAME, read from the corner of an
-// eye.
+// While playing, the NEXT panels and INFO are streaming content (tdp T2):
+// the pieces to come, the level, the rows and the score change as the
+// player plays on GAME, read from the corner of an eye.
 func (t *Tetru) setActions() {
-	t.next1P.Stream, t.next2P.Stream = t.playing(), t.playing()
+	t.next1P.Stream, t.next2P.Stream, t.infoP.Stream = t.playing(), t.playing(), t.playing()
 	enter := terminu.Action{Key: "Enter", Label: "Play", Desc: "a new game", Scope: terminu.PanelScope, Hint: "play", Disabled: t.waiting, Do: t.enter}
 	switch {
 	case t.playing(), t.waiting():
