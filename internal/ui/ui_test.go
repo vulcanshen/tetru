@@ -18,6 +18,7 @@ import (
 func newTetru(t *testing.T) *Tetru {
 	t.Helper()
 	t.Setenv("TETRU__DATA", t.TempDir())
+	t.Setenv("TETRU__CONFIG", t.TempDir())
 	tt := NewTetru()
 	tt.seed = func() uint64 { return 1 }
 	return tt
@@ -51,7 +52,7 @@ func kept(t *testing.T) []scores.Score {
 // has one turn.
 func turnable(tt *Tetru, d *tdptest.Driver) {
 	for tt.g.Cur == 1 {
-		d.Press("d")
+		d.Press("Enter")
 	}
 }
 
@@ -65,7 +66,7 @@ func topOut(t *testing.T, tt *Tetru, d *tdptest.Driver) {
 		if tt.g.Over {
 			return
 		}
-		d.Press("d")
+		d.Press("Enter")
 	}
 	t.Fatal("the stack never reached the top")
 }
@@ -79,22 +80,22 @@ func widest(d *tdptest.Driver) int {
 	return most
 }
 
-func TestLayoutScoresGameNext(t *testing.T) {
+func TestTetruScreen(t *testing.T) {
 	tdptest.EachIconWidth(t, func(t *testing.T) {
 		tt, d := open(t, 60, 32)
-		r := row(d, 1)
-		// [1] SCOR…: two-cell powerline ends leave 16 columns no room for
-		// the whole label (tdp panel.4 cuts it).
-		s, g, n := strings.Index(r, "[1] SCOR"), strings.Index(r, "[2] GAME"), strings.Index(r, "[3] NEXT")
-		if !strings.HasPrefix(r, "┌") || !strings.Contains(r, "┏") || s < 0 || g < s || n < g {
-			t.Fatalf("not SCORES, GAME, NEXT, GAME focused: %q", r)
+		if r := row(d, 0); !strings.Contains(r, "[T]ETRU") || !strings.Contains(r, "[R]ANK") || !strings.Contains(r, "[S]ETTINGS") {
+			t.Fatalf("chips %q", r)
 		}
-		if got := widest(d); got != fieldW+queueW {
-			t.Fatalf("GAME and NEXT draw %d pixels a row, not the field and the boxes", got)
+		if r := row(d, 2); !strings.HasPrefix(r, "┏") || !strings.Contains(r, "[1] GAME") || !strings.Contains(r, "[2] NEXT 1") {
+			t.Fatalf("not GAME, focused, and NEXT 1 at its right: %q", r)
 		}
-		for _, c := range []struct{ w, s, g, n int }{{60, 16, 26, 18}, {77, 26, 26, 25}, {150, 50, 50, 50}} {
-			got := tt.layout(c.w, 30)
-			if got[0].W != c.s || got[1].W != c.g || got[2].W != c.n || got[1].X != c.s || got[2].X != c.s+c.g {
+		if !d.Has("[3] NEXT 2") || !d.Has("[4] MANUAL") || !d.Has("Tab|1–4:panels") {
+			t.Fatal("no NEXT 2 or MANUAL")
+		}
+		for _, c := range []struct{ w, g, r int }{{60, 37, 23}, {77, 52, 25}, {150, 100, 50}} {
+			got := tt.layout(c.w, 29)
+			nh := boxTall + 2
+			if got[0].W != c.g || got[1].X != c.g || got[1].W != c.r || got[1].H != nh || got[2].Y != nh || got[3].Y != 2*nh || got[3].H != 29-2*nh {
 				t.Fatalf("at %d columns: %+v", c.w, got)
 			}
 		}
@@ -105,42 +106,38 @@ func TestLayoutScoresGameNext(t *testing.T) {
 }
 
 func TestNarrowShowsTheFocusedPanelOnly(t *testing.T) {
-	_, d := open(t, 50, 30)
-	if d.Has("SCORES") || d.Has("NEXT") || !d.Has("[2] GAME") {
+	_, d := open(t, 50, 31)
+	if d.Has("NEXT") || d.Has("MANUAL") || !d.Has("[1] GAME") {
 		t.Fatal("narrow, another panel shows beside the game")
 	}
 	if got := widest(d); got != sceneW {
 		t.Fatalf("narrow, GAME draws %d pixels a row, not the field and the boxes", got)
 	}
-	d.Press("Tab")
-	if r := row(d, 1); !strings.Contains(r, "[3] NEXT") || strings.Contains(r, "GAME") {
-		t.Fatalf("Tab did not show NEXT alone: %q", r)
-	}
-	if got := widest(d); got != queueW {
-		t.Fatalf("NEXT alone draws %d pixels a row", got)
-	}
-	d.Press("Tab")
-	if r := row(d, 1); !strings.Contains(r, "[1] SCORES") || strings.Contains(r, "GAME") {
-		t.Fatalf("Tab did not show SCORES alone: %q", r)
+	for _, p := range []string{"[2] NEXT 1", "[3] NEXT 2", "[4] MANUAL"} {
+		d.Press("Tab")
+		if r := row(d, 2); !strings.Contains(r, p) || strings.Contains(r, "GAME") {
+			t.Fatalf("Tab did not show %s alone: %q", p, r)
+		}
 	}
 }
 
 func TestNextStaysBrightWhilePlaying(t *testing.T) {
 	tt, d := open(t, 77, 32)
-	if tt.nextP.Stream {
+	streams := func() bool { return tt.next1P.Stream && tt.next2P.Stream }
+	if tt.next1P.Stream || tt.next2P.Stream {
 		t.Fatal("NEXT is streaming with no game")
 	}
 	play(d, "vulcan")
-	if !tt.nextP.Stream {
-		t.Fatal("NEXT dims while playing")
+	if !streams() {
+		t.Fatal("the NEXT panels dim while playing")
 	}
 	d.Press("Esc")
-	if tt.nextP.Stream {
+	if tt.next1P.Stream || tt.next2P.Stream {
 		t.Fatal("NEXT is streaming with the game paused")
 	}
 	d.Press("Enter")
 	topOut(t, tt, d)
-	if tt.nextP.Stream {
+	if tt.next1P.Stream || tt.next2P.Stream {
 		t.Fatal("NEXT is streaming with the game over")
 	}
 }
@@ -151,29 +148,37 @@ func TestLeastSizeIsTheGameAlone(t *testing.T) {
 		t.Fatalf("%d×%d is under the least size", minW, minH)
 	}
 	d.Resize(minW-1, minH)
-	if !d.Has("needs a terminal of at least 42×26") {
+	if !d.Has("needs a terminal of at least 42×30") {
 		t.Fatal("no size message under the least size")
 	}
 }
 
 func TestPictureGrowsTwiceOnALargeTerminal(t *testing.T) {
-	tt, d := open(t, 150, 50)
+	tt, d := open(t, 150, 52)
 	if tt.scale != 2 || widest(d) != 2*(fieldW+queueW) {
-		t.Fatalf("150×50: GAME and NEXT %d times, %d pixels a row", tt.scale, widest(d))
+		t.Fatalf("150×52: GAME and NEXT %d times, %d pixels a row", tt.scale, widest(d))
 	}
-	if !d.Has("[1] SCORES") || !d.Has("[3] NEXT") {
-		t.Fatal("a panel gone at 150 columns")
+	if got := tt.layout(150, 49); got[1].H != 2*boxTall+2 {
+		t.Fatalf("NEXT 1 is %d high, twice", got[1].H)
 	}
-	d.Resize(120, 50)
+	d.Resize(150, 40)
 	if tt.scale != 1 || widest(d) != fieldW+queueW {
-		t.Fatalf("120×50, a third too narrow for twice: %d times, %d pixels a row", tt.scale, widest(d))
+		t.Fatalf("150×40, too low for twice: %d times, %d pixels a row", tt.scale, widest(d))
 	}
 }
 
-func TestStatusbar(t *testing.T) {
-	_, d := open(t, 60, 32)
-	if r := row(d, 0); !strings.HasPrefix(r, "Level: 1   Lines: 0      Score: 0") {
-		t.Fatalf("statusbar %q", r)
+func TestStatsInGame(t *testing.T) {
+	tt, d := open(t, 60, 32)
+	if !strings.Contains(row(d, 4), "Level: 1   Lines: 0") || !strings.Contains(row(d, 5), "Score: 0") {
+		t.Fatalf("no level, rows and score over the field:\n%s\n%s", row(d, 4), row(d, 5))
+	}
+	if strings.Contains(row(d, 0), "Level") {
+		t.Fatal("the level is still at the top")
+	}
+	play(d, "vulcan")
+	d.Press("Enter")
+	if !d.Has("Score: " + comma(tt.g.Score)) {
+		t.Fatal("the score is not GAME's")
 	}
 	if comma(1234567) != "1,234,567" || comma(12) != "12" {
 		t.Fatal("comma")
@@ -217,10 +222,10 @@ func TestPlay(t *testing.T) {
 		play(d, "vulcan")
 		turnable(tt, d)
 		score := tt.g.Score
-		if !tt.playing() || !strings.Contains(row(d, 1), "Play") {
+		if !tt.playing() || !strings.Contains(row(d, 2), "Play") {
 			t.Fatal("not in the Play mode")
 		}
-		if r := row(d, 31); !strings.HasPrefix(r, "Space:menu ?:help e:rotate left r:rotate right Esc:pause") {
+		if r := row(d, 31); !strings.HasPrefix(r, "Space:menu ?:help e:rotate left i:rotate right Esc:pause") {
 			t.Fatalf("footer %q", r)
 		}
 		if strings.Contains(row(d, 30), "Enter:") {
@@ -247,9 +252,9 @@ func TestPlay(t *testing.T) {
 		if tt.g.At.Y != at.Y+2 || tt.g.At.Turn != at.Turn {
 			t.Fatal("k or ↑ did something")
 		}
-		d.Press("r")
+		d.Press("i")
 		if tt.g.At.Turn != 1 {
-			t.Fatal("r did not turn clockwise")
+			t.Fatal("i did not turn clockwise")
 		}
 		d.Press("e")
 		if tt.g.At.Turn != 0 {
@@ -257,13 +262,12 @@ func TestPlay(t *testing.T) {
 		}
 		before := tt.g.Score
 		d.Press("d")
-		if tt.g.Score-before < 2*10 {
-			t.Fatal("d did not drop the piece")
+		if tt.g.Score != before {
+			t.Fatal("d did something")
 		}
-		before = tt.g.Score
-		d.Press("PgDn")
+		d.Press("Enter")
 		if tt.g.Score-before < 2*10 {
-			t.Fatalf("PgDn did not drop: score %d", tt.g.Score)
+			t.Fatal("Enter did not drop the piece")
 		}
 	})
 }
@@ -282,7 +286,7 @@ func TestTheGameStopsUnderAPopup(t *testing.T) {
 	tt, d := open(t, 60, 32)
 	play(d, "vulcan")
 	d.Press("Space")
-	for _, s := range []string{"ITEM OPERATION", "Rotat[e] left", "[r]otate right", "PLAY MODE", "h|l", "drop to the bottom", "[Esc] Pause"} {
+	for _, s := range []string{"ITEM OPERATION", "Rotat[e] left", "Rotate r[i]ght", "PLAY MODE", "move left", "drop to the bottom", "[Esc] Pause"} {
 		if !d.Has(s) {
 			t.Fatalf("the Play mode's Space menu has no %q", s)
 		}
@@ -320,7 +324,7 @@ func TestEscPausesEnterResumes(t *testing.T) {
 	tt, d := open(t, 60, 32)
 	play(d, "vulcan")
 	d.Press("Esc")
-	if tt.playing() || !tt.paused() || !d.Has("Enter:resume") || strings.Contains(row(d, 1), "Play") {
+	if tt.playing() || !tt.paused() || !d.Has("Enter:resume") || strings.Contains(row(d, 2), "Play") {
 		t.Fatal("Esc did not pause")
 	}
 	s := picture(tt.g, true)
@@ -420,8 +424,8 @@ func TestTopOutKeepsTheScore(t *testing.T) {
 	if r, ok := tt.list.Current(); !ok || r.Cells[0] != "vulcan" {
 		t.Fatal("the cursor is not on the new score")
 	}
-	if !strings.Contains(row(d, 0), "Score: "+comma(tt.g.Score)) {
-		t.Fatal("the statusbar lost the last game's score")
+	if !d.Has("Score: " + comma(tt.g.Score)) {
+		t.Fatal("GAME lost the last game's score")
 	}
 	d.Advance(game.Curtain / 2)
 	if tt.g.Ended() {
@@ -447,6 +451,7 @@ func TestTopOutKeepsTheScore(t *testing.T) {
 
 func TestScoresBestFirst(t *testing.T) {
 	t.Setenv("TETRU__DATA", t.TempDir())
+	t.Setenv("TETRU__CONFIG", t.TempDir())
 	at := time.Date(2026, 11, 11, 9, 0, 0, 0, time.Local)
 	scores.Save(scores.Path(), []scores.Score{
 		{Time: at, Name: "amy", Score: 300},
@@ -455,11 +460,12 @@ func TestScoresBestFirst(t *testing.T) {
 	})
 	tt := NewTetru()
 	d := tdptest.Start(t, tt.App, 100, 32)
+	d.Press("R")
 	r := d.Screen()
-	if !strings.Contains(r[3], "bob") || !strings.Contains(r[3], "9,800") || !strings.Contains(r[4], "amy") || !strings.Contains(r[5], "cat") {
-		t.Fatalf("not best first, the earlier of two the same first:\n%s", strings.Join(r[2:6], "\n"))
+	if !strings.Contains(r[2], "[1] RANK") || !strings.Contains(r[4], "bob") || !strings.Contains(r[4], "9,800") || !strings.Contains(r[5], "amy") || !strings.Contains(r[6], "cat") {
+		t.Fatalf("not best first, the earlier of two the same first:\n%s", strings.Join(r[2:7], "\n"))
 	}
-	if !strings.Contains(r[2], "TIME") || !strings.Contains(r[3], "2026-11-11 10:00") {
+	if !strings.Contains(r[3], "TIME") || !strings.Contains(r[4], "2026-11-11 10:00") {
 		t.Fatal("no time column at 100 columns")
 	}
 }
@@ -551,7 +557,7 @@ func TestQuitWithNoGameLeaves(t *testing.T) {
 func TestFinishKeepsTheGameGoing(t *testing.T) {
 	tt, d := open(t, 60, 32)
 	play(d, "vulcan")
-	d.Press("d")
+	d.Press("Enter")
 	tt.Finish() // what main does after Run: Ctrl-C twice, the terminal closed
 	tt.Finish()
 	if all := kept(t); len(all) != 1 || all[0].Score != tt.g.Score {
@@ -579,7 +585,7 @@ func TestLineClearFlashesThenGoes(t *testing.T) {
 			g.Put(x, game.Rows-1, 1)
 		}
 	}
-	d.Press("d")
+	d.Press("Enter")
 	if len(g.Going) != 1 {
 		t.Fatalf("rows going %v", g.Going)
 	}
@@ -593,7 +599,7 @@ func TestLineClearFlashesThenGoes(t *testing.T) {
 		t.Fatal("halfway, the middle is not gone while the ends stay")
 	}
 	d.Advance(game.Wipe)
-	if g.Lines != 1 || len(g.Going) != 0 || !strings.Contains(row(d, 0), "Lines: 1") {
+	if g.Lines != 1 || len(g.Going) != 0 || !d.Has("Lines: 1") {
 		t.Fatal("the row did not go")
 	}
 }
@@ -601,6 +607,7 @@ func TestLineClearFlashesThenGoes(t *testing.T) {
 func TestBrokenScoresAskToMoveAside(t *testing.T) {
 	dir := t.TempDir()
 	t.Setenv("TETRU__DATA", dir)
+	t.Setenv("TETRU__CONFIG", t.TempDir())
 	path := filepath.Join(dir, "scores.yaml")
 	os.WriteFile(path, []byte("scores: [nope"), 0o644)
 	tt := NewTetru()

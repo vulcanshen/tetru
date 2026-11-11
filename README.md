@@ -9,16 +9,17 @@
 
 Pieces of four blocks fall into a well ten blocks wide; move and turn them as they fall, and fill rows from wall to wall
 to clear them. Every ten rows is a level, and every level falls faster, up to the tenth. tetru keeps every game's score
-with the player's name and the time, and lists the best beside the well.
+with the player's name and the time, and ranks them, the best first.
 
 ![tetru: a game played, the Space menu pausing it, and the score kept](docs/demo.gif)
 
 ## Features
 
-- **Drawn as locku's falling blocks**: the same square pixels, colours and grey frame. Three columns: the scores, the
-  well in the middle, and the pieces to come in a column of boxes of their own.
+- **Drawn as locku's falling blocks**: the same square pixels, colours and grey frame. The well with its level, rows
+  and score at the left; at its right the next two pieces, a box each, and the keys to play with.
+- **Your keys**: every key you play with but `Space` can be changed on the Settings screen.
 - **Ten levels of speed**: a level every ten rows, from a row a second to ten a second; past the tenth the speed stays.
-- **Every game kept**: the time, the name and the score, the best first in the SCORES panel. A game left half way is kept
+- **Every game kept**: the time, the name and the score, the best first on the Rank screen. A game left half way is kept
   too: quitting, or closing the terminal, keeps the score it had then.
 - **Pause whenever**: `Space` pauses and shows what you can do; `Esc` pauses and leaves the game where it is.
 
@@ -29,7 +30,8 @@ with the player's name and the time, and lists the best beside the well.
 - macOS or Linux (WSL too).
 - A [Nerd Font](https://www.nerdfonts.com) terminal profile: the blocks and the frames are Nerd Font glyphs.
 - A truecolor (24-bit) terminal: the faded colours and the layer colours cannot be told apart in 256 colours.
-- A terminal at least 42 columns wide and 26 rows high, the well alone; the scores show beside it from 60 columns on. In a
+- A terminal at least 42 columns wide and 30 rows high, the well alone; the pieces to come and the keys show beside it
+  from 60 columns on. In a
   smaller one tetru shows only its name, the size it needs and how to quit, and comes back as it was once the terminal
   grows: the game waits meanwhile.
 
@@ -64,8 +66,8 @@ No sudo: it installs to `~/.local/bin`.
 
 ### The first start
 
-tetru opens with the focus on the well, ready to play, and an empty SCORES panel. It writes nothing until a game with
-points ends: then `~/.tetru/scores.yaml`.
+tetru opens on the Tetru screen with the focus on the well, ready to play. It writes nothing until a game with points
+ends, then `~/.tetru/scores.yaml`, or until a key is changed, then `~/.config/tetru/config.yaml`.
 
 ### Uninstall
 
@@ -85,7 +87,7 @@ It asks before removing `~/.tetru`, your scores.
 
 1. Run `tetru`.
 2. Press `Enter`, type your name and press `Enter`: the game starts.
-3. `h` and `l` move the piece, `e` and `r` turn it, `j` takes it down a row and `d` drops it.
+3. `h` and `l` move the piece, `e` and `i` turn it, `j` takes it down a row and `Enter` drops it.
 4. Press `Space` to pause and see what you can do; `Esc` closes the menu and the game goes on.
 5. Press `q` to quit; with a game going tetru asks first, and keeps its score.
 
@@ -97,17 +99,29 @@ tetru version    print the version (-v, --version)
 tetru help       print the command-line usage (-h, --help)
 ```
 
-Playing (the game in the `Play` mode):
+tetru has three screens; switch with their keys, or from Global operation in the `Space` menu:
+
+| Key | Screen |
+|---|---|
+| `T` | Tetru: the game |
+| `R` | Rank: the scores, the best first |
+| `S` | Settings: the keys to play with |
+
+Playing (the game in the `Play` mode), with the keys as they first are:
 
 | Key | What it does |
 |---|---|
-| `h\|l`, `←\|→` | Move the piece left, right |
+| `h`, `←` | Move the piece left |
+| `l`, `→` | Move it right |
 | `j`, `↓` | Move it down a row: a point a row |
-| `d`, `PgDn` | Drop it to the bottom and set it there: two points a row |
 | `e` | Turn it left (counterclockwise) |
-| `r` | Turn it right (clockwise) |
+| `i` | Turn it right (clockwise) |
+| `Enter` | Drop it to the bottom and set it there: two points a row |
 | `Space` | Pause, and show what you can do; close it to go on |
 | `Esc` | Pause, out of the game; `Enter` goes on |
+
+On the Settings screen, `Enter` on an action lists the keys it can have; the one chosen is the key from then on, and the
+MANUAL panel beside the well shows it. `←`, `→` and `↓` always move the piece too. `Space` always pauses.
 
 Clearing 1, 2, 3 or 4 rows at once scores 100, 300, 500 or 800 times the level. A piece that lies on the stack is set half
 a second later; moving or turning it gives it the half second again, a few times.
@@ -128,7 +142,7 @@ The keys every family app shares:
 | `?` | Every key that works here |
 | `!` | The App Log: what was done, newest last; here, the scores kept |
 | `Tab`, `1`–`9` | The next panel; jump to a panel by its number. While playing, `Esc` first |
-| `j\|k`, `gg\|G` | On SCORES: move, to the top, to the bottom |
+| `j\|k`, `gg\|G` | On Rank and Settings: move, to the top, to the bottom |
 | `Esc` | Close the popup on top, one at a time; it never leaves tetru |
 | `q` | Quit; with a game going, after asking |
 
@@ -137,13 +151,16 @@ The keys every family app shares:
 | What | Where | To move it |
 |---|---|---|
 | The scores | `~/.tetru/scores.yaml` | `TETRU__DATA` |
+| The keys to play with | `~/.config/tetru/config.yaml` (`$XDG_CONFIG_HOME/tetru`) | `TETRU__CONFIG` |
 
-A game with no points is not kept. tetru keeps no settings, and uses none of the family's shared setting keys.
+A game with no points is not kept. tetru uses none of the family's shared setting keys.
 
 ## Limits
 
 - A game is kept only once it ends: when it reaches the top, is ended or a new one started, when tetru quits, or when its
   terminal is closed. A game in a program killed outright (`kill -9`, a power cut) is lost.
+- A key is a small letter, or `Enter` for the drop; a few letters are kept for moving around the screens (`j k u d g h l`)
+  and `q` for quitting, so `k` cannot turn the piece yet: turning left is `e`.
 - macOS and Linux only (WSL too); there is no Windows build.
 
 ## Links

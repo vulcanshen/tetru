@@ -16,8 +16,9 @@ import (
 const (
 	// Cols and Rows are the field, in blocks.
 	Cols, Rows = 10, 20
-	// Queue is how many pieces to come are shown, a box each.
-	Queue = 4
+	// Queue is how many pieces to come are shown, a box each (user,
+	// 2026-11-11: Next 1 and Next 2).
+	Queue = 2
 	// MaxLevel is the last level: the speed goes no higher after it (user,
 	// 2026-11-11: the ten levels are speeds).
 	MaxLevel = 10

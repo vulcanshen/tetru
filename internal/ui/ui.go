@@ -1,6 +1,7 @@
-// Package ui is tetru's terminal UI: the GAME panel with the field and the
-// pieces to come, the SCORES panel at its left, the Play mode the game runs
-// in, and the scores kept, on terminu-go.
+// Package ui is tetru's terminal UI on terminu-go: three screens (user,
+// 2026-11-11), Tetru with the GAME panel, the pieces to come and the
+// manual, Rank with the scores kept, Settings with the keys to play with;
+// the Play mode the game runs in.
 package ui
 
 import (
@@ -15,6 +16,7 @@ import (
 	terminu "github.com/vulcanshen/terminu-go"
 
 	"github.com/vulcanshen/tetru/internal/game"
+	"github.com/vulcanshen/tetru/internal/keys"
 	"github.com/vulcanshen/tetru/internal/scores"
 	"github.com/vulcanshen/tetru/internal/version"
 )
@@ -27,15 +29,17 @@ import (
 var icon []byte
 
 const (
-	// minW, minH are tetru's least size (tdp L1, lower than 60 × 32): the
-	// GAME panel alone (narrow) drawing the field and the boxes, its frame
-	// and a cell's margin each side, the statusbar and the footer.
-	minW, minH = 2*sceneW + 4, sceneH + 4
+	// minW, minH are tetru's least size (tdp L1, lower than 60 × 32): GAME
+	// alone (narrow) drawing the field and the boxes, its frame and a cell's
+	// margin each side; the chip row, its rule and the footer, GAME's frame,
+	// the rows over the field and the picture.
+	minW, minH = 2*sceneW + 4, 3 + 2 + statsH + sceneH
 	// narrowBelow is the width under which only the focused panel is drawn
-	// (tdp screen.5): the three panels at their least make 60.
+	// (tdp screen.5's most).
 	narrowBelow = 60
-	// scoresW is the least the SCORES panel is given: a name and a score.
-	scoresW = narrowBelow - (2*fieldW + 2) - (2*queueW + 2)
+	// sideW is the least the column at GAME's right is given: MANUAL's rows
+	// and its frame.
+	sideW = manualW + 2
 	// frame is a step of the game: the pace of the clear, as locku's.
 	frame = 40 * time.Millisecond
 	// nameLen is the most characters a name has.
@@ -49,13 +53,17 @@ type Tetru struct {
 	path    string         // the scores' file
 	all     []scores.Score // the records, as kept
 	loadErr error          // why the file could not be read, at start
+	cfg     string         // the settings file
+	keys    keys.Set       // the keys to play with
+	cfgErr  error          // why the settings could not be read, at start
 
 	list   *terminu.List
-	scoreP *terminu.Panel
+	rankP  *terminu.Panel
 	gameP  *terminu.Panel
-	nextP  *terminu.Panel
+	next1P *terminu.Panel
+	next2P *terminu.Panel
 	play   *terminu.Mode
-	scale  int // what a pixel of GAME and NEXT is grown by, side by side
+	scale  int // what a pixel of GAME and the NEXT panels is grown by
 
 	g     *game.Game // the game, nil before the first
 	name  string     // who plays it
@@ -72,11 +80,13 @@ func New() *terminu.App { return NewTetru().App }
 // NewTetru is tetru with its game, for main to keep the score of a game
 // still going when the program ends (Finish).
 func NewTetru() *Tetru {
-	t := &Tetru{App: terminu.New("tetru"), path: scores.Path(), seed: rand.Uint64}
+	t := &Tetru{App: terminu.New("tetru"), path: scores.Path(), cfg: keys.Path(), seed: rand.Uint64, scale: 1}
 	t.all, t.loadErr = scores.Load(t.path)
+	if t.keys, t.cfgErr = keys.Load(t.cfg); t.cfgErr != nil {
+		t.keys = keys.Default()
+	}
 	a := t.App
 	a.MinWidth, a.MinHeight = minW, minH
-	a.Status = t.status
 	a.QuitFlow = t.quit
 	a.OnMsg = t.onMsg
 	a.Start = t.start
@@ -88,32 +98,28 @@ func NewTetru() *Tetru {
 			{Title: "Time", Drop: 1},
 		},
 		EmptyFact: "No scores yet",
-		EmptyHint: "Press [Enter] on [2] GAME to play",
+		EmptyHint: "Press [T] to play",
 	}
-	t.scoreP = &terminu.Panel{Label: "Scores", Body: t.list}
+	t.rankP = &terminu.Panel{Label: "Rank", Body: t.list}
 	t.gameP = &terminu.Panel{Label: "Game", Body: &field{t}, OnEsc: func() tea.Cmd { return nil }}
-	t.nextP = &terminu.Panel{Label: "Next", Body: &queue{t}}
-	t.play = &terminu.Mode{
-		Name:   "Play",
-		Exit:   "pause",
-		Pause:  true,
-		OnExit: t.pause,
-		Keys: []terminu.ModeKey{
-			{Key: "h|l", Keys: []string{"h", "l", "←", "→"}, Desc: "move left, right", NoFooter: true, Do: t.move},
-			{Key: "j", Keys: []string{"j", "↓"}, Desc: "down a row", NoFooter: true, Do: t.down},
-			{Key: "d", Keys: []string{"d", "PgDn"}, Desc: "drop to the bottom", NoFooter: true, Do: t.drop},
-			{Key: "e", Desc: "rotate left", Item: true, Label: "Rotate left", MenuDesc: "the falling piece, counterclockwise", Do: t.rotate},
-			{Key: "r", Desc: "rotate right", Item: true, Label: "Rotate right", MenuDesc: "the falling piece, clockwise", Do: t.rotate},
-		},
-	}
+	t.next1P = &terminu.Panel{Label: "Next 1", Body: &next{t, 0}}
+	t.next2P = &terminu.Panel{Label: "Next 2", Body: &next{t, 1}}
+	manualP := &terminu.Panel{Label: "Manual", Body: &manual{t}}
+	keysP := &terminu.Panel{Label: "Keys", Body: &terminu.Values{Header: [2]string{"Action", "Key"}, Fields: t.keyFields()}}
+	t.play = &terminu.Mode{Name: "Play", Exit: "pause", Pause: true, OnExit: t.pause}
+	t.setModeKeys()
 	t.setActions()
 	t.setRows("")
 	a.AddScreen(&terminu.Screen{
 		Name:        "Tetru",
-		Panels:      []*terminu.Panel{t.scoreP, t.gameP, t.nextP},
+		Key:         "T",
+		Desc:        "the game",
+		Panels:      []*terminu.Panel{t.gameP, t.next1P, t.next2P, manualP},
 		NarrowBelow: narrowBelow,
 		Layout:      t.layout,
 	})
+	a.AddScreen(&terminu.Screen{Name: "Rank", Key: "R", Desc: "the scores, best first", Panels: []*terminu.Panel{t.rankP}})
+	a.AddScreen(&terminu.Screen{Name: "Settings", Key: "S", Desc: "the keys to play with", Panels: []*terminu.Panel{keysP}})
 	var err error
 	if a.Splash, err = terminu.NewSplash(icon, "tetru", version.Display(), "A falling-block game for the terminal"); err != nil {
 		panic(err) // the embedded icon is broken: a mistake in the program
@@ -121,77 +127,54 @@ func NewTetru() *Tetru {
 	return t
 }
 
-// start puts the focus on GAME (opening tetru is to play), and, when the
-// scores could not be read, asks to move the file aside (tdp E3).
+// start puts the focus on GAME (opening tetru is to play), and asks to move
+// aside the files that could not be read.
 func (t *Tetru) start() tea.Cmd {
-	cmd := t.App.Focus(t.gameP)
-	if t.loadErr != nil {
+	return tea.Batch(t.App.Focus(t.gameP), t.moveAside())
+}
+
+// moveAside asks to move aside a file that could not be read (tdp E3), one
+// after the other: the settings, then the scores.
+func (t *Tetru) moveAside() tea.Cmd {
+	switch {
+	case t.cfgErr != nil:
+		err := t.cfgErr
+		t.cfgErr = nil
+		return t.App.MoveAside(t.cfg, err, func() tea.Cmd {
+			t.keys = keys.Default()
+			t.setModeKeys()
+			return t.moveAside()
+		})
+	case t.loadErr != nil:
 		err := t.loadErr
 		t.loadErr = nil
-		return tea.Batch(cmd, t.App.MoveAside(t.path, err, func() tea.Cmd {
+		return t.App.MoveAside(t.path, err, func() tea.Cmd {
 			t.all = nil
 			t.setRows("")
 			return nil
-		}))
+		})
 	}
-	return cmd
+	return nil
 }
 
-// layout is SCORES, GAME and NEXT from the left, as wide as one another,
-// none under its least: GAME the field, NEXT the boxes, each with its
-// panel's frame, SCORES a name and a score (user, 2026-11-11: three
-// columns; GAME as wide as its picture and SCORES the rest left the scores
-// most of a wide terminal). The pictures are grown twice when both fit.
+// layout is the Tetru screen: GAME at the left, and at its right a column
+// of NEXT 1, NEXT 2 and MANUAL under one another (user, 2026-11-11), the
+// column a third of the width and MANUAL's at least, the NEXT panels as
+// high as a box. GAME and the boxes are grown twice when GAME and the
+// column both have room for it.
 func (t *Tetru) layout(w, h int) []terminu.Rect {
-	ws := share(w, []int{scoresW, 2*fieldW + 2, 2*queueW + 2})
-	t.scale = min(fits(fieldW, ws[1]-2, h-2), fits(queueW, ws[2]-2, h-2))
-	rects := make([]terminu.Rect, len(ws))
-	x := 0
-	for i, pw := range ws {
-		rects[i] = terminu.Rect{X: x, W: pw, H: h}
-		x += pw
+	rw := max(sideW, w/3)
+	gw := w - rw
+	t.scale = 1
+	if gw-2 >= 2*2*fieldW && h-2 >= statsH+2*sceneH && rw-2 >= 2*2*queueW {
+		t.scale = 2
 	}
-	return rects
-}
-
-// share splits w into widths as near one another as they can be, each at
-// least its least: a width whose least is over an even share is its least,
-// the others share what is left, the first ones a column more when it does
-// not split evenly.
-func share(w int, least []int) []int {
-	ws := make([]int, len(least))
-	fixed := make([]bool, len(least))
-	for {
-		rest, free := w, 0
-		for i := range least {
-			if fixed[i] {
-				rest -= ws[i]
-			} else {
-				free++
-			}
-		}
-		if free == 0 {
-			return ws
-		}
-		each, more := rest/free, false
-		for i := range least {
-			if !fixed[i] && least[i] > each {
-				ws[i], fixed[i], more = least[i], true, true
-			}
-		}
-		if !more {
-			extra := rest - each*free
-			for i := range least {
-				if !fixed[i] {
-					ws[i] = each
-					if extra > 0 {
-						ws[i]++
-						extra--
-					}
-				}
-			}
-			return ws
-		}
+	nh := boxTall*t.scale + 2
+	return []terminu.Rect{
+		{W: gw, H: h},
+		{X: gw, W: rw, H: nh},
+		{X: gw, Y: nh, W: rw, H: nh},
+		{X: gw, Y: 2 * nh, W: rw, H: h - 2*nh},
 	}
 }
 
@@ -199,22 +182,6 @@ func share(w int, least []int) []int {
 func (t *Tetru) narrow() bool {
 	w, _ := t.App.Size()
 	return t.App.ForceNarrow || w < narrowBelow
-}
-
-// status is the statusbar: the level, the rows cleared and the score of
-// the game, or of the last one; values in Lavender, where the game is
-// (tdp screen.4), Level and Lines a fixed width (tdp L2).
-func (t *Tetru) status(int) []terminu.Span {
-	level, lines, score := 1, 0, 0
-	if t.g != nil {
-		level, lines, score = t.g.Level, t.g.Lines, t.g.Score
-	}
-	q, v := terminu.Fg(terminu.Overlay0), terminu.Fg(terminu.Lavender)
-	return []terminu.Span{
-		{Text: "Level: ", Style: q}, {Text: fmt.Sprintf("%-2d", level), Style: v},
-		{Text: "  Lines: ", Style: q}, {Text: fmt.Sprintf("%-5d", lines), Style: v},
-		{Text: "  Score: ", Style: q}, {Text: comma(score), Style: v},
-	}
 }
 
 // comma writes n with its thousands apart: 12,340.
@@ -237,10 +204,11 @@ func (t *Tetru) paused() bool { return t.going() && t.gameP.InMode() != t.play }
 
 // setActions are GAME's actions as the game stands: Enter plays a new
 // game, or goes on with the one paused (tdp K3); New game and End game.
-// While playing, NEXT is streaming content (tdp T2): the pieces to come
-// change as the player plays on GAME, read from the corner of an eye.
+// While playing, the NEXT panels are streaming content (tdp T2): the pieces
+// to come change as the player plays on GAME, read from the corner of an
+// eye.
 func (t *Tetru) setActions() {
-	t.nextP.Stream = t.playing()
+	t.next1P.Stream, t.next2P.Stream = t.playing(), t.playing()
 	enter := terminu.Action{Key: "Enter", Label: "Play", Desc: "a new game", Scope: terminu.PanelScope, Hint: "play", Do: t.enter}
 	switch {
 	case t.playing():
@@ -418,28 +386,46 @@ func (t *Tetru) setRows(sel string) {
 	}
 }
 
-// The Play mode's keys.
-
-func (t *Tetru) move(key string) tea.Cmd {
-	if key == "h" || key == "←" {
-		t.g.Move(-1)
-	} else {
-		t.g.Move(1)
+// setModeKeys are the Play mode's keys, the player's (Settings): the moves
+// with their arrows too (tdp K12) and the drop, all the way down, are
+// moving: shown in the mode's Space menu, not in the footer, which keeps
+// room for Esc:pause; the turns are things done to the falling piece, run
+// from the Space menu too (tdp K11). k and ↑ do nothing.
+//
+// TODO(tdp #4): rotate left on k and ↑, as the user asked.
+func (t *Tetru) setModeKeys() {
+	k := t.keys
+	t.play.Keys = []terminu.ModeKey{
+		{Key: k[keys.Left], Keys: []string{k[keys.Left], keys.Arrow(keys.Left)}, Desc: "move left", NoFooter: true, Do: t.do(keys.Left)},
+		{Key: k[keys.Right], Keys: []string{k[keys.Right], keys.Arrow(keys.Right)}, Desc: "move right", NoFooter: true, Do: t.do(keys.Right)},
+		{Key: k[keys.Down], Keys: []string{k[keys.Down], keys.Arrow(keys.Down)}, Desc: "down a row", NoFooter: true, Do: t.do(keys.Down)},
+		{Key: k[keys.RotateLeft], Desc: "rotate left", Item: true, Label: keys.RotateLeft.Label(), MenuDesc: keys.RotateLeft.Desc(), Do: t.do(keys.RotateLeft)},
+		{Key: k[keys.RotateRight], Desc: "rotate right", Item: true, Label: keys.RotateRight.Label(), MenuDesc: keys.RotateRight.Desc(), Do: t.do(keys.RotateRight)},
+		{Key: k[keys.Drop], Desc: "drop to the bottom", NoFooter: true, Do: t.do(keys.Drop)},
 	}
-	return nil
 }
 
-func (t *Tetru) down(string) tea.Cmd { t.g.Down(); return t.after() }
-
-func (t *Tetru) drop(string) tea.Cmd { t.g.Drop(); return t.after() }
-
-func (t *Tetru) rotate(key string) tea.Cmd {
-	if key == "e" {
-		t.g.Rotate(-1)
-	} else {
-		t.g.Rotate(1)
+// do is a Play mode key: action a on the falling piece.
+func (t *Tetru) do(a keys.Action) func(string) tea.Cmd {
+	return func(string) tea.Cmd {
+		switch a {
+		case keys.Left:
+			t.g.Move(-1)
+		case keys.Right:
+			t.g.Move(1)
+		case keys.Down:
+			t.g.Down()
+			return t.after()
+		case keys.RotateLeft:
+			t.g.Rotate(-1)
+		case keys.RotateRight:
+			t.g.Rotate(1)
+		case keys.Drop:
+			t.g.Drop()
+			return t.after()
+		}
+		return nil
 	}
-	return nil
 }
 
 // after is what follows a move that may have set the piece: the stack at

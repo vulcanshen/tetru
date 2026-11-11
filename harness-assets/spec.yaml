@@ -1,42 +1,63 @@
-id: 2
+id: 3
 from: v1.2.2
 to: v1.2.2
 tasks:
   - id: 1
-    spec: 2
-    request: '一個直的空間玩遊戲，右邊是接下來的方塊的框；排行放在左邊；終端機窄的時候，排行那一欄優先收掉；分三欄，接下來的方塊放到獨立的 panel，排行與遊戲的比例在寬或窄的終端機上都不能一邊倒'
-    tdp: [tdp terms.2, tdp terms.3, tdp screen.1, tdp screen.4, tdp screen.5, tdp screen.7, tdp L1, tdp L2, tdp L3, tdp L4, tdp E5, tdp panel.1, tdp panel.4, tdp K1, tdp K2]
+    spec: 3
+    request: '一個直的空間玩遊戲，右邊是接下來的方塊；排行不在遊戲旁邊，改成另一個分頁：[T]etru、[R]ank、[S]ettings；遊戲的右邊由上而下是 Next 1、Next 2、Manual；Level、Lines、Score 放在遊戲的 panel 裡；終端機窄的時候，排行優先收掉'
+    tdp: [tdp terms.2, tdp terms.3, tdp screen.1, tdp screen.2, tdp screen.3, tdp screen.5, tdp screen.7, tdp M4, tdp L1, tdp L2, tdp L3, tdp L4, tdp E5, tdp panel.1, tdp panel.4, tdp K1, tdp K2, tdp P5]
     remark:
       - |
-        60×32 的版面（使用者 2026-11-11 提的三欄）：
-         Level: 3   Lines: 25     Score: 12,340
-        ┌[1] SCORES────┐┏[2] GAME━━━━━━━━━━━━━━━━┓┌[3] NEXT────────┐
-        │ NAME   SCORE │┃▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒┃│▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒│
-        │ vul…  52,300 │┃▒▒                    ▒▒┃│▒▒  ████████  ▒▒│
-        │ amy   31,020 │┃▒▒        ██          ▒▒┃│▒▒            ▒▒│
-        │              │┃▒▒        ████        ▒▒┃│▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒│
-        │              │┃▒▒        ██          ▒▒┃│▒▒    ████    ▒▒│
-        │              │┃      ⋮ 20 rows ⋮       ┃│▒▒    ████    ▒▒│
-        │              │┃▒▒████          ██████▒▒┃│    ⋮ 4 boxes   │
-        │              │┃▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒┃│▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒│
-        └──────────────┘┗━ Enter:play ━━━━━━━━━━━┛└────────────────┘
-         Space:menu ?:help !:log Tab|1–3:panels q:quit
-      - '三個 panel：左邊 [1] SCORES、中間 [2] GAME（場地）、右邊 [3] NEXT（接下來的方塊）。panel 怎麼拆，app 可以自行決定（tdp L1）；遊戲的右邊留給接下來的方塊，排行在遊戲中不是最重要的，放左邊；接下來的方塊自己一個 panel（使用者 2026-11-11）。編號照由左到右'
-      - '三個 panel 一樣寬，但不小於各自的最小寬度：GAME 26 欄（場地 24 欄與 panel 的框）、NEXT 18 欄（框 16 欄與 panel 的框）、SCORES 16 欄（名字與分數）；比平分寬的拿最小寬度，其他的再平分剩下的。60 欄時 16｜26｜18，77 欄時 26｜26｜25，150 欄時各 50，GAME 在畫面正中間。第一版 GAME 只拿場地的寬、SCORES 拿剩下的，寬的終端機上排行佔了七成（使用者 2026-11-11：比例太糟糕，寬窄都一樣）'
-      - '60 欄時 SCORES 只有 16 欄：名字截到 3 個字加 …（tdp panel.5 的截短）；powerline 符號佔兩格時膠囊截成 [1] SCOR…（tdp panel.4）'
-      - '啟動時 focus 在 [2] GAME：打開 app 就是要玩'
-      - '最低尺寸 42×26（tdp L1：可以調低）：剛好放得下 GAME 自己（場地與框 22 列、panel 的框 2 列、statusbar 與 footer 各 1 列）。窄寬的門檻 60（tdp screen.5 的上限；三個 panel 的最小寬度加起來剛好 60）：42–59 欄只畫有 focus 的 panel、佔滿寬度。tdp 的窄寬是「只畫 focus 的那一個」，沒有「指定先收哪一個」；玩的時候 focus 在 GAME，排行就收掉（使用者要的「排行優先收掉」），NEXT 也一起收掉，所以這時 GAME 自己把接下來的方塊畫在場地右邊，跟 locku 一樣（task 2）'
-      - 'statusbar（tdp screen.4）：Level、Lines、Score 三組，label Overlay0、值 Lavender（現在玩到哪）；Level、Lines 補成固定寬，Score 在最後不補（tdp L2）。沒有在玩時寫上一局最後的值，還沒玩過寫第 1 關、0 行、0 分'
+        Tetru 畫面 60×32（使用者 2026-11-11 提的：分頁、右邊三個 panel、Level 等放進遊戲）：
+         [T]ETRU [R]ANK [S]ETTINGS
+        ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        ┏[1] GAME━━━━━━━━━━━━━━━━━━━━━━━━━━━┓┌[2] NEXT 1───────────┐
+        ┃     Level: 3   Lines: 25          ┃│  ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒   │
+        ┃     Score: 12,340                 ┃│  ▒▒            ▒▒   │
+        ┃                                   ┃│  ▒▒  ████████  ▒▒   │
+        ┃     ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒      ┃│  ▒▒            ▒▒   │
+        ┃     ▒▒                    ▒▒      ┃│  ▒▒            ▒▒   │
+        ┃     ▒▒        ██          ▒▒      ┃│  ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒   │
+        ┃     ▒▒        ████        ▒▒      ┃└─────────────────────┘
+        ┃     ▒▒        ██          ▒▒      ┃┌[3] NEXT 2───────────┐
+        ┃     ▒▒                    ▒▒      ┃│  ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒   │
+        ┃     ▒▒                    ▒▒      ┃│  ▒▒            ▒▒   │
+        ┃     ▒▒                    ▒▒      ┃│  ▒▒    ████    ▒▒   │
+        ┃     ▒▒                    ▒▒      ┃│  ▒▒    ████    ▒▒   │
+        ┃     ▒▒                    ▒▒      ┃│  ▒▒            ▒▒   │
+        ┃     ▒▒                    ▒▒      ┃│  ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒   │
+        ┃     ▒▒                    ▒▒      ┃└─────────────────────┘
+        ┃     ▒▒                    ▒▒      ┃┌[4] MANUAL───────────┐
+        ┃     ▒▒                    ▒▒      ┃│ h      move left    │
+        ┃     ▒▒                    ▒▒      ┃│ l      move right   │
+        ┃     ▒▒                    ▒▒      ┃│ j      down a row   │
+        ┃     ▒▒                    ▒▒      ┃│ e      rotate left  │
+        ┃     ▒▒                    ▒▒      ┃│ i      rotate right │
+        ┃     ▒▒██                  ▒▒      ┃│ Enter  drop         │
+        ┃     ▒▒████            ██  ▒▒      ┃│ Space  pause, menu  │
+        ┃     ▒▒██████      ████████▒▒      ┃│ Esc    pause        │
+        ┃     ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒      ┃│                     │
+        ┃                                   ┃│                     │
+        ┃                                   ┃│                     │
+        ┗━ Enter:play ━━━━━━━━━━━━━━━━━━━━━━┛└─────────────────────┘
+        Space:menu ?:help !:log Tab|1–4:panels q:quit
+      - '三個畫面（tdp terms.2：一組同時顯示的 panel；多畫面用 global operation 切換）：[T]etru 是遊戲、[R]ank 是排行（task 8）、[S]ettings 是按鍵（task 13）。最上面一列是畫面 chip（tdp screen.3），chip 列下面一條全寬的線。T、R、S 是 global 熱鍵（tdp M4：沒有 popup 開著時在 panel 上也能直接按；模式裡不作用，玩的時候要先 Esc），大寫是 Shift，跟家族的多畫面 app（sshu、webu）一樣用大寫字母。第一版的 [G]ame 用不了：G 在 tdp K12 保留給「到最底下」'
+      - 'Tetru 畫面四個 panel：左邊 [1] GAME（task 2），右邊一欄由上而下 [2] NEXT 1、[3] NEXT 2（task 2）、[4] MANUAL（task 14）。panel 怎麼拆，app 可以自行決定（tdp L1）；編號照由左到右、由上到下。啟動時 focus 在 [1] GAME：打開 app 就是要玩'
+      - '寬度：右邊那一欄是整個寬度的三分之一，至少放得下 MANUAL（23 欄），GAME 拿剩下的：60 欄 37｜23、77 欄 52｜25、150 欄 100｜50。三分之一照 tdp L1 自己舉的 1:2；遊戲在左邊、佔大半，第一版排行在寬的終端機上佔了七成（使用者 2026-11-11：比例太糟糕）'
+      - '高度：NEXT 1、NEXT 2 各是一個框的高（框 6 列加 panel 的框，8 列），MANUAL 拿剩下的'
+      - 'Level、Lines、Score 寫在 GAME 裡、場地上面兩列，再空一列（使用者 2026-11-11）；不再有 statusbar（tdp screen.4：要不要有，app 可以自行決定；多畫面時它會在 chip 列的右邊，離遊戲很遠）。label Overlay0、值 Lavender（現在玩到哪，同 statusbar）；Level 補成固定寬（tdp L2）。沒有在玩時寫上一局最後的值，還沒玩過寫第 1 關、0 行、0 分'
+      - '最低尺寸 42×30（tdp L1：可以調低）：寬是 GAME 自己（場地與一欄框 38 欄、panel 的框與左右各一格）；高是 chip 列與線 2 列、footer 1 列、GAME 的框 2 列、Level 等 3 列、場地 22 列。窄寬的門檻 60（tdp screen.5 的上限）：42–59 欄只畫有 focus 的 panel、佔滿寬度；玩的時候 focus 在 GAME，NEXT 收掉，所以這時 GAME 自己把兩個接下來的方塊畫在場地右邊，跟 locku 一樣（task 2）'
   - id: 2
-    spec: 2
-    request: '顯示方式沿用 locku 的 tetromino：一樣的方塊、一樣的顏色、一樣的灰框，右邊一欄框放接下來的方塊；接下來的方塊放到獨立的 panel'
+    spec: 3
+    request: '顯示方式沿用 locku 的 tetromino：一樣的方塊、一樣的顏色、一樣的灰框；接下來的方塊在 Next 1、Next 2 兩個 panel，每個只放一個'
     tdp: [tdp P5, tdp P4, tdp F1, tdp T2, tdp F8, tdp screen.5]
     remark:
-      - '照 locku 的 tetromino 螢幕保護（internal/saver/tetromino.go）：一個像素 2 欄 × 1 列；一格方塊一個像素；場地 10×20，外框一個像素寬的灰（catppuccin overlay1 #7f849c）；右邊一欄 4 個框，框裡 6×4 像素、一個方塊一個像素、置中'
-      - '分三欄之後（使用者 2026-11-11）：GAME 畫場地與它的框，NEXT 畫那一欄框（左邊的框線就是場地右邊的那一條，兩個 panel 裡各畫一次）；兩張圖一樣高、都垂直置中，橫著看是對齊的。窄寬時只畫 GAME（tdp screen.5），這時 GAME 照 locku 把那一欄框畫在場地右邊、共用外框，玩的時候照樣看得到接下來的方塊'
+      - '照 locku 的 tetromino 螢幕保護（internal/saver/tetromino.go）：一個像素 2 欄 × 1 列；一格方塊一個像素；場地 10×20，外框一個像素寬的灰（catppuccin overlay1 #7f849c）；接下來的方塊一個一個框，框裡 6×4 像素、一個方塊一個像素、置中'
+      - 'GAME 畫場地與它的框；NEXT 1、NEXT 2 各畫一個框（框 8×6 像素），各放一個接下來的方塊（使用者 2026-11-11：每個 Next 只放一個）；圖各自置中在自己的 panel 裡。接下來的方塊只看兩個（第一版是四個）'
+      - '窄寬時只畫 GAME（tdp screen.5），這時 GAME 照 locku 把兩個框畫在場地右邊、共用外框，下面到底是框的灰；玩的時候照樣看得到接下來的方塊。Tab 到 NEXT 1、NEXT 2 時各畫自己的框'
       - '方塊的顏色照 locku（catppuccin-mocha）：I sky、O yellow、T mauve、S green、Z red、J blue、L peach。內容本身的顏色是領域的，app 可以自行決定（tdp P5）；不碰介面元素用的意義（tdp P4）'
-      - '放大：GAME 與 NEXT 都放得下兩倍時，兩邊一起把一個像素畫成 2×2（4 欄 × 2 列），照 locku 的 fitScene；只放得下一邊時都不放大，兩張圖的像素一樣大'
-      - '場地與框是 panel 內容自己畫的，不是 popup（tdp F1）。GAME 失焦時照 tdp T2 跟著淡化（遊戲那時是停的，不是串流內容）。玩的時候 NEXT 是串流內容、不淡化（tdp T2：接下來的方塊一直在換，玩家眼睛在場地上、用餘光看它）；暫停、結束、還沒玩時沒有東西在流，照常淡化'
+      - '放大：GAME 與右邊那一欄都放得下兩倍時（GAME 裡 48 欄、47 列，右邊 32 欄），GAME 與兩個 NEXT 一起把一個像素畫成 2×2（4 欄 × 2 列），照 locku 的 fitScene；NEXT 的高跟著變兩倍'
+      - '場地與框是 panel 內容自己畫的，不是 popup（tdp F1）。GAME 失焦時照 tdp T2 跟著淡化。玩的時候兩個 NEXT 是串流內容、不淡化（tdp T2：接下來的方塊一直在換，玩家眼睛在場地上、用餘光看它）；暫停、結束、還沒玩時沒有東西在流，照常淡化'
   - id: 3
     spec: 1
     request: '真的可以玩的落塊消行遊戲；10 關，關卡指的是速度：到第 10 關之後不再加速，一直玩到遊戲結束或玩家離開'
@@ -47,33 +68,34 @@ tasks:
       - '每消 10 行升一關；第 1–10 關每往下一格的時間：1000、800、650、520、420、330、260、200、150、100 ms；第 10 關之後不再升、不再加速（使用者 2026-11-11）'
       - '碰到底之後 500 ms 才固定；那段時間裡移動、旋轉成功就重新算，最多重算 15 次，免得一直拖著不落'
       - '旋轉照 locku：方塊在自己的框裡轉。轉不過去時依序試往左 1 格、往右 1 格、往上 1 格，長條再試左右各 2 格'
-      - '分數：一次消 1、2、3、4 行是 100、300、500、800 乘上當時的關卡；j 往下每一格 1 分、d 落下每一格 2 分'
+      - '分數：一次消 1、2、3、4 行是 100、300、500、800 乘上當時的關卡；往下一格每一格 1 分、落到底每一格 2 分'
       - '新的方塊放不進場地，或固定時有一格還在場地上方，遊戲結束（照 locku）'
       - '名字是 tetru；不用別的遊戲的名稱、商標與音樂'
   - id: 4
-    spec: 1
-    request: 'h、l 左右移動；e 左旋、r 右旋；d 快速落下'
+    spec: 3
+    request: '遊戲的按鍵：h 左、l 右、j 下一格、k 左旋、i 右旋、Enter 快速向下；這是遊戲，要讓使用者好玩，跟 tdp 衝突就請 tdp 調整'
     tdp: [tdp K11, tdp K12, tdp K3, tdp P5, tdp M5, tdp panel.3, tdp screen.2, tdp menu.4, tdp K6]
     remark:
       - '遊戲進行中是 GAME 的模式 Play（tdp K11：進入之後一部分鍵換成模式自己的意思，Esc 離開）：外框換成模式色、上框右邊 ┫Play┣（tdp panel.3）；只有 Play 的鍵與 core key 作用，亂按的其他鍵不出聲'
-      - 'Enter 在 GAME 上是開始一局或繼續（tdp K3：panel 沒有項目時，對整個 panel 做最直觀的動作）'
-      - 'h|l、←|→ 左右一格；j、↓ 往下一格：tdp K12 的方向鍵就是方向'
-      - 'd、PgDn 落到底並固定：tdp K12 的 d 是往下大步移動、到底停住，落到底就是這個方向；PgDn 照 K12 跟 d 一樣'
-      - 'k、↑ 不作用：方塊不能往上。使用者 2026-11-11 原本想拿 k 旋轉；tdp K12 沒有「沒東西可移就可以拿去用」的例外，使用者選了不回報、改用別的鍵'
-      - 'e 左旋、r 右旋（使用者 2026-11-11 選的）：領域熱鍵，app 可以自行決定（tdp P5），不佔 core key、不佔移動的字母；e 在 tdp K12 只在一段文字裡移動時保留，GAME 沒有文字游標'
-      - 'footer 在 Play 裡照 tdp screen.2：Space:menu ?:help e|r:rotate Esc:pause；移動的鍵在 ? 與 Space menu（tdp K6、menu.4），不佔 footer，窄的時候 Esc:pause 才不會先被捨掉'
+      - 'Play 的鍵是使用者在 Settings 設的（task 13），預設照使用者 2026-11-11 說的：h 左、l 右、j 往下一格、i 右旋、Enter 落到底；左旋暫時是 e（下一條）'
+      - note: '使用者要 k 左旋（2026-11-11），但 tdp K12 把 k 保留給移動、沒有「方向沒東西可移時可以拿去用」的例外。暫時照 K12：k、↑ 在 Play 裡不作用，左旋預設 e（TODO(tdp #4)）；tdp 放行後預設改成 k'
+        issue: tdp #4
+      - '←、→、↓ 一直是左、右、往下一格，不管使用者把那個動作設成哪個鍵：tdp K12 的方向鍵就是方向'
+      - 'Enter 在 Play 裡是落到底並固定：K11 的表沒有 Enter，照 tdp K3「對 focus 的東西做最直觀的動作」，Play 裡 focus 的是落下中的方塊，把它放到底就是最直觀的（跟 Drag mode 的 Enter 放下一樣）。Play 外 Enter 在 GAME 上是開始一局或繼續（tdp K3：panel 沒有項目時，對整個 panel 做最直觀的動作）'
+      - '旋轉是對落下中的方塊做的事：ITEM OPERATION（tdp K11），在 footer；移動與落到底是移動：只在 ? 與 Space menu 顯示（tdp K6、menu.4），不佔 footer，60 欄時 Esc:pause 才不會被捨掉（footer：Space:menu ?:help e:rotate left i:rotate right Esc:pause）'
   - id: 5
-    spec: 1
-    request: 'Space 暫停，並打開 Space menu'
+    spec: 3
+    request: 'Space 暫停，並打開 Space menu；Space 不能改'
     tdp: [tdp K5, tdp K11, tdp K4, tdp menu.4, tdp M2, tdp M7, tdp L1, tdp screen.7]
     remark:
-      - 'Play 裡按 Space 開 Play 模式的 Space menu（tdp K11、menu.4）：ITEM OPERATION 是對落下中的方塊的 [e] Rotate left、[r] Rotate right；PLAY MODE 列 h|l、j、d（只顯示）與 [Esc] Pause。menu 開著遊戲就停，Esc 或 Space 關掉就接著玩'
+      - 'Play 裡按 Space 開 Play 模式的 Space menu（tdp K11、menu.4）：ITEM OPERATION 是對落下中的方塊的 Rotat[e] left、Rotate r[i]ght（照使用者設的鍵）；PLAY MODE 列移動、往下、落到底（只顯示）與 [Esc] Pause。menu 開著遊戲就停，Esc 或 Space 關掉就接著玩'
       - '遊戲只在 Play 裡、沒有任何 popup、終端機不比最低尺寸小時才走；toast 不是 popup，不擋'
       - note: 'tgo 沒有公開「現在有沒有 popup 開著」，遊戲停不停只能靠讀 tgo 內部的 popup 疊（TODO(tgo)），測試守住它跟 tgo 的行為一致；等 tgo 給 API 再改'
         issue: 待回報 terminu-go
       - 'Esc 離開 Play＝暫停（tdp K4：Esc 是安全的出口，不會丟掉這一局）：場地中間畫暫停記號，兩條直槓（Lavender）；GAME 的 hint 換成 Enter:resume；Enter 回到 Play。原本想寫 PAUSE 的像素字，五個字 19 像素寬，比場地寬'
-      - '暫停時 GAME 的 Space menu 是一般的（tdp M2）：PANEL OPERATION 的 [Enter] Resume、[n]ew game、[x] End game，與 Global operation'
+      - '暫停時 GAME 的 Space menu 是一般的（tdp M2）：PANEL OPERATION 的 [Enter] Resume、[n]ew game、[x] End game，與 Global operation（換畫面也在這裡）'
       - 'Tab、數字鍵在 Play 裡暫停（tdp K11），按了 tgo 跳 Info toast：Press [Esc] to leave Play first'
+      - 'Space 一直是 Space（使用者 2026-11-11：除了 Space 以外都能設），也是 tdp K1、P5 的 core key：Settings 裡列出來但停用'
   - id: 6
     spec: 1
     request: '每一筆分數記姓名'
@@ -92,17 +114,17 @@ tasks:
       - '什麼時候記：堆到頂結束、[x] End game、[n]ew game 結束還在玩的那一局、離開 app 時有一局還沒結束（q、Ctrl-C，連按兩次 Ctrl-C 也一樣，關掉終端機也一樣）'
       - note: 'tgo 的 Run 收到 SIGHUP（關掉終端機）時不會結束，程式直接被殺，Run 之後的收尾跑不到；main 暫時攔下 SIGHUP、轉成 SIGTERM 送給自己（bubbletea 收到 SIGTERM 會正常結束 Run）（TODO(tgo)）'
         issue: 待回報 terminu-go
-      - '分數是 0 的那一局不記：一行都沒消、沒用 j 或 d 落下，排行上只會多一列 0'
+      - '分數是 0 的那一局不記：一行都沒消、沒有往下或落到底，排行上只會多一列 0'
       - '記下時在 App Log 記一筆（tdp note.7）；寫不進去開 error popup（tdp F5）；讀不了時照 tdp E3 問要不要移開（tgo MoveAside）'
   - id: 8
-    spec: 1
-    request: '排行放在左邊'
-    tdp: [tdp panel.5, tdp screen.8, tdp K3, tdp K12]
+    spec: 3
+    request: '排行改成另一個分頁 [R]ank'
+    tdp: [tdp panel.5, tdp screen.2, tdp screen.8, tdp K3, tdp K12, tdp M5]
     remark:
-      - '[1] SCORES 是一般清單（tdp panel.5）：NAME（可截短）、SCORE（數字靠右）、TIME（2006-01-02 15:04），欄放不下先拿掉 TIME'
+      - 'Rank 畫面只有一個 panel：[1] RANK，一般清單（tdp panel.5）：NAME（可截短）、SCORE（數字靠右）、TIME（2006-01-02 15:04），欄放不下先拿掉 TIME；只有一個 panel 的畫面，footer 沒有 Tab|1–N（tdp screen.2）'
       - '順序固定：分數高的在前，同分照時間早的在前（tdp panel.5 的「順序要固定」）'
-      - '記下一筆之後，SCORES 的 cursor 移到那一筆（tdp K3：新增一項之後 cursor 移到新的那一項）；focus 不換'
-      - '沒有紀錄時空狀態：No scores yet / Press [Enter] on [2] GAME to play（tdp screen.8）'
+      - '記下一筆之後，RANK 的 cursor 移到那一筆（tdp K3：新增一項之後 cursor 移到新的那一項）；畫面與 focus 不換（tdp K3：背景發生的事不換畫面）'
+      - '沒有紀錄時空狀態：No scores yet / Press [T] to play（tdp screen.8；到 Tetru 畫面，focus 在 GAME 上，Enter 開始）'
       - 'Enter 在一筆紀錄上沒有動作：紀錄沒有東西可以打開'
   - id: 9
     spec: 2
@@ -110,7 +132,7 @@ tasks:
     tdp: [tdp P5]
     remark:
       - '照 locku 的時間：閃白 280 ms、往兩端消失 400 ms；結束時方塊由上往下變灰 5 秒（場地與 NEXT 的框一起），接著寫出 END（catppuccin red #f38ba8，locku 的小號像素字）留在畫面上'
-      - 'END 置中在場地裡：分三欄之後場地自己一個 panel（task 2），locku 的 END 11 像素寬、場地裡面只有 10；E 窄一個像素（2 像素寬），整個字 10 像素剛好放進場地，其他照 locku'
+      - 'END 置中在場地裡：場地自己一個 panel（task 2），locku 的 END 11 像素寬、場地裡面只有 10；E 窄一個像素（2 像素寬），整個字 10 像素剛好放進場地，其他照 locku'
       - '動畫用 tgo App.Tick（README 的計時器），測試推得動'
   - id: 10
     spec: 1
@@ -135,3 +157,26 @@ tasks:
     tdp: [tdp E4, tdp E6, tdp E7, harness project.2, harness project.3, harness project.4, harness project.5, harness project.6]
     remark:
       - 'repo 照 harness project.3；README 兩份照 tdp E7 的 12 段'
+  - id: 13
+    spec: 3
+    request: '除了 Space 是暫停並打開 Space menu，其他的鍵都在 Settings 裡讓使用者自己設定'
+    tdp: [tdp panel.12, tdp select, tdp popup.7, tdp E2, tdp E3, tdp F5, tdp note.7, tdp K1, tdp K12, tdp P5]
+    remark:
+      - note: 'tdp 沒寫使用者能不能自己改鍵、能選哪些鍵、兩個動作同一個鍵怎麼辦，也沒有「按一個鍵就記下」的輸入元件。暫時：只讓使用者在照現在的 tdp 能用的鍵裡選（下面幾條），用 select 選（TODO(tdp #5)）'
+        issue: tdp #5
+      - 'Settings 畫面只有一個 panel：[1] KEYS，一列一個值（tdp panel.12）：表頭 ACTION、KEY；Move left、Move right、Down a row、Rotate left、Rotate right、Drop 各一列，最後一列 Pause 是 Space、停用（tdp M6：Space 不能改）'
+      - 'Enter 在一列上打開 select（tdp select）：標題 KEY: <動作>，列出這個動作能用、而且沒有別的動作在用的鍵，現在的鍵選著；Enter 確定就寫進設定檔，寫不進去 popup 不關、上面開 error popup（tdp popup.7），值不變'
+      - '能用的鍵：小寫字母，不含 core key q（tdp K1）與保留給移動的 j k u d g h l（tdp K12）；左移、右移、往下另外可以選自己方向的 h、l、j；落到底另外可以選 Enter（tdp K3）。兩個動作不會同一個鍵：別的動作在用的鍵不列出來'
+      - '設定是 app 自己的選項（tdp E3）：~/.config/tetru/config.yaml（$XDG_CONFIG_HOME/tetru），TETRU__CONFIG 覆寫（tdp E2）；keys 底下 move_left、move_right、down、rotate_left、rotate_right、drop。沒寫的照預設；設定檔裡其他的 key 寫回時留著（tdp E3）。改了在 App Log 記一筆（tdp note.7）'
+      - '設定檔讀不了（格式錯、鍵不能用、兩個動作同一個鍵）時照 tdp E3 問要不要移開（tgo MoveAside），移開就用預設的鍵；排行的檔也讀不了時接著問它'
+      - note: 'tgo MoveAside 找 .bak 名字的迴圈（asideName）只在 Lstat 回「不存在」時停；路徑的上一層是檔案（ENOTDIR）或目錄不能進（EACCES）時一直轉，app 啟動就卡住（TETRU__CONFIG、TETRU__DATA 指錯時會遇到）。不常見，暫時沒有繞過'
+        issue: 待回報 terminu-go
+      - '改了馬上生效：Play 的鍵、footer、Space menu、? 與 MANUAL 寫的都是現在的鍵'
+  - id: 14
+    spec: 3
+    request: '遊戲右下的 Manual 放操作方式'
+    tdp: [tdp P5, tdp M5, tdp T2, tdp components.2]
+    remark:
+      - '[4] MANUAL 是 panel 的內容，app 可以自行決定（tdp P5）：一列一個鍵與它做什麼，照使用者在 Settings 設的鍵：移動左右、往下一格、左旋、右旋、落到底，再加 Space（pause, menu）與 Esc（pause）'
+      - '鍵名照 tdp M5（Enter、Space、Esc），鍵 Blue 跟 hint 一樣、說明是一般的字；鍵一欄 5 格，欄與欄之間兩格（tdp components.2）'
+      - '只能讀，沒有 cursor、沒有鍵；失焦時照 tdp T2 淡化。它不取代 ? 與 Space menu：能做的事照樣在 Space menu'
