@@ -1,37 +1,42 @@
-id: 1
-from: 0
+id: 2
+from: v1.2.2
 to: v1.2.2
 tasks:
   - id: 1
-    spec: 1
-    request: '一個直的空間玩遊戲，右邊是接下來的方塊的框；排行放在左邊；終端機窄的時候，排行那一欄優先收掉'
-    tdp: [tdp terms.2, tdp terms.3, tdp screen.1, tdp screen.4, tdp screen.5, tdp screen.7, tdp L1, tdp L2, tdp L3, tdp L4, tdp E5, tdp panel.1, tdp K1, tdp K2]
+    spec: 2
+    request: '一個直的空間玩遊戲，右邊是接下來的方塊的框；排行放在左邊；終端機窄的時候，排行那一欄優先收掉；分三欄，接下來的方塊放到獨立的 panel，排行與遊戲的比例在寬或窄的終端機上都不能一邊倒'
+    tdp: [tdp terms.2, tdp terms.3, tdp screen.1, tdp screen.4, tdp screen.5, tdp screen.7, tdp L1, tdp L2, tdp L3, tdp L4, tdp E5, tdp panel.1, tdp panel.4, tdp K1, tdp K2]
     remark:
       - |
-        60×32 的版面（使用者 2026-11-11 看過）：
-         Level: 3  Lines: 25  Score: 12,340
-        ┌[1] SCORES──────┐┏[2] GAME━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-        │ NAME      SCORE│┃ ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒ ┃
-        │ vulcan   52,300│┃ ▒▒                    ▒▒  ████████  ▒▒ ┃
-        │ amy      31,020│┃ ▒▒        ██          ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒ ┃
-        │                │┃ ▒▒        ████        ▒▒    ████    ▒▒ ┃
-        │                │┃         （場地 10×20，右邊 4 個框）        ┃
-        │                │┃ ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒ ┃
-        └────────────────┘┗━ Enter:play ━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
-         Space:menu ?:help !:log Tab|1–2:panels q:quit
-      - '兩個 panel：左邊 [1] SCORES、右邊 [2] GAME。panel 怎麼拆，app 可以自行決定（tdp L1）；遊戲的右邊留給接下來的方塊，排行在遊戲中不是最重要的，放左邊（使用者 2026-11-11）。編號照由左到右'
-      - 'GAME 的寬度跟著場地（42 欄，放大時更寬），SCORES 拿剩下的；啟動時 focus 在 [2] GAME：打開 app 就是要玩'
-      - '最低尺寸 42×26（tdp L1：可以調低）：剛好放得下 GAME 自己（場地與外框 22 列、panel 的框 2 列、statusbar 與 footer 各 1 列）。窄寬的門檻 60（tdp screen.5 的上限）：42–59 欄只畫有 focus 的 panel、佔滿寬度。tdp 的窄寬是「只畫 focus 的那一個」，沒有「指定先收哪一個」；focus 在 GAME 時就是排行收掉，使用者要的「排行優先收掉」在玩的時候成立（使用者 2026-11-11 看過）'
+        60×32 的版面（使用者 2026-11-11 提的三欄）：
+         Level: 3   Lines: 25     Score: 12,340
+        ┌[1] SCORES────┐┏[2] GAME━━━━━━━━━━━━━━━━┓┌[3] NEXT────────┐
+        │ NAME   SCORE │┃▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒┃│▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒│
+        │ vul…  52,300 │┃▒▒                    ▒▒┃│▒▒  ████████  ▒▒│
+        │ amy   31,020 │┃▒▒        ██          ▒▒┃│▒▒            ▒▒│
+        │              │┃▒▒        ████        ▒▒┃│▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒│
+        │              │┃▒▒        ██          ▒▒┃│▒▒    ████    ▒▒│
+        │              │┃      ⋮ 20 rows ⋮       ┃│▒▒    ████    ▒▒│
+        │              │┃▒▒████          ██████▒▒┃│    ⋮ 4 boxes   │
+        │              │┃▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒┃│▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒│
+        └──────────────┘┗━ Enter:play ━━━━━━━━━━━┛└────────────────┘
+         Space:menu ?:help !:log Tab|1–3:panels q:quit
+      - '三個 panel：左邊 [1] SCORES、中間 [2] GAME（場地）、右邊 [3] NEXT（接下來的方塊）。panel 怎麼拆，app 可以自行決定（tdp L1）；遊戲的右邊留給接下來的方塊，排行在遊戲中不是最重要的，放左邊；接下來的方塊自己一個 panel（使用者 2026-11-11）。編號照由左到右'
+      - '三個 panel 一樣寬，但不小於各自的最小寬度：GAME 26 欄（場地 24 欄與 panel 的框）、NEXT 18 欄（框 16 欄與 panel 的框）、SCORES 16 欄（名字與分數）；比平分寬的拿最小寬度，其他的再平分剩下的。60 欄時 16｜26｜18，77 欄時 26｜26｜25，150 欄時各 50，GAME 在畫面正中間。第一版 GAME 只拿場地的寬、SCORES 拿剩下的，寬的終端機上排行佔了七成（使用者 2026-11-11：比例太糟糕，寬窄都一樣）'
+      - '60 欄時 SCORES 只有 16 欄：名字截到 3 個字加 …（tdp panel.5 的截短）；powerline 符號佔兩格時膠囊截成 [1] SCOR…（tdp panel.4）'
+      - '啟動時 focus 在 [2] GAME：打開 app 就是要玩'
+      - '最低尺寸 42×26（tdp L1：可以調低）：剛好放得下 GAME 自己（場地與框 22 列、panel 的框 2 列、statusbar 與 footer 各 1 列）。窄寬的門檻 60（tdp screen.5 的上限；三個 panel 的最小寬度加起來剛好 60）：42–59 欄只畫有 focus 的 panel、佔滿寬度。tdp 的窄寬是「只畫 focus 的那一個」，沒有「指定先收哪一個」；玩的時候 focus 在 GAME，排行就收掉（使用者要的「排行優先收掉」），NEXT 也一起收掉，所以這時 GAME 自己把接下來的方塊畫在場地右邊，跟 locku 一樣（task 2）'
       - 'statusbar（tdp screen.4）：Level、Lines、Score 三組，label Overlay0、值 Lavender（現在玩到哪）；Level、Lines 補成固定寬，Score 在最後不補（tdp L2）。沒有在玩時寫上一局最後的值，還沒玩過寫第 1 關、0 行、0 分'
   - id: 2
-    spec: 1
-    request: '顯示方式沿用 locku 的 tetromino：一樣的方塊、一樣的顏色、一樣的灰框，右邊一欄框放接下來的方塊'
-    tdp: [tdp P5, tdp P4, tdp F1, tdp T2, tdp F8]
+    spec: 2
+    request: '顯示方式沿用 locku 的 tetromino：一樣的方塊、一樣的顏色、一樣的灰框，右邊一欄框放接下來的方塊；接下來的方塊放到獨立的 panel'
+    tdp: [tdp P5, tdp P4, tdp F1, tdp T2, tdp F8, tdp screen.5]
     remark:
-      - '照 locku 的 tetromino 螢幕保護（internal/saver/tetromino.go）：一個像素 2 欄 × 1 列；一格方塊一個像素；場地 10×20，外框一個像素寬的灰（catppuccin overlay1 #7f849c）；右邊一欄 4 個框，框裡 6×4 像素、一個方塊一個像素、置中；框與場地共用外框'
+      - '照 locku 的 tetromino 螢幕保護（internal/saver/tetromino.go）：一個像素 2 欄 × 1 列；一格方塊一個像素；場地 10×20，外框一個像素寬的灰（catppuccin overlay1 #7f849c）；右邊一欄 4 個框，框裡 6×4 像素、一個方塊一個像素、置中'
+      - '分三欄之後（使用者 2026-11-11）：GAME 畫場地與它的框，NEXT 畫那一欄框（左邊的框線就是場地右邊的那一條，兩個 panel 裡各畫一次）；兩張圖一樣高、都垂直置中，橫著看是對齊的。窄寬時只畫 GAME（tdp screen.5），這時 GAME 照 locku 把那一欄框畫在場地右邊、共用外框，玩的時候照樣看得到接下來的方塊'
       - '方塊的顏色照 locku（catppuccin-mocha）：I sky、O yellow、T mauve、S green、Z red、J blue、L peach。內容本身的顏色是領域的，app 可以自行決定（tdp P5）；不碰介面元素用的意義（tdp P4）'
-      - '放大：GAME 放得下兩倍時，一個像素畫成 2×2（4 欄 × 2 列），照 locku 的 fitScene；SCORES 至少留 18 欄才放大，60 欄以上兩個 panel 一樣並排'
-      - '場地與框是 panel 內容自己畫的，不是 popup（tdp F1）；GAME 失焦時照 tdp T2 跟著淡化（遊戲那時是停的，不是串流內容）'
+      - '放大：GAME 與 NEXT 都放得下兩倍時，兩邊一起把一個像素畫成 2×2（4 欄 × 2 列），照 locku 的 fitScene；只放得下一邊時都不放大，兩張圖的像素一樣大'
+      - '場地與框是 panel 內容自己畫的，不是 popup（tdp F1）。GAME 失焦時照 tdp T2 跟著淡化（遊戲那時是停的，不是串流內容）。玩的時候 NEXT 是串流內容、不淡化（tdp T2：接下來的方塊一直在換，玩家眼睛在場地上、用餘光看它）；暫停、結束、還沒玩時沒有東西在流，照常淡化'
   - id: 3
     spec: 1
     request: '真的可以玩的落塊消行遊戲；10 關，關卡指的是速度：到第 10 關之後不再加速，一直玩到遊戲結束或玩家離開'
@@ -100,11 +105,12 @@ tasks:
       - '沒有紀錄時空狀態：No scores yet / Press [Enter] on [2] GAME to play（tdp screen.8）'
       - 'Enter 在一筆紀錄上沒有動作：紀錄沒有東西可以打開'
   - id: 9
-    spec: 1
+    spec: 2
     request: '消行與結束的樣子照 locku：消的那幾行先閃白，再從中間往兩端消失；結束時由上往下變灰，再寫出紅色的 END'
     tdp: [tdp P5]
     remark:
-      - '照 locku 的時間：閃白 280 ms、往兩端消失 400 ms；結束時方塊由上往下變灰 5 秒，接著寫出 END（catppuccin red #f38ba8，locku 的小號像素字）留在畫面上，照 locku 置中在整張圖'
+      - '照 locku 的時間：閃白 280 ms、往兩端消失 400 ms；結束時方塊由上往下變灰 5 秒（場地與 NEXT 的框一起），接著寫出 END（catppuccin red #f38ba8，locku 的小號像素字）留在畫面上'
+      - 'END 置中在場地裡：分三欄之後場地自己一個 panel（task 2），locku 的 END 11 像素寬、場地裡面只有 10；E 窄一個像素（2 像素寬），整個字 10 像素剛好放進場地，其他照 locku'
       - '動畫用 tgo App.Tick（README 的計時器），測試推得動'
   - id: 10
     spec: 1

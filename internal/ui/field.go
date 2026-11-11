@@ -15,13 +15,18 @@ import (
 // block a pixel; the field framed in grey a pixel thick, the pieces to come
 // in a column of boxes at its right, a box each, the side by the field the
 // field's own. Inside the frame the ground is lit too, in surface0, as
-// locku's board is.
+// locku's board is. The field is GAME's and the boxes NEXT's (user,
+// 2026-11-11: three columns); narrow, where GAME is drawn alone, GAME draws
+// both, as locku's board is.
 const (
 	edge       = 1 // the frame's width in pixels
 	boxW, boxH = 6, 4
-	// sceneW and sceneH are the whole picture in pixels: the field and
-	// its frame, and the column of boxes.
-	sceneW = 2*edge + game.Cols + boxW + edge
+	// fieldW is the field and its frame, queueW the column of boxes and its
+	// frame, its left side the field's right; sceneW and sceneH are the two
+	// side by side, in pixels.
+	fieldW = 2*edge + game.Cols
+	queueW = 2*edge + boxW
+	sceneW = fieldW + queueW - edge
 	sceneH = 2*edge + game.Rows
 )
 
@@ -54,36 +59,33 @@ var inks = []terminu.Color{
 	terminu.Lavender,
 }
 
-// endWord is END in locku's short pixel face, a pixel apart.
+// endWord is END in locku's short pixel face, a pixel apart, the E a pixel
+// narrower than locku's: the word fits inside the field, ten pixels.
 var endWord = []string{
-	"###.###.##.",
-	"#...#.#.#.#",
-	"##..#.#.#.#",
-	"#...#.#.#.#",
-	"###.#.#.##.",
+	"##.###.##.",
+	"#..#.#.#.#",
+	"##.#.#.#.#",
+	"#..#.#.#.#",
+	"##.#.#.##.",
 }
 
 // pauseSign is two bars, the pause.
 var pauseSign = []string{"##.##", "##.##", "##.##", "##.##", "##.##"}
 
-// field is the GAME panel's body: the picture of t's game.
+// field is the GAME panel's body: the field of t's game, and the boxes
+// too when GAME is drawn alone.
 type field struct{ t *Tetru }
 
-// scale is the most a pixel can be grown by in w × h cells: 2 when the
-// picture fits twice as large, else 1.
-func scale(w, h int) int {
-	if w >= 2*2*sceneW && h >= 2*sceneH {
+// queue is the NEXT panel's body: the boxes of the pieces to come.
+type queue struct{ t *Tetru }
+
+// fits is the most a pixel can be grown by for a picture pw pixels wide in
+// w × h cells: 2 when it fits twice as large, else 1.
+func fits(pw, w, h int) int {
+	if w >= 2*2*pw && h >= 2*sceneH {
 		return 2
 	}
 	return 1
-}
-
-// panelWidth is the GAME panel's width for at most w × h cells, its frame
-// and a cell's margin each side included: the picture at the scale that
-// fits.
-func panelWidth(w, h int) int {
-	k := scale(w-4, h-2)
-	return 2*sceneW*k + 4
 }
 
 // scene is the picture, a pixel an ink.
@@ -112,7 +114,7 @@ func (s *scene) stamp(rows []string, x, y int, ink uint8) {
 // pause sign over a game paused.
 func picture(g *game.Game, paused bool) scene {
 	var s scene
-	fw := 2*edge + game.Cols // the field's frame
+	fw := fieldW
 	for y := range sceneH {
 		for x := range sceneW {
 			s.px[y][x] = inkGround
@@ -175,7 +177,7 @@ func picture(g *game.Game, paused bool) scene {
 			}
 		}
 		if g.Ended() {
-			s.stamp(endWord, (sceneW-len(endWord[0]))/2, (sceneH-len(endWord))/2, inkRed)
+			s.stamp(endWord, edge+(game.Cols-len(endWord[0]))/2, (sceneH-len(endWord))/2, inkRed)
 		}
 	} else if paused {
 		s.stamp(pauseSign, edge+(game.Cols-len(pauseSign[0]))/2, edge+(game.Rows-len(pauseSign))/2, inkPause)
@@ -197,14 +199,23 @@ func preview(s *scene, p, x, y int) {
 	}
 }
 
-// Draw is the picture in the middle of w × h cells, at the largest scale
-// that fits: every pixel k × k glyphs, two columns each.
+// Draw is the field in the middle of w × h cells, at the scale NEXT is
+// drawn at; narrow, where GAME is alone, the field and the boxes, at the
+// largest scale that fits.
 func (f *field) Draw(w, h int, focused bool) []string {
 	t := f.t
 	sc := picture(t.g, t.paused())
-	k := scale(w, h)
+	if t.narrow() {
+		return draw(&sc, 0, sceneW, fits(sceneW, w, h), w, h)
+	}
+	return draw(&sc, 0, fieldW, min(t.scale, fits(fieldW, w, h)), w, h)
+}
+
+// draw is the pixels x0 to x1 of every row of sc in the middle of w × h
+// cells, every pixel k × k glyphs, two columns each.
+func draw(sc *scene, x0, x1, k, w, h int) []string {
 	cell := pixelGlyph + strings.Repeat(" ", max(0, 2-terminu.IconWidth()))
-	pw, ph := 2*sceneW*k, sceneH*k
+	pw, ph := 2*(x1-x0)*k, sceneH*k
 	left, top := max(0, (w-pw)/2), max(0, (h-ph)/2)
 	out := make([]string, h)
 	blank := strings.Repeat(" ", w)
@@ -214,10 +225,10 @@ func (f *field) Draw(w, h int, focused bool) []string {
 	for y := range sceneH {
 		var b strings.Builder
 		b.WriteString(strings.Repeat(" ", left))
-		for x := 0; x < sceneW; {
+		for x := x0; x < x1; {
 			ink := sc.px[y][x]
 			run := x
-			for run < sceneW && sc.px[y][run] == ink {
+			for run < x1 && sc.px[y][run] == ink {
 				run++
 			}
 			n := (run - x) * k
@@ -250,3 +261,27 @@ func (f *field) Scroll() string { return "" }
 
 // MoveKeys are none out of the mode: nothing moves.
 func (f *field) MoveKeys() []terminu.KeyRow { return nil }
+
+// Draw is the boxes in the middle of w × h cells, at the scale GAME is
+// drawn at; alone (narrow), at the largest scale that fits.
+func (q *queue) Draw(w, h int, focused bool) []string {
+	t := q.t
+	sc := picture(t.g, t.paused())
+	k := fits(queueW, w, h)
+	if !t.narrow() {
+		k = min(t.scale, k)
+	}
+	return draw(&sc, fieldW-edge, sceneW, k, w, h)
+}
+
+// Key takes nothing: NEXT has nothing to do.
+func (q *queue) Key(string, tea.KeyMsg) (bool, tea.Cmd) { return false, nil }
+
+// HasItem is false: NEXT has no cursor.
+func (q *queue) HasItem() bool { return false }
+
+// Scroll is nothing: the boxes always fit.
+func (q *queue) Scroll() string { return "" }
+
+// MoveKeys are none: nothing moves.
+func (q *queue) MoveKeys() []terminu.KeyRow { return nil }

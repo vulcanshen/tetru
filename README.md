@@ -15,8 +15,8 @@ with the player's name and the time, and lists the best beside the well.
 
 ## Features
 
-- **Drawn as locku's falling blocks**: the same square pixels, colours and grey frame, the pieces to come in a column
-  of boxes at the well's right.
+- **Drawn as locku's falling blocks**: the same square pixels, colours and grey frame. Three columns: the scores, the
+  well in the middle, and the pieces to come in a column of boxes of their own.
 - **Ten levels of speed**: a level every ten rows, from a row a second to ten a second; past the tenth the speed stays.
 - **Every game kept**: the time, the name and the score, the best first in the SCORES panel. A game left half way is kept
   too: quitting, or closing the terminal, keeps the score it had then.

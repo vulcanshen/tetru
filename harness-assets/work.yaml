@@ -1,27 +1,32 @@
 tasks:
   - id: 1
-    spec: 1
+    spec: 2
     implementation: |
-      一個畫面（tgo Screen）兩個 panel：左邊 [1] SCORES（task 8）、右邊 [2] GAME（tgo Panel，自己畫的 body，task 2）；tgo Screen.Layout 放成左右，
-      GAME 的寬度是場地那張圖的寬（60 欄時 42 欄：圖 38 欄、panel 的框與左右各一格留白），SCORES 拿剩下的（60 欄時 18 欄）
+      一個畫面（tgo Screen）三個 panel：左邊 [1] SCORES（task 8）、中間 [2] GAME、右邊 [3] NEXT（tgo Panel，自己畫的 body，task 2）；tgo Screen.Layout 由左到右排，
+      三個一樣寬，但不小於各自的最小寬度：SCORES 16、GAME 26、NEXT 18；比平分寬的拿最小寬度，其他的平分剩下的，除不盡的多出來的一欄給左邊的
+      （60 欄 16｜26｜18、77 欄 26｜26｜25、150 欄 50｜50｜50）
       啟動時（tgo App.Start）用 tgo App.Focus 把 focus 放到 [2] GAME
       最低尺寸 42×26（tgo App.MinWidth、MinHeight）；比它小時 tgo 只畫名稱、needs a terminal of at least 42×26、Press [Ctrl-C] twice to quit
-      窄寬的門檻 60（tgo Screen.NarrowBelow）：42–59 欄只畫有 focus 的 panel，玩的時候 focus 在 GAME，排行就收掉；Tab 換成只畫 SCORES
+      窄寬的門檻 60（tgo Screen.NarrowBelow）：42–59 欄只畫有 focus 的 panel，玩的時候 focus 在 GAME，排行與 NEXT 收掉、GAME 自己畫接下來的方塊（task 2）；
+      Tab 換成只畫 NEXT，再按換成只畫 SCORES
       statusbar（tgo App.Status）：Level: 1   Lines: 0      Score: 0，label Overlay0、值 Lavender；Level 補到 2 格、Lines 補到 5 格、Score 在最後不補，
       分數每三位一個逗號（12,340）；沒在玩時是上一局的值，還沒玩過是 1、0、0
       tdptest 在每一格畫面量每一列等於終端機寬度（tdp L4）；版面的測試在 icon 與 powerline 符號 1/1、2/1、2/2 格下各跑一次（tdp E5）
-    test: [TestLayoutScoresLeftGameRight, TestNarrowShowsTheFocusedPanelOnly, TestLeastSizeIsTheGameAlone, TestPictureGrowsTwiceOnALargeTerminal, TestStatusbar, TestFirstLaunch]
+    test: [TestLayoutScoresGameNext, TestNarrowShowsTheFocusedPanelOnly, TestLeastSizeIsTheGameAlone, TestPictureGrowsTwiceOnALargeTerminal, TestStatusbar, TestFirstLaunch]
   - id: 2
-    spec: 1
+    spec: 2
     implementation: |
-      GAME 的 body 自己畫（tgo Body）：一張 19×22 像素的圖，一個像素是 nf-fa-square（U+F0C8），icon 佔一格時後面補一個空白，所以一個像素 2 欄 × 1 列
+      GAME 與 NEXT 的 body 自己畫（tgo Body），從同一張 19×22 像素的圖切出來；一個像素是 nf-fa-square（U+F0C8），icon 佔一格時後面補一個空白，所以一個像素 2 欄 × 1 列
       圖：場地 10×20，外框一個像素寬、#7f849c；框裡空的地方也畫像素，#313244（locku 的底）；右邊一欄 4 個框，框裡 6×4 像素，跟場地共用外框，
       最後一個框下面到底都是框的灰；每個框置中畫一個接下來的方塊，一個方塊一個像素，第一個框是下一個
       方塊的顏色：I #89dceb、O #f9e2af、T #cba6f7、S #a6e3a1、Z #f38ba8、J #89b4fa、L #fab387
-      圖置中在 GAME 裡；GAME 放得下兩倍（76 欄 × 44 列）、而且 SCORES 還有 18 欄時，一個像素畫成 2×2
+      GAME 畫場地與外框（左邊 12 像素）、NEXT 畫那一欄框與它左右的框線（右邊 8 像素），各自置中在自己的 panel 裡
+      窄寬（42–59 欄，只畫有 focus 的 panel）時 GAME 畫整張圖，場地右邊就是那一欄框；Tab 到 NEXT 時只畫那一欄框
+      GAME 與 NEXT 都放得下兩倍（GAME 裡 48 欄、NEXT 裡 32 欄、44 列）時，兩邊一起把一個像素畫成 2×2；只放得下一邊時都不放大
       還沒玩過時畫空的場地與空的框
-      顏色用 tgo 的 Fg 上色；GAME 失焦或被 popup 蓋住時由 tgo 淡化
-    test: [TestPictureIsLockus, TestPictureGrowsTwiceOnALargeTerminal, TestPopupsOverTheGameAtEveryWidth]
+      顏色用 tgo 的 Fg 上色；失焦或被 popup 蓋住時由 tgo 淡化；玩的時候（Play 模式裡）NEXT 標成串流內容（tgo Panel.Stream），失焦也不淡化，
+      暫停、結束、還沒玩時拿掉
+    test: [TestPictureIsLockus, TestLayoutScoresGameNext, TestNarrowShowsTheFocusedPanelOnly, TestPictureGrowsTwiceOnALargeTerminal, TestNextStaysBrightWhilePlaying, TestPopupsOverTheGameAtEveryWidth]
   - id: 3
     spec: 1
     implementation: |
@@ -84,10 +89,11 @@ tasks:
       沒有 Enter 與其他動作；j|k、gg|G 由 tgo 移動
     test: [TestScoresBestFirst, TestTopOutKeepsTheScore]
   - id: 9
-    spec: 1
+    spec: 2
     implementation: |
       消行：滿的那幾行先畫成 #ffffff 280 ms，再從場地中間往兩端一格一格變回底色，400 ms 消完，上面的掉下來，下一個方塊進來
-      結束：方塊與那幾行由上往下一列像素一列像素變成框的灰，5 秒蓋滿整張圖；之後在整張圖正中間寫 END（locku 的小號像素字，#f38ba8），一直留著
+      結束：方塊與那幾行由上往下一列像素一列像素變成框的灰，5 秒蓋滿整張圖（場地與 NEXT 的框）；之後在場地正中間寫 END（locku 的小號像素字，
+      E 窄一個像素，整個字 10 像素寬，#f38ba8），一直留著
       兩段動畫都由 tgo App.Tick 每 40 ms 推一格；灰幕不管有沒有 popup 都照走
     test: [TestLineClearFlashesThenGoes, TestTheWipeGoesFromTheMiddleOut, TestTopOutKeepsTheScore, TestTheStackAtTheTopEnds]
   - id: 10

@@ -28,12 +28,14 @@ var icon []byte
 
 const (
 	// minW, minH are tetru's least size (tdp L1, lower than 60 × 32): the
-	// GAME panel alone, the picture and its panel's frame, the statusbar
-	// and the footer.
+	// GAME panel alone (narrow) drawing the field and the boxes, its frame
+	// and a cell's margin each side, the statusbar and the footer.
 	minW, minH = 2*sceneW + 4, sceneH + 4
-	// scoresW is the least the SCORES panel is given beside GAME: a name and
-	// a score.
-	scoresW = 18
+	// narrowBelow is the width under which only the focused panel is drawn
+	// (tdp screen.5): the three panels at their least make 60.
+	narrowBelow = 60
+	// scoresW is the least the SCORES panel is given: a name and a score.
+	scoresW = narrowBelow - (2*fieldW + 2) - (2*queueW + 2)
 	// frame is a step of the game: the pace of the clear, as locku's.
 	frame = 40 * time.Millisecond
 	// nameLen is the most characters a name has.
@@ -51,7 +53,9 @@ type Tetru struct {
 	list   *terminu.List
 	scoreP *terminu.Panel
 	gameP  *terminu.Panel
+	nextP  *terminu.Panel
 	play   *terminu.Mode
+	scale  int // what a pixel of GAME and NEXT is grown by, side by side
 
 	g     *game.Game // the game, nil before the first
 	name  string     // who plays it
@@ -88,6 +92,7 @@ func NewTetru() *Tetru {
 	}
 	t.scoreP = &terminu.Panel{Label: "Scores", Body: t.list}
 	t.gameP = &terminu.Panel{Label: "Game", Body: &field{t}, OnEsc: func() tea.Cmd { return nil }}
+	t.nextP = &terminu.Panel{Label: "Next", Body: &queue{t}}
 	t.play = &terminu.Mode{
 		Name:   "Play",
 		Exit:   "pause",
@@ -105,8 +110,8 @@ func NewTetru() *Tetru {
 	t.setRows("")
 	a.AddScreen(&terminu.Screen{
 		Name:        "Tetru",
-		Panels:      []*terminu.Panel{t.scoreP, t.gameP},
-		NarrowBelow: 60,
+		Panels:      []*terminu.Panel{t.scoreP, t.gameP, t.nextP},
+		NarrowBelow: narrowBelow,
 		Layout:      t.layout,
 	})
 	var err error
@@ -132,12 +137,68 @@ func (t *Tetru) start() tea.Cmd {
 	return cmd
 }
 
-// layout is SCORES at the left and GAME at the right, GAME as wide as its
-// picture, SCORES what is left (user, 2026-11-11: at the game's right go
-// the pieces to come; the scores matter less while playing).
+// layout is SCORES, GAME and NEXT from the left, as wide as one another,
+// none under its least: GAME the field, NEXT the boxes, each with its
+// panel's frame, SCORES a name and a score (user, 2026-11-11: three
+// columns; GAME as wide as its picture and SCORES the rest left the scores
+// most of a wide terminal). The pictures are grown twice when both fit.
 func (t *Tetru) layout(w, h int) []terminu.Rect {
-	gw := min(w, panelWidth(w-scoresW, h))
-	return []terminu.Rect{{X: 0, Y: 0, W: w - gw, H: h}, {X: w - gw, Y: 0, W: gw, H: h}}
+	ws := share(w, []int{scoresW, 2*fieldW + 2, 2*queueW + 2})
+	t.scale = min(fits(fieldW, ws[1]-2, h-2), fits(queueW, ws[2]-2, h-2))
+	rects := make([]terminu.Rect, len(ws))
+	x := 0
+	for i, pw := range ws {
+		rects[i] = terminu.Rect{X: x, W: pw, H: h}
+		x += pw
+	}
+	return rects
+}
+
+// share splits w into widths as near one another as they can be, each at
+// least its least: a width whose least is over an even share is its least,
+// the others share what is left, the first ones a column more when it does
+// not split evenly.
+func share(w int, least []int) []int {
+	ws := make([]int, len(least))
+	fixed := make([]bool, len(least))
+	for {
+		rest, free := w, 0
+		for i := range least {
+			if fixed[i] {
+				rest -= ws[i]
+			} else {
+				free++
+			}
+		}
+		if free == 0 {
+			return ws
+		}
+		each, more := rest/free, false
+		for i := range least {
+			if !fixed[i] && least[i] > each {
+				ws[i], fixed[i], more = least[i], true, true
+			}
+		}
+		if !more {
+			extra := rest - each*free
+			for i := range least {
+				if !fixed[i] {
+					ws[i] = each
+					if extra > 0 {
+						ws[i]++
+						extra--
+					}
+				}
+			}
+			return ws
+		}
+	}
+}
+
+// narrow says whether only the focused panel is drawn (tdp screen.5).
+func (t *Tetru) narrow() bool {
+	w, _ := t.App.Size()
+	return t.App.ForceNarrow || w < narrowBelow
 }
 
 // status is the statusbar: the level, the rows cleared and the score of
@@ -176,7 +237,10 @@ func (t *Tetru) paused() bool { return t.going() && t.gameP.InMode() != t.play }
 
 // setActions are GAME's actions as the game stands: Enter plays a new
 // game, or goes on with the one paused (tdp K3); New game and End game.
+// While playing, NEXT is streaming content (tdp T2): the pieces to come
+// change as the player plays on GAME, read from the corner of an eye.
 func (t *Tetru) setActions() {
+	t.nextP.Stream = t.playing()
 	enter := terminu.Action{Key: "Enter", Label: "Play", Desc: "a new game", Scope: terminu.PanelScope, Hint: "play", Do: t.enter}
 	switch {
 	case t.playing():

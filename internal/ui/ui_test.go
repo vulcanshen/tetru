@@ -70,17 +70,33 @@ func topOut(t *testing.T, tt *Tetru, d *tdptest.Driver) {
 	t.Fatal("the stack never reached the top")
 }
 
-func TestLayoutScoresLeftGameRight(t *testing.T) {
+// widest is the most pixels on a row of the screen.
+func widest(d *tdptest.Driver) int {
+	most := 0
+	for _, r := range d.Screen() {
+		most = max(most, strings.Count(r, pixelGlyph))
+	}
+	return most
+}
+
+func TestLayoutScoresGameNext(t *testing.T) {
 	tdptest.EachIconWidth(t, func(t *testing.T) {
 		tt, d := open(t, 60, 32)
-		if r := row(d, 1); !strings.HasPrefix(r, "┌") || !strings.Contains(r, "[1] SCORES") || !strings.Contains(r, "┏") || !strings.Contains(r, "[2] GAME") {
-			t.Fatalf("not SCORES then GAME, GAME focused: %q", r)
+		r := row(d, 1)
+		// [1] SCOR…: two-cell powerline ends leave 16 columns no room for
+		// the whole label (tdp panel.4 cuts it).
+		s, g, n := strings.Index(r, "[1] SCOR"), strings.Index(r, "[2] GAME"), strings.Index(r, "[3] NEXT")
+		if !strings.HasPrefix(r, "┌") || !strings.Contains(r, "┏") || s < 0 || g < s || n < g {
+			t.Fatalf("not SCORES, GAME, NEXT, GAME focused: %q", r)
 		}
-		if strings.Index(row(d, 1), "SCORES") > strings.Index(row(d, 1), "GAME") {
-			t.Fatal("SCORES is not at the left")
+		if got := widest(d); got != fieldW+queueW {
+			t.Fatalf("GAME and NEXT draw %d pixels a row, not the field and the boxes", got)
 		}
-		if got := tt.layout(60, 30); got[1].W != 42 || got[0].W != 18 {
-			t.Fatalf("at 60 columns: %+v", got)
+		for _, c := range []struct{ w, s, g, n int }{{60, 16, 26, 18}, {77, 26, 26, 25}, {150, 50, 50, 50}} {
+			got := tt.layout(c.w, 30)
+			if got[0].W != c.s || got[1].W != c.g || got[2].W != c.n || got[1].X != c.s || got[2].X != c.s+c.g {
+				t.Fatalf("at %d columns: %+v", c.w, got)
+			}
 		}
 		if !d.Has("Enter:play") {
 			t.Fatal("GAME's hint has no Enter:play")
@@ -90,12 +106,42 @@ func TestLayoutScoresLeftGameRight(t *testing.T) {
 
 func TestNarrowShowsTheFocusedPanelOnly(t *testing.T) {
 	_, d := open(t, 50, 30)
-	if d.Has("SCORES") || !d.Has("[2] GAME") {
-		t.Fatal("narrow, the scores show beside the game")
+	if d.Has("SCORES") || d.Has("NEXT") || !d.Has("[2] GAME") {
+		t.Fatal("narrow, another panel shows beside the game")
+	}
+	if got := widest(d); got != sceneW {
+		t.Fatalf("narrow, GAME draws %d pixels a row, not the field and the boxes", got)
+	}
+	d.Press("Tab")
+	if r := row(d, 1); !strings.Contains(r, "[3] NEXT") || strings.Contains(r, "GAME") {
+		t.Fatalf("Tab did not show NEXT alone: %q", r)
+	}
+	if got := widest(d); got != queueW {
+		t.Fatalf("NEXT alone draws %d pixels a row", got)
 	}
 	d.Press("Tab")
 	if r := row(d, 1); !strings.Contains(r, "[1] SCORES") || strings.Contains(r, "GAME") {
 		t.Fatalf("Tab did not show SCORES alone: %q", r)
+	}
+}
+
+func TestNextStaysBrightWhilePlaying(t *testing.T) {
+	tt, d := open(t, 77, 32)
+	if tt.nextP.Stream {
+		t.Fatal("NEXT is streaming with no game")
+	}
+	play(d, "vulcan")
+	if !tt.nextP.Stream {
+		t.Fatal("NEXT dims while playing")
+	}
+	d.Press("Esc")
+	if tt.nextP.Stream {
+		t.Fatal("NEXT is streaming with the game paused")
+	}
+	d.Press("Enter")
+	topOut(t, tt, d)
+	if tt.nextP.Stream {
+		t.Fatal("NEXT is streaming with the game over")
 	}
 }
 
@@ -111,12 +157,16 @@ func TestLeastSizeIsTheGameAlone(t *testing.T) {
 }
 
 func TestPictureGrowsTwiceOnALargeTerminal(t *testing.T) {
-	tt, d := open(t, 120, 50)
-	if got := tt.layout(120, 48); got[1].W != 2*2*sceneW+4 {
-		t.Fatalf("GAME at 120 columns is %d wide", got[1].W)
+	tt, d := open(t, 150, 50)
+	if tt.scale != 2 || widest(d) != 2*(fieldW+queueW) {
+		t.Fatalf("150×50: GAME and NEXT %d times, %d pixels a row", tt.scale, widest(d))
 	}
-	if !d.Has("[1] SCORES") {
-		t.Fatal("SCORES gone at 120 columns")
+	if !d.Has("[1] SCORES") || !d.Has("[3] NEXT") {
+		t.Fatal("a panel gone at 150 columns")
+	}
+	d.Resize(120, 50)
+	if tt.scale != 1 || widest(d) != fieldW+queueW {
+		t.Fatalf("120×50, a third too narrow for twice: %d times, %d pixels a row", tt.scale, widest(d))
 	}
 }
 
@@ -384,6 +434,9 @@ func TestTopOutKeepsTheScore(t *testing.T) {
 		for x := range sceneW {
 			if s.px[y][x] == inkRed {
 				red++
+				if x < edge || x >= fieldW-edge {
+					t.Fatalf("END is out of the field at pixel %d", x)
+				}
 			}
 		}
 	}
