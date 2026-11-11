@@ -29,7 +29,7 @@ var icon []byte
 
 const (
 	// minW, minH are tetru's least size (tdp L1, lower than 60 × 32): wide
-	// enough for GAME alone (narrow), the field and the boxes, 34 columns,
+	// enough for GAME alone (narrow), the field and the boxes, 38 columns,
 	// the level, the rows and the score over them, 38, its frame and a
 	// cell's margin each side; high enough for the chip row, its rule and
 	// the footer, and the column at GAME's right: NEXT 1 and NEXT 2 and INFO,

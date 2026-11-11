@@ -1,9 +1,9 @@
-id: 8
+id: 9
 from: v1.2.3
 to: v1.2.3
 tasks:
   - id: 1
-    spec: 8
+    spec: 9
     request: '一個直的空間玩遊戲，右邊是接下來的方塊；排行不在遊戲旁邊，改成另一個分頁：[T]etru、[R]ank、[S]ettings；遊戲的右邊由上而下是 Next 1、Next 2，最下面一個 panel 分上下兩段，上面 Level、Lines、Score、下面操作方式（不叫 Manual）；終端機窄的時候，排行優先收掉；遊戲太小，GAME 的 panel 就是遊戲，不要遊戲自己的外框，縮小上下；空間要用滿，遊戲區域不能這麼小'
     tdp: [tdp terms.2, tdp terms.3, tdp screen.1, tdp screen.2, tdp screen.3, tdp screen.5, tdp screen.7, tdp M4, tdp L1, tdp L2, tdp L3, tdp L4, tdp E5, tdp panel.1, tdp panel.4, tdp K1, tdp K2, tdp P5]
     remark:
@@ -46,26 +46,27 @@ tasks:
       - '寬度：右邊那一欄是整個寬度的三分之一，至少放得下 INFO（23 欄），GAME 拿剩下的：60 欄 37｜23、77 欄 52｜25、150 欄 100｜50。三分之一照 tdp L1 自己舉的 1:2；遊戲在左邊、佔大半，第一版排行在寬的終端機上佔了七成（使用者 2026-11-11：比例太糟糕）'
       - '高度：NEXT 1、NEXT 2 各是一格的高（4 列加 panel 的框，6 列；放大時 10 列），INFO 拿剩下的'
       - 'Level、Lines、Score 在 INFO 上面那一段，一行一個（使用者 2026-11-11：GAME 裡只放場地）；不再有 statusbar（tdp screen.4：要不要有，app 可以自行決定；多畫面時它會在 chip 列的右邊，離遊戲很遠）。label Overlay0、值 Lavender（現在玩到哪，同 statusbar）。沒有在玩時寫上一局最後的值，還沒玩過寫第 1 關、0 行、0 分'
-      - '遊戲太小、空間要用滿（使用者 2026-11-11，150×32 與 77×32 的終端機）：GAME 裡只有場地（Level 等在 INFO）、場地沒有自己的框。一格方塊是 locku 的方塊 icon，一格只能一列高：32 列時 GAME 裡 27 列，場地 20 列；GAME 裡有 40 列（45 列的終端機）起放大成兩倍。曾經改成實心方塊、一格 1.25 列高填滿 GAME，使用者看了要換回原本的方塊 icon（2026-11-11）'
-      - '最低尺寸 42×29（tdp L1：可以調低）：寬是 GAME 自己（場地與兩個框 34 欄、上面一行 Level 等 38 欄、panel 的框與左右各一格）；高是 chip 列與線 2 列、footer 1 列，加上右邊那一欄：NEXT 1、NEXT 2 各 6 列、INFO 12 列與框。窄寬的門檻 60（tdp screen.5 的上限）：42–59 欄只畫有 focus 的 panel、佔滿寬度；玩的時候 focus 在 GAME，NEXT 與 INFO 收掉，所以這時 GAME 自己在場地上面寫一行 Level、Lines、Score，場地右邊畫兩個接下來的方塊（task 2）'
+      - '遊戲太小、空間要用滿（使用者 2026-11-11，150×32 與 77×32 的終端機）：GAME 裡只有場地（Level 等在 INFO）、場地沒有自己的框。一格方塊是 locku 的方塊 icon，一格只能一列高：場地照使用者說的固定 12 格寬、24 格高（2026-11-11：寬高都是固定的數字，加大一點），32 列時 GAME 裡 27 列，場地 24 列；GAME 裡有 48 列（53 列的終端機）起放大成兩倍。曾經改成實心方塊、一格 1.25 列高填滿 GAME，使用者看了要換回原本的方塊 icon（2026-11-11）'
+      - '最低尺寸 42×29（tdp L1：可以調低）：寬是 GAME 自己（場地與兩個框 38 欄、上面一行 Level 等 38 欄、panel 的框與左右各一格）；高是 chip 列與線 2 列、footer 1 列，加上場地 24 列與框，也剛好放得下右邊那一欄：NEXT 1、NEXT 2 各 6 列、INFO 12 列與框。窄寬的門檻 60（tdp screen.5 的上限）：42–59 欄只畫有 focus 的 panel、佔滿寬度；玩的時候 focus 在 GAME，NEXT 與 INFO 收掉，所以這時 GAME 自己在場地上面寫一行 Level、Lines、Score，場地右邊畫兩個接下來的方塊（task 2）'
   - id: 2
-    spec: 8
+    spec: 9
     request: '顯示方式沿用 locku 的 tetromino：一樣的方塊 icon、一樣的顏色；接下來的方塊在 Next 1、Next 2 兩個 panel，每個只放一個；場地與 Next 都不要自己的外框'
     tdp: [tdp P5, tdp P4, tdp F1, tdp T2, tdp F8, tdp screen.5]
     remark:
-      - '照 locku 的 tetromino 螢幕保護（internal/saver/tetromino.go）：一個像素是 locku 的方塊 icon（nf-fa-square），2 欄 × 1 列；一格方塊一個像素；場地 10×20，空的地方畫 locku 的底；接下來的方塊一個一格，6×4 像素的底、一個方塊一個像素、置中'
-      - '放大：GAME 與右邊那一欄都放得下兩倍時（GAME 裡 40 欄、40 列，右邊 24 欄），GAME 與兩個 NEXT 一起把一個像素畫成 2×2（4 欄 × 2 列），照 locku 的 fitScene；NEXT 的高跟著變兩倍'
+      - '照 locku 的 tetromino 螢幕保護（internal/saver/tetromino.go）：一個像素是 locku 的方塊 icon（nf-fa-square），2 欄 × 1 列；一格方塊一個像素；場地 12×24（task 3），空的地方畫 locku 的底；接下來的方塊一個一格，6×4 像素的底、一個方塊一個像素、置中'
+      - '放大：GAME 與右邊那一欄都放得下兩倍時（GAME 裡 48 欄、48 列，右邊 24 欄），GAME 與兩個 NEXT 一起把一個像素畫成 2×2（4 欄 × 2 列），照 locku 的 fitScene；NEXT 的高跟著變兩倍'
       - '場地與接下來的方塊都沒有自己的灰框（使用者 2026-11-11：GAME 的 panel 就是遊戲本身，NEXT 也有自己的 panel，panel 的框就是它們的框）'
       - 'GAME 畫場地；NEXT 1、NEXT 2 各畫一格（6×4 像素），各放一個接下來的方塊（使用者 2026-11-11：每個 Next 只放一個）；圖各自置中在自己的 panel 裡。接下來的方塊只看兩個（第一版是四個）'
       - '窄寬時只畫 GAME（tdp screen.5），這時 GAME 把兩格畫在場地右邊、隔一個像素，兩格之間也隔一個像素；玩的時候照樣看得到接下來的方塊。Tab 到 NEXT 1、NEXT 2 時各畫自己的一格'
       - '方塊的顏色照 locku（catppuccin-mocha）：I sky、O yellow、T mauve、S green、Z red、J blue、L peach。內容本身的顏色是領域的，app 可以自行決定（tdp P5）；不碰介面元素用的意義（tdp P4）'
       - '場地與接下來的方塊是 panel 內容自己畫的，不是 popup（tdp F1）。GAME 失焦時照 tdp T2 跟著淡化。玩的時候兩個 NEXT 與 INFO 是串流內容、不淡化（tdp T2：接下來的方塊與分數一直在換，玩家眼睛在場地上、用餘光看它）；暫停、結束、還沒玩時沒有東西在流，照常淡化'
   - id: 3
-    spec: 1
+    spec: 9
     request: '真的可以玩的落塊消行遊戲；10 關，關卡指的是速度：到第 10 關之後不再加速，一直玩到遊戲結束或玩家離開'
     tdp: [tdp P5]
     remark:
       - '遊戲規則是功能邏輯，app 可以自行決定（tdp P5）'
+      - '場地 12 格寬、24 格高（使用者 2026-11-11：寬高固定，比標準的 10×20 加大一點；寬高比照樣 1:2）'
       - '七種方塊，七個一袋、袋裡順序打亂（照 locku）；新的方塊從場地上方、正中間進來'
       - '每消 10 行升一關；第 1–10 關每往下一格的時間：1000、800、650、520、420、330、260、200、150、100 ms；第 10 關之後不再升、不再加速（使用者 2026-11-11）'
       - '碰到底之後 500 ms 才固定；那段時間裡移動、旋轉成功就重新算，最多重算 15 次，免得一直拖著不落'

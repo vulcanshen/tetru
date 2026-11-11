@@ -1,6 +1,6 @@
 tasks:
   - id: 1
-    spec: 8
+    spec: 9
     implementation: |
       三個畫面（tgo Screen，Name、Key、Desc）：Tetru（T，the game）、Rank（R，the scores, best first）、Settings（S，the keys to play with）；
       tgo 畫最上面的畫面 chip 列與下面的線，T、R、S 是 global 熱鍵，global operation popup 裡也列出來
@@ -15,23 +15,23 @@ tasks:
       tdptest 在每一格畫面量每一列等於終端機寬度（tdp L4）；版面的測試在 icon 與 powerline 符號 1/1、2/1、2/2 格下各跑一次（tdp E5）
     test: [TestTetruScreen, TestScreensSwitchOnTRS, TestNarrowShowsTheFocusedPanelOnly, TestLeastSizeIsTheGameAlone, TestPictureGrowsTwiceOnALargeTerminal, TestStatsInInfo, TestFirstLaunch]
   - id: 2
-    spec: 8
+    spec: 9
     implementation: |
-      GAME 與 NEXT 1、NEXT 2 的 body 自己畫（tgo Body），從同一張 17×20 像素的圖切出來；一個像素是 nf-fa-square（U+F0C8），icon 佔一格時後面補一個空白，所以一個像素 2 欄 × 1 列
-      圖：場地 10×20，沒有框，空的地方畫像素，#313244（locku 的底）；隔一個像素是一欄兩格，各 6×4 像素的底、沒有框，兩格之間隔一個像素；
+      GAME 與 NEXT 1、NEXT 2 的 body 自己畫（tgo Body），從同一張 19×24 像素的圖切出來；一個像素是 nf-fa-square（U+F0C8），icon 佔一格時後面補一個空白，所以一個像素 2 欄 × 1 列
+      圖：場地 12×24（task 3），沒有框，空的地方畫像素，#313244（locku 的底）；隔一個像素是一欄兩格，各 6×4 像素的底、沒有框，兩格之間隔一個像素；
       每格置中畫一個接下來的方塊，一個方塊一個像素，第一格是下一個（game.Queue 是 2）
       方塊的顏色：I #89dceb、O #f9e2af、T #cba6f7、S #a6e3a1、Z #f38ba8、J #89b4fa、L #fab387
-      GAME 畫場地（左邊 10 像素）；NEXT 1、NEXT 2 各畫自己那一格（右邊 6 像素、4 像素高）；各自置中在自己的 panel 裡
+      GAME 畫場地（左邊 12 像素）；NEXT 1、NEXT 2 各畫自己那一格（右邊 6 像素、4 像素高）；各自置中在自己的 panel 裡
       窄寬（42–59 欄，只畫有 focus 的 panel）時 GAME 畫整張圖，場地右邊隔一個像素是兩格；Tab 到 NEXT 1、NEXT 2 時各畫自己那一格
-      GAME 裡放得下 40 欄、40 列，右邊那一欄放得下 24 欄、終端機的高放得下右邊那一欄時，GAME 與兩個 NEXT 一起把一個像素畫成 2×2，NEXT 的高跟著變兩倍；不然都不放大
+      GAME 裡放得下 48 欄、48 列，右邊那一欄放得下 24 欄、終端機的高放得下右邊那一欄時，GAME 與兩個 NEXT 一起把一個像素畫成 2×2，NEXT 的高跟著變兩倍；不然都不放大
       還沒玩過時畫空的場地與空的兩格
       顏色用 tgo 的 Fg 上色；失焦或被 popup 蓋住時由 tgo 淡化；玩的時候（Play 模式裡）NEXT 1、NEXT 2、INFO 標成串流內容（tgo Panel.Stream），失焦也不淡化，
       暫停、結束、還沒玩時拿掉
     test: [TestPictureIsLockus, TestTetruScreen, TestNarrowShowsTheFocusedPanelOnly, TestPictureGrowsTwiceOnALargeTerminal, TestNextStaysBrightWhilePlaying, TestPopupsOverTheGameAtEveryWidth]
   - id: 3
-    spec: 1
+    spec: 9
     implementation: |
-      遊戲在 internal/game，不碰終端機：
+      遊戲在 internal/game，不碰終端機：場地 12 格寬、24 格高（game.Cols、game.Rows）
       七種方塊（locku 的 art 與轉法），七個一袋、袋裡打亂；新方塊的最上面一列在場地第一列、左右置中（3 格寬的偏左半格）；放不進去就結束
       每一格往下的時間照關卡：1000、800、650、520、420、330、260、200、150、100 ms；每消 10 行升一關，到第 10 關為止
       碰到底後 500 ms 固定；這段時間裡移動、旋轉成功就重算，最多 15 次

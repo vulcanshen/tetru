@@ -72,8 +72,8 @@ func TestMoveStopsAtTheWalls(t *testing.T) {
 	for g.Move(-1) {
 		n++
 	}
-	if n != 4 {
-		t.Fatalf("the square moved %d left from the middle, not 4", n)
+	if n != (Cols-2)/2 {
+		t.Fatalf("the square moved %d left from the middle, not %d", n, (Cols-2)/2)
 	}
 	for _, b := range g.Blocks() {
 		if b[0] < 0 {
@@ -124,14 +124,14 @@ func TestDownScoresARow(t *testing.T) {
 }
 
 func TestDropSetsThePieceAndScoresTwoARow(t *testing.T) {
-	g := with(1) // the square, two high: 18 rows to fall
-	if n := g.Drop(); n != 18 {
-		t.Fatalf("the square fell %d rows, not 18", n)
+	g := with(1) // the square, two high: all but two rows to fall
+	if n := g.Drop(); n != Rows-2 {
+		t.Fatalf("the square fell %d rows, not %d", n, Rows-2)
 	}
-	if g.Score != 36 {
-		t.Fatalf("score %d, not 36", g.Score)
+	if g.Score != 2*(Rows-2) {
+		t.Fatalf("score %d, not %d", g.Score, 2*(Rows-2))
 	}
-	if g.Cell(4, Rows-1) == 0 || g.Cell(5, Rows-2) == 0 {
+	if m := (Cols - 2) / 2; g.Cell(m, Rows-1) == 0 || g.Cell(m+1, Rows-2) == 0 {
 		t.Fatal("the square is not set at the foot")
 	}
 }
@@ -157,11 +157,12 @@ func TestLockWaitsAndMovingRestartsIt(t *testing.T) {
 	g.Advance(LockDelay - 100*time.Millisecond)
 	g.Move(-1)
 	g.Advance(LockDelay - 100*time.Millisecond)
-	if g.Cur != cur || g.Cell(3, Rows-1) != 0 {
+	x := (Cols-2)/2 - 1 // the square's left column, a column left of the middle
+	if g.Cur != cur || g.Cell(x, Rows-1) != 0 {
 		t.Fatal("the piece was set though moving restarted the wait")
 	}
 	g.Advance(100 * time.Millisecond)
-	if g.Cell(3, Rows-1) == 0 {
+	if g.Cell(x, Rows-1) == 0 {
 		t.Fatal("the piece was not set after lying still for the delay")
 	}
 }
@@ -187,7 +188,7 @@ func TestClearScoresAtTheLevelAndGoesUp(t *testing.T) {
 	g := with(I)
 	g.Level, g.Lines = 3, 29
 	for y := Rows - 4; y < Rows; y++ {
-		g.fill(y, 9)
+		g.fill(y, Cols-1)
 	}
 	g.Rotate(1) // upright, in column 6 of its box
 	for g.Move(1) {
@@ -237,7 +238,7 @@ func TestTheSpeedStopsAtTheLastLevel(t *testing.T) {
 	g.Drop() // flat, in columns 3–6: the row is not full, nothing goes
 	g.Level = MaxLevel
 	g.Lines = 199
-	g.fill(Rows-2, 9)
+	g.fill(Rows-2, Cols-1)
 	g.Next[0] = I
 	g.come()
 	g.Rotate(1)

@@ -15,7 +15,7 @@ import (
 
 const (
 	// Cols and Rows are the field, in blocks.
-	Cols, Rows = 10, 20
+	Cols, Rows = 12, 24
 	// Queue is how many pieces to come are shown, a box each (user,
 	// 2026-11-11: Next 1 and Next 2).
 	Queue = 2

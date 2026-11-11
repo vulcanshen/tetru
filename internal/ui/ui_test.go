@@ -158,11 +158,11 @@ func TestLeastSizeIsTheGameAlone(t *testing.T) {
 }
 
 func TestPictureGrowsTwiceOnALargeTerminal(t *testing.T) {
-	tt, d := open(t, 150, 52)
+	tt, d := open(t, 150, 54)
 	if tt.scale != 2 || widest(d) != 2*(fieldW+boxW) {
-		t.Fatalf("150×52: GAME and NEXT %d times, %d pixels a row", tt.scale, widest(d))
+		t.Fatalf("150×54: GAME and NEXT %d times, %d pixels a row", tt.scale, widest(d))
 	}
-	if got := tt.layout(150, 49); got[1].H != 2*boxH+2 {
+	if got := tt.layout(150, 51); got[1].H != 2*boxH+2 {
 		t.Fatalf("NEXT 1 is %d high, twice", got[1].H)
 	}
 	d.Resize(150, 40)

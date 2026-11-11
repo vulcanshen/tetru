@@ -7,8 +7,8 @@
 
 **A falling-block game for the terminal.**
 
-Pieces of four blocks fall into a well ten blocks wide; move and turn them as they fall, and fill rows from wall to wall
-to clear them. Every ten rows is a level, and every level falls faster, up to the tenth. tetru keeps every game's score
+Pieces of four blocks fall into a well twelve blocks wide and twenty-four deep; move and turn them as they fall, and
+fill rows from wall to wall to clear them. Every ten rows is a level, and every level falls faster, up to the tenth. tetru keeps every game's score
 with the player's name and the time, and ranks them, the best first.
 
 ![tetru: a game played, the Space menu pausing it, and the score kept](docs/demo.gif)
