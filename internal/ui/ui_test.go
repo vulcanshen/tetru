@@ -285,7 +285,7 @@ func TestPlay(t *testing.T) {
 		if !tt.playing() || !strings.Contains(row(d, 2), "Play") {
 			t.Fatal("not in the Play mode")
 		}
-		if r := row(d, 31); !strings.HasPrefix(r, "Space:menu ?:help e:rotate left i:rotate right Esc:pause") {
+		if r := row(d, 31); !strings.HasPrefix(r, "Space:menu ?:help k:rotate left i:rotate right Esc:pause") {
 			t.Fatalf("footer %q", r)
 		}
 		if strings.Contains(row(d, 30), "Enter:") {
@@ -307,18 +307,21 @@ func TestPlay(t *testing.T) {
 		if tt.g.At.Y != at.Y+2 || tt.g.Score != score+2 {
 			t.Fatal("j and ↓ do not move down a row")
 		}
-		d.Press("k")
-		d.Press("↑")
+		d.Press("e")
 		if tt.g.At.Y != at.Y+2 || tt.g.At.Turn != at.Turn {
-			t.Fatal("k or ↑ did something")
+			t.Fatal("e did something")
 		}
 		d.Press("i")
 		if tt.g.At.Turn != 1 {
 			t.Fatal("i did not turn clockwise")
 		}
-		d.Press("e")
+		d.Press("k")
 		if tt.g.At.Turn != 0 {
-			t.Fatal("e did not turn back")
+			t.Fatal("k did not turn back")
+		}
+		d.Press("↑")
+		if tt.g.At.Turn != 3 || tt.g.At.Y != at.Y+2 {
+			t.Fatal("↑ did not turn left as k does (tdp K12)")
 		}
 		before := tt.g.Score
 		d.Press("d")
@@ -346,7 +349,7 @@ func TestTheGameStopsUnderAPopup(t *testing.T) {
 	tt, d := open(t, 60, 32)
 	play(d)
 	d.Press("Space")
-	for _, s := range []string{"ITEM OPERATION", "Rotat[e] left", "Rotate r[i]ght", "PLAY MODE", "move left", "drop to the bottom", "[Esc] Pause"} {
+	for _, s := range []string{"ITEM OPERATION", "[k] Rotate left", "Rotate r[i]ght", "PLAY MODE", "move left", "drop to the bottom", "[Esc] Pause"} {
 		if !d.Has(s) {
 			t.Fatalf("the Play mode's Space menu has no %q", s)
 		}
@@ -630,9 +633,8 @@ func TestQuitWithAGameAsksAndKeeps(t *testing.T) {
 	if all := kept(t); len(all) != 1 || all[0].Name != "bob" {
 		t.Fatalf("quitting kept %+v", all)
 	}
-	d.Advance(closing)
 	if !d.Quit() {
-		t.Fatal("Enter did not leave once the popup closed")
+		t.Fatal("Enter did not leave")
 	}
 }
 

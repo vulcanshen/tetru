@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/vulcanshen/terminu-go/tdptest"
 
@@ -32,7 +33,7 @@ func TestScreensSwitchOnTRS(t *testing.T) {
 
 func TestInfoShowsTheKeys(t *testing.T) {
 	_, d := open(t, 60, 32)
-	for _, s := range []string{"h      move left", "l      move right", "j      down a row", "e      rotate left", "i      rotate right", "Enter  drop", "Space  pause, menu", "Esc    pause"} {
+	for _, s := range []string{"h      move left", "l      move right", "j      down a row", "k      rotate left", "i      rotate right", "Enter  drop", "Space  pause, menu", "Esc    pause"} {
 		if !d.Has(s) {
 			t.Fatalf("INFO has no %q", s)
 		}
@@ -74,9 +75,10 @@ func TestSettingsSetAKey(t *testing.T) {
 	}
 	play(d)
 	turnable(tt, d)
-	d.Press("e")
+	d.Press("k")
+	d.Press("↑")
 	if tt.g.At.Turn != 0 {
-		t.Fatal("e still turns")
+		t.Fatal("k or ↑ still turns")
 	}
 	d.Press("a")
 	if tt.g.At.Turn == 0 {
@@ -123,7 +125,7 @@ func TestBrokenSettingsAskToMoveAside(t *testing.T) {
 	dir := t.TempDir()
 	t.Setenv("TETRU__CONFIG", dir)
 	path := filepath.Join(dir, "config.yaml")
-	os.WriteFile(path, []byte("keys:\n  rotate_left: k\n"), 0o644)
+	os.WriteFile(path, []byte("keys:\n  rotate_left: q\n"), 0o644)
 	tt := NewTetru()
 	d := tdptest.Start(t, tt.App, 60, 32)
 	if !d.Has("can't be read") || !d.Has("config.yaml") {
@@ -135,5 +137,30 @@ func TestBrokenSettingsAskToMoveAside(t *testing.T) {
 	}
 	if tt.keys != keys.Default() {
 		t.Fatal("not the default keys after starting fresh")
+	}
+}
+
+func TestAKeyInUseIsRefused(t *testing.T) {
+	tt, d := open(t, 60, 32)
+	d.Press("S")
+	d.Press("j")
+	d.Press("j")
+	d.Press("j") // Rotate left
+	for _, c := range []struct{ key, why string }{
+		{"i", "Rotate right's key"},
+		{"Space", "the Space menu"},
+	} {
+		d.Press("Enter")
+		d.Press("/")
+		d.Type(c.key)
+		d.Press("Enter")
+		d.Press("Enter")
+		if !d.Has("Can't use "+c.key+" for Rotate left") || !d.Has(c.why) || tt.keys[keys.RotateLeft] != "k" {
+			t.Fatalf("%s for Rotate left: kept %q, no Warning", c.key, tt.keys[keys.RotateLeft])
+		}
+		if s, err := keys.Load(tt.cfg); err != nil || s[keys.RotateLeft] != "k" {
+			t.Fatalf("a refused key was written: %v %v", s, err)
+		}
+		d.Advance(5 * time.Second) // the toast goes
 	}
 }

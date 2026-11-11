@@ -53,78 +53,51 @@ func (a Action) Desc() string { return about[a].desc }
 type Set [len(about)]string
 
 // Default is the keys the user asked for (2026-11-11): h left, l right, j a
-// row down, i rotate right, Enter drop; rotate left is e for now.
-//
-// TODO(tdp #4): rotate left is k, as the user asked, once tdp lets a mode
-// take k (tdp K12 keeps it for moving up).
-func Default() Set { return Set{"h", "l", "j", "e", "i", "Enter"} }
+// row down, k rotate left, i rotate right, Enter drop. k has no moving to do
+// in the Play mode, a piece never going up: the mode may take it (tdp K12).
+func Default() Set { return Set{"h", "l", "j", "k", "i", "Enter"} }
 
-// Arrow is the arrow key that does a besides its key, whatever that is
-// (tdp K12: the arrows are the directions); "" for an action with none.
-func Arrow(a Action) string {
-	switch a {
-	case Left:
-		return "←"
-	case Right:
-		return "→"
-	case Down:
-		return "↓"
+// arrows are the arrow keys of the letters that have one: h|j|k|l are
+// ←|↓|↑|→ (tdp K12).
+var arrows = map[string]string{"h": "←", "j": "↓", "k": "↑", "l": "→"}
+
+// Keys are the keys that do a in s: its key, and that key's arrow when it
+// has one (tdp K12: an arrow does what its letter does).
+func (s Set) Keys(a Action) []string {
+	if arrow, ok := arrows[s[a]]; ok {
+		return []string{s[a], arrow}
 	}
-	return ""
+	return []string{s[a]}
 }
 
-// reserved are the small letters a key can't be: q is a core key (tdp K1),
-// the others are kept for moving (tdp K12).
-const reserved = "qjkudghl"
+// core are the core keys among the keys offered, and what each does in the
+// Play mode (tdp K11): a key the player can't have.
+var core = map[string]string{"Space": "it pauses and opens the Space menu", "q": "it quits"}
 
-// own is the letter of the way a moves (tdp K12: h left, l right, j down),
-// "" for an action that does not move.
-func own(a Action) string {
-	switch a {
-	case Left:
-		return "h"
-	case Right:
-		return "l"
-	case Down:
-		return "j"
-	}
-	return ""
-}
-
-// Choices are the keys a can have, as tdp stands: a small letter that is
-// not a core key nor kept for moving; a moving action its own letter too;
-// Drop Enter too (tdp K3: on the falling piece, putting it down is what
-// Enter does).
-//
-// TODO(tdp #5): tdp does not say whether a player may choose the keys, nor
-// which ones.
-func Choices(a Action) []string {
+// Choices are the keys offered to the player for an action: the small
+// letters, Enter, and Space (tdp K11: which keys the player may choose is
+// the app's). One already doing something in the Play mode is refused
+// (UsedBy).
+func Choices() []string {
 	var out []string
 	for c := 'a'; c <= 'z'; c++ {
-		k := string(c)
-		if !strings.ContainsRune(reserved, c) || k == own(a) {
-			out = append(out, k)
-		}
+		out = append(out, string(c))
 	}
-	if a == Drop {
-		out = append(out, "Enter")
-	}
-	return out
+	return append(out, "Enter", "Space")
 }
 
-// Free are a's choices no other action has in s.
-func (s Set) Free(a Action) []string {
-	var out []string
-	for _, k := range Choices(a) {
-		taken := false
-		for _, b := range Actions {
-			taken = taken || b != a && s[b] == k
-		}
-		if !taken {
-			out = append(out, k)
+// UsedBy says what already has key k in the Play mode, other than action a:
+// another action, its arrow, or a core key (tdp K11); "" when nothing has it.
+func (s Set) UsedBy(a Action, k string) string {
+	if why, ok := core[k]; ok {
+		return why
+	}
+	for _, b := range Actions {
+		if b != a && slices.Contains(s.Keys(b), k) {
+			return "it is " + b.Label() + "'s key"
 		}
 	}
-	return out
+	return ""
 }
 
 // Check says what is wrong with s: a key its action can't have, or a key
@@ -133,7 +106,7 @@ func (s Set) Check() error {
 	by := map[string]Action{}
 	for _, a := range Actions {
 		k := s[a]
-		if !slices.Contains(Choices(a), k) {
+		if !slices.Contains(Choices(), k) || core[k] != "" {
 			return fmt.Errorf("%s: %q can't be a key to %s", a.ID(), k, strings.ToLower(a.Label()))
 		}
 		if b, ok := by[k]; ok {

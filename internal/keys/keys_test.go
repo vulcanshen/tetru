@@ -10,7 +10,7 @@ import (
 
 func TestDefaultIsTheUsersKeys(t *testing.T) {
 	d := Default()
-	if d[Left] != "h" || d[Right] != "l" || d[Down] != "j" || d[RotateLeft] != "e" || d[RotateRight] != "i" || d[Drop] != "Enter" {
+	if d[Left] != "h" || d[Right] != "l" || d[Down] != "j" || d[RotateLeft] != "k" || d[RotateRight] != "i" || d[Drop] != "Enter" {
 		t.Fatalf("default %v", d)
 	}
 	if err := d.Check(); err != nil {
@@ -18,31 +18,37 @@ func TestDefaultIsTheUsersKeys(t *testing.T) {
 	}
 }
 
-func TestChoicesKeepTdpsKeys(t *testing.T) {
-	for _, a := range Actions {
-		c := Choices(a)
-		for _, k := range []string{"q", "k", "u", "d", "g", "G", "Space", "Tab", "Esc", "1", "?", "!"} {
-			if slices.Contains(c, k) {
-				t.Fatalf("%s can be %q", a.ID(), k)
-			}
-		}
-		if !slices.Contains(c, "e") || !slices.Contains(c, "z") {
-			t.Fatalf("%s: %v", a.ID(), c)
+func TestArrowsGoWithTheirLetters(t *testing.T) {
+	d := Default()
+	for a, want := range map[Action][]string{Left: {"h", "←"}, Right: {"l", "→"}, Down: {"j", "↓"}, RotateLeft: {"k", "↑"}, RotateRight: {"i"}, Drop: {"Enter"}} {
+		if got := d.Keys(a); !slices.Equal(got, want) {
+			t.Fatalf("%s: %v", a.ID(), got)
 		}
 	}
-	if !slices.Contains(Choices(Left), "h") || slices.Contains(Choices(Left), "l") || slices.Contains(Choices(RotateLeft), "h") {
-		t.Fatal("a moving letter goes to its own way only")
-	}
-	if !slices.Contains(Choices(Drop), "Enter") || slices.Contains(Choices(RotateLeft), "Enter") {
-		t.Fatal("Enter is Drop's only")
+	d[Left], d[RotateRight] = "a", "h"
+	if !slices.Equal(d.Keys(Left), []string{"a"}) || !slices.Equal(d.Keys(RotateRight), []string{"h", "←"}) {
+		t.Fatal("the arrow does not follow its letter")
 	}
 }
 
-func TestFreeLeavesOutTheOthersKeys(t *testing.T) {
-	s := Default()
-	f := s.Free(RotateLeft)
-	if slices.Contains(f, "i") || !slices.Contains(f, "e") || !slices.Contains(f, "a") {
-		t.Fatalf("free for rotate left: %v", f)
+func TestUsedBySaysWhoHasAKey(t *testing.T) {
+	d := Default()
+	for k, want := range map[string]string{
+		"i":     "it is Rotate right's key",
+		"k":     "it is Rotate left's key",
+		"↑":     "it is Rotate left's key",
+		"Space": "it pauses and opens the Space menu",
+		"q":     "it quits",
+		"a":     "",
+		"Enter": "", // its own key
+	} {
+		if got := d.UsedBy(Drop, k); got != want {
+			t.Fatalf("%q: %q", k, got)
+		}
+	}
+	c := Choices()
+	if !slices.Contains(c, "a") || !slices.Contains(c, "k") || !slices.Contains(c, "Enter") || !slices.Contains(c, "Space") || slices.Contains(c, "Tab") {
+		t.Fatalf("choices %v", c)
 	}
 }
 
@@ -92,7 +98,7 @@ func TestSaveThenLoadKeepsOtherKeys(t *testing.T) {
 func TestLoadBadKeys(t *testing.T) {
 	dir := t.TempDir()
 	for name, body := range map[string]string{
-		"reserved": "keys:\n  rotate_left: k\n",
+		"core":     "keys:\n  rotate_left: q\n",
 		"twice":    "keys:\n  rotate_left: i\n",
 		"not yaml": "keys: [\n",
 		"not keys": "keys: 3\n",

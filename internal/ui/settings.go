@@ -30,20 +30,24 @@ func (t *Tetru) keyFields() []*terminu.Field {
 	})
 }
 
-// chooseKey opens a select of the keys a can have that no other action has
-// (tdp select). The one chosen is written to the settings file before the
-// popup closes: a failure keeps it open under an error popup (tdp popup.7).
-//
-// TODO(tdp #5): tdp has no input that takes a key pressed; a select of the
-// keys tdp leaves free stands in for it.
+// chooseKey opens a select of the keys offered (tdp select; tdp K11: which
+// keys and how are the app's): the small letters, Enter and Space, the key
+// now chosen. A key already doing something in the Play mode (another
+// action's, its arrow, a core key) is refused with a Warning saying what
+// has it, and not set (tdp K11). Another is written to the settings file
+// before the popup closes: a failure keeps it open under an error popup
+// (tdp popup.7).
 func (t *Tetru) chooseKey(a keys.Action) tea.Cmd {
-	opts := t.keys.Free(a)
+	opts := keys.Choices()
 	return t.App.Select(terminu.Select{
 		Title:    "Key",
 		Subject:  a.Label(),
 		Options:  opts,
 		Selected: slices.Index(opts, t.keys[a]),
 		Commit: func(i int) error {
+			if t.keys.UsedBy(a, opts[i]) != "" {
+				return nil // refused, said by Done
+			}
 			s := t.keys
 			s[a] = opts[i]
 			if err := keys.Save(t.cfg, s); err != nil {
@@ -53,6 +57,9 @@ func (t *Tetru) chooseKey(a keys.Action) tea.Cmd {
 			return nil
 		},
 		Done: func(i int) tea.Cmd {
+			if t.keys[a] != opts[i] {
+				return t.App.Toast(terminu.Warning, "Can't use "+opts[i]+" for "+a.Label()+": "+t.keys.UsedBy(a, opts[i]))
+			}
 			t.setModeKeys()
 			t.App.Log(terminu.Success, a.Label()+" is now "+opts[i])
 			return nil

@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"os/signal"
-	"syscall"
 
 	"github.com/vulcanshen/tetru/internal/ui"
 	"github.com/vulcanshen/tetru/internal/version"
@@ -28,9 +26,8 @@ func main() {
 		os.Exit(command(os.Args[1], os.Stdout, os.Stderr))
 	}
 	t := ui.NewTetru()
-	endOnHangup()
 	err := t.App.Run()
-	t.Finish() // a game still going keeps its score, Ctrl-C twice too
+	t.Finish() // a game still going keeps its score: Ctrl-C twice, the terminal closed (Run returns on SIGHUP)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "tetru:", err)
 		os.Exit(1)
@@ -49,19 +46,4 @@ func command(arg string, out, errOut io.Writer) int {
 	}
 	fmt.Fprintf(errOut, "tetru: unknown command %q\n\n%s", arg, usage)
 	return 2
-}
-
-// endOnHangup ends the program as SIGTERM does when its terminal is closed
-// (SIGHUP), so that Run returns and the game going keeps its score (user,
-// 2026-11-11: leaving keeps the score as it is then).
-//
-// TODO(tgo #4): terminu-go's Run ends on SIGTERM (bubbletea's) but not on
-// SIGHUP, which kills the program before anything after Run.
-func endOnHangup() {
-	hup := make(chan os.Signal, 1)
-	signal.Notify(hup, syscall.SIGHUP)
-	go func() {
-		<-hup
-		syscall.Kill(os.Getpid(), syscall.SIGTERM)
-	}()
 }

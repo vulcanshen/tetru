@@ -1,6 +1,6 @@
-id: 6
+id: 7
 from: v1.2.2
-to: v1.2.2
+to: v1.2.3
 tasks:
   - id: 1
     spec: 6
@@ -76,26 +76,24 @@ tasks:
       - '新的方塊放不進場地，或固定時有一格還在場地上方，遊戲結束（照 locku）'
       - '名字是 tetru；不用別的遊戲的名稱、商標與音樂'
   - id: 4
-    spec: 3
+    spec: 7
     request: '遊戲的按鍵：h 左、l 右、j 下一格、k 左旋、i 右旋、Enter 快速向下；這是遊戲，要讓使用者好玩，跟 tdp 衝突就請 tdp 調整'
     tdp: [tdp K11, tdp K12, tdp K3, tdp P5, tdp M5, tdp panel.3, tdp screen.2, tdp menu.4, tdp K6]
     remark:
       - '遊戲進行中是 GAME 的模式 Play（tdp K11：進入之後一部分鍵換成模式自己的意思，Esc 離開）：外框換成模式色、上框右邊 ┫Play┣（tdp panel.3）；只有 Play 的鍵與 core key 作用，亂按的其他鍵不出聲'
-      - 'Play 的鍵是使用者在 Settings 設的（task 13），預設照使用者 2026-11-11 說的：h 左、l 右、j 往下一格、i 右旋、Enter 落到底；左旋暫時是 e（下一條）'
-      - note: '使用者要 k 左旋（2026-11-11），但 tdp K12 把 k 保留給移動、沒有「方向沒東西可移時可以拿去用」的例外。暫時照 K12：k、↑ 在 Play 裡不作用，左旋預設 e（TODO(tdp #4)）；tdp 放行後預設改成 k。2026-11-11 terminu 回覆：下一版 K12 放行，模式裡某個移動鍵沒有移動可做時（Play 的 k、↑），模式可以拿它做自己的動作，方向鍵做一樣的事；發版後左旋預設改回 k（tdp 與 terminu-go 等 tetru 發第一版時一起發；在那之前照舊用 v1.2.2，TODO 留著）'
-        issue: tdp #4
-      - '←、→、↓ 一直是左、右、往下一格，不管使用者把那個動作設成哪個鍵：tdp K12 的方向鍵就是方向'
+      - 'Play 的鍵是使用者在 Settings 設的（task 13），預設照使用者 2026-11-11 說的：h 左、l 右、j 往下一格、k 左旋、i 右旋、Enter 落到底'
+      - 'k 左旋：Play 裡方塊不會往上，k 沒有移動可做，模式可以拿它做自己的動作（tdp K12，K12-19；tdp #4 回報後 v1.2.3 放行），↑ 跟 k 做一樣的事；照模式其他的鍵一樣寫在 Space menu、? 與 footer'
+      - '方向鍵跟著字母：h|j|k|l 就是 ←|↓|↑|→（tdp K12），哪個動作的鍵是 h、j、k、l，它的方向鍵就做那個動作；預設 ← 左、→ 右、↓ 往下、↑ 左旋。動作設成別的字母時，原本那個字母與它的方向鍵就不作用'
       - 'Enter 在 Play 裡是落到底並固定：K11 的表沒有 Enter，照 tdp K3「對 focus 的東西做最直觀的動作」，Play 裡 focus 的是落下中的方塊，把它放到底就是最直觀的（跟 Drag mode 的 Enter 放下一樣）。Play 外 Enter 在 GAME 上是開始一局或繼續（tdp K3：panel 沒有項目時，對整個 panel 做最直觀的動作）'
-      - '旋轉是對落下中的方塊做的事：ITEM OPERATION（tdp K11），在 footer；移動與落到底是移動：只在 ? 與 Space menu 顯示（tdp K6、menu.4），不佔 footer，60 欄時 Esc:pause 才不會被捨掉（footer：Space:menu ?:help e:rotate left i:rotate right Esc:pause）'
+      - '旋轉是對落下中的方塊做的事：ITEM OPERATION（tdp K11），在 footer；移動與落到底是移動：只在 ? 與 Space menu 顯示（tdp K6、menu.4），不佔 footer，60 欄時 Esc:pause 才不會被捨掉（footer：Space:menu ?:help k:rotate left i:rotate right Esc:pause）'
   - id: 5
-    spec: 3
+    spec: 7
     request: 'Space 暫停，並打開 Space menu；Space 不能改'
     tdp: [tdp K5, tdp K11, tdp K4, tdp menu.4, tdp M2, tdp M7, tdp L1, tdp screen.7]
     remark:
-      - 'Play 裡按 Space 開 Play 模式的 Space menu（tdp K11、menu.4）：ITEM OPERATION 是對落下中的方塊的 Rotat[e] left、Rotate r[i]ght（照使用者設的鍵）；PLAY MODE 列移動、往下、落到底（只顯示）與 [Esc] Pause。menu 開著遊戲就停，Esc 或 Space 關掉就接著玩'
+      - 'Play 裡按 Space 開 Play 模式的 Space menu（tdp K11、menu.4）：ITEM OPERATION 是對落下中的方塊的 [k] Rotate left、Rotate r[i]ght（照使用者設的鍵）；PLAY MODE 列移動、往下、落到底（只顯示）與 [Esc] Pause。menu 開著遊戲就停，Esc 或 Space 關掉就接著玩'
       - '遊戲只在 Play 裡、沒有任何 popup、終端機不比最低尺寸小時才走；toast 不是 popup，不擋'
-      - note: 'tgo 沒有公開「現在有沒有 popup 開著」，遊戲停不停只能靠讀 tgo 內部的 popup 疊（TODO(tgo #3)），測試守住它跟 tgo 的行為一致；等 tgo 給 API 再改。2026-11-11 terminu 回覆：下一版有 App.Covered() bool（popup 開著、收起動畫播到一半、splash 開著都算，toast 不算）；發版後拿掉 reflect（tdp 與 terminu-go 等 tetru 發第一版時一起發；在那之前照舊用 v1.2.2，TODO 留著）'
-        issue: tgo #3
+      - '有沒有東西蓋在畫面上用 tgo App.Covered()（popup 開著、收起動畫播到一半、splash 開著都算，toast 不算；tgo #3 回報後 v1.2.3 加的）'
       - 'Esc 離開 Play＝暫停（tdp K4：Esc 是安全的出口，不會丟掉這一局）：場地中間畫暫停記號，兩條直槓（Lavender）；GAME 的 hint 換成 Enter:resume；Enter 回到 Play。原本想寫 PAUSE 的像素字，五個字 19 像素寬，比場地寬'
       - '暫停時 GAME 的 Space menu 是一般的（tdp M2）：PANEL OPERATION 的 [Enter] Resume、[n]ew game、[x] End game，與 Global operation（換畫面也在這裡）'
       - 'Tab、數字鍵在 Play 裡暫停（tdp K11），按了 tgo 跳 Info toast：Press [Esc] to leave Play first'
@@ -110,15 +108,14 @@ tasks:
       - '怎麼結束就在哪裡問：堆到頂時等灰幕落完、END 出來才問（玩家可能還在按 Enter 落方塊，一出來就問會被那個 Enter 直接收下 ANON）；灰幕落下時 Enter 與 [n]ew game 不作用，hint 也拿掉（tdp M6、panel.1），記下之後才回來；Esc 也是記成 ANON（不填）。[x] End game、[n]ew game、離開 app 時，問名字就是那個動作的確認（標題 END GAME、NEW GAME、QUIT，Enter:end、start、quit），Esc 取消那個動作、回到遊戲（tdp K4）'
       - '問不到時記成 ANON：連按兩次 Ctrl-C、關掉終端機（使用者 2026-11-11：不填預設就是 ANON）'
   - id: 7
-    spec: 4
+    spec: 7
     request: '分數記在 data 目錄，每一筆記時間、姓名、分數；玩家中途離開也算分數，記離開當下的分數'
     tdp: [tdp E2, tdp E3, tdp P5, tdp F5, tdp note.7]
     remark:
       - '刪了就找不回來的紀錄是資料（tdp E3）：~/.tetru/scores.yaml，TETRU__DATA 覆寫（tdp E2）；檔案格式 app 可以自行決定（tdp P5）'
       - '格式：scores 底下一筆一個 {time, name, score}；time 是 RFC 3339，照記下的順序附在最後'
       - '什麼時候記：一局結束、問了誰玩的之後（task 6）：堆到頂、[x] End game、[n]ew game 結束還在玩的那一局、離開 app 時有一局還沒記（q、Ctrl-C；連按兩次 Ctrl-C、關掉終端機時問不到，記成 ANON）'
-      - note: 'tgo 的 Run 收到 SIGHUP（關掉終端機）時不會結束，程式直接被殺，Run 之後的收尾跑不到；main 暫時攔下 SIGHUP、轉成 SIGTERM 送給自己（bubbletea 收到 SIGTERM 會正常結束 Run）（TODO(tgo #4)）。2026-11-11 terminu 回覆：下一版 Run 收到 SIGHUP 時正常回來、回 nil；發版後拿掉 endOnHangup（tdp 與 terminu-go 等 tetru 發第一版時一起發；在那之前照舊用 v1.2.2，TODO 留著）'
-        issue: tgo #4
+      - '關掉終端機（SIGHUP）時 tgo 的 Run 正常回來（tgo #4 回報後 v1.2.3），main 在 Run 之後照樣記下還沒記的那一局'
       - '分數是 0 的那一局不記：一行都沒消、沒有往下或落到底，排行上只會多一列 0'
       - '記下時在 App Log 記一筆（tdp note.7）；寫不進去開 error popup（tdp F5）；讀不了時照 tdp E3 問要不要移開（tgo MoveAside）'
   - id: 8
@@ -141,15 +138,13 @@ tasks:
       - '堆到頂時 END 出來才問誰玩的（task 6）'
       - '動畫用 tgo App.Tick（README 的計時器），測試推得動'
   - id: 10
-    spec: 4
+    spec: 7
     request: '玩家可以中途結束、重新開始或離開，結束或離開時記下當下的分數'
     tdp: [tdp M2, tdp M3, tdp M5, tdp M6, tdp F6, tdp text, tdp K9]
     remark:
       - '[x] End game（keep this score and stop）與 [n]ew game（start over from level 1）是 GAME 的 panel operation（tdp M2、M3）；n、x 是領域熱鍵（tdp P5），不佔移動的字母'
       - '有一局有分數時，兩個都先問誰玩的（task 6），那就是確認（tdp F6：哪些要確認 app 可以自行決定）：說出分數，Esc 取消；0 分的局沒有東西會丟，不問，直接結束或重開；沒有一局在玩時 [x] End game 停用（tdp M6）'
       - '離開流程（tdp K9：離開流程與問什麼，app 可以自行決定）：有一局有分數時問誰玩的，標題 QUIT、Enter:quit，Esc 留下；0 分或沒有一局時直接離開（有 popup 開著時 tgo 先開 Quit tetru?）'
-      - note: 'app 自己的 popup 在 Enter 時回 tea.Quit，tdptest 會卡在 popup 收起的動畫（tgo 自己的 Quit confirm 沒有這個問題）；暫時等 popup 收完（tdp F2 的 288 ms）再離開（TODO(tgo #5)）。2026-11-11 terminu 回覆：下一版 tdptest 收到 tea.Quit 後不再等動畫；發版後 accept 直接回 tea.Quit（tdp 與 terminu-go 等 tetru 發第一版時一起發；在那之前照舊用 v1.2.2，TODO 留著）'
-        issue: tgo #5
   - id: 11
     spec: 1
     request: '跟家族其他 app 一樣有 splash、version、help'
@@ -164,19 +159,16 @@ tasks:
     remark:
       - 'repo 照 harness project.3；README 兩份照 tdp E7 的 12 段'
   - id: 13
-    spec: 3
+    spec: 7
     request: '除了 Space 是暫停並打開 Space menu，其他的鍵都在 Settings 裡讓使用者自己設定'
-    tdp: [tdp panel.12, tdp select, tdp popup.7, tdp E2, tdp E3, tdp F5, tdp note.7, tdp K1, tdp K12, tdp P5]
+    tdp: [tdp panel.12, tdp select, tdp popup.7, tdp toast, tdp E2, tdp E3, tdp F5, tdp note.7, tdp K1, tdp K11, tdp K12, tdp P5]
     remark:
-      - note: 'tdp 沒寫使用者能不能自己改鍵、能選哪些鍵、兩個動作同一個鍵怎麼辦，也沒有「按一個鍵就記下」的輸入元件。暫時：只讓使用者在照現在的 tdp 能用的鍵裡選（下面幾條），用 select 選（TODO(tdp #5)）。2026-11-11 terminu 回覆：下一版 K11 放行，讓玩家改模式的鍵、能選哪些、怎麼設定由 app 決定；要守的：選到這個模式裡已經有作用的鍵（模式的其他鍵、core key）就跳 Warning、寫出被誰用了、不設定；模式的 Space menu、?、提示寫目前作用的鍵；core key 與 panel 的鍵不給改（tdp 與 terminu-go 等 tetru 發第一版時一起發；在那之前照舊用 v1.2.2，TODO 留著）'
-        issue: tdp #5
+      - '讓玩家改 Play 的鍵、能選哪些、怎麼設定，app 可以自行決定（tdp K11，K11-14；tdp #5 回報後 v1.2.3 放行）；要守的：選到 Play 裡已經有作用的鍵（別的動作的鍵與它的方向鍵、core key）就跳 Warning、寫出被誰用了、不設定；Space menu、? 與 footer 寫的是目前的鍵；core key 與 panel 的鍵不給改'
       - 'Settings 畫面只有一個 panel：[1] KEYS，一列一個值（tdp panel.12）：表頭 ACTION、KEY；Move left、Move right、Down a row、Rotate left、Rotate right、Drop 各一列，最後一列 Pause 是 Space、停用（tdp M6：Space 不能改）'
-      - 'Enter 在一列上打開 select（tdp select）：標題 KEY: <動作>，列出這個動作能用、而且沒有別的動作在用的鍵，現在的鍵選著；Enter 確定就寫進設定檔，寫不進去 popup 不關、上面開 error popup（tdp popup.7），值不變'
-      - '能用的鍵：小寫字母，不含 core key q（tdp K1）與保留給移動的 j k u d g h l（tdp K12）；左移、右移、往下另外可以選自己方向的 h、l、j；落到底另外可以選 Enter（tdp K3）。兩個動作不會同一個鍵：別的動作在用的鍵不列出來'
+      - 'Enter 在一列上打開 select（tdp select）：標題 KEY: <動作>，列出 a 到 z、Enter、Space，現在的鍵選著；選到別的動作在用的鍵、它的方向鍵、Space 或 q，跳 Warning toast（tdp toast）：Can''t use i for Rotate left: it is Rotate right''s key，鍵不變、不寫檔；其他的 Enter 確定就寫進設定檔，寫不進去 popup 不關、上面開 error popup（tdp popup.7），值不變'
+      - '列出的鍵（tdp K11：能選哪些由 app 決定）：小寫字母與 Enter，加上 Space（選了照 K11 跳 Warning，看得出 Space 不能用）；方向鍵跟著字母（task 4），不另外列。設定檔裡的鍵不是小寫字母或 Enter、或是 q、Space、兩個動作同一個鍵，都算讀不了'
       - '設定是 app 自己的選項（tdp E3）：~/.config/tetru/config.yaml（$XDG_CONFIG_HOME/tetru），TETRU__CONFIG 覆寫（tdp E2）；keys 底下 move_left、move_right、down、rotate_left、rotate_right、drop。沒寫的照預設；設定檔裡其他的 key 寫回時留著（tdp E3）。改了在 App Log 記一筆（tdp note.7）'
       - '設定檔讀不了（格式錯、鍵不能用、兩個動作同一個鍵）時照 tdp E3 問要不要移開（tgo MoveAside），移開就用預設的鍵；排行的檔也讀不了時接著問它'
-      - note: 'tgo MoveAside 找 .bak 名字的迴圈（asideName）只在 Lstat 回「不存在」時停；路徑的上一層是檔案（ENOTDIR）或目錄不能進（EACCES）時一直轉，app 啟動就卡住（TETRU__CONFIG、TETRU__DATA 指錯時會遇到）。不常見，暫時沒有繞過。2026-11-11 terminu 回覆：下一版 MoveAside 不再無限迴圈，改名失敗時開錯誤視窗寫原因、Esc 離開（tdp 與 terminu-go 等 tetru 發第一版時一起發；在那之前照舊用 v1.2.2，TODO 留著）'
-        issue: tgo #6
       - '改了馬上生效：Play 的鍵、footer、Space menu、? 與 INFO 寫的都是現在的鍵'
   - id: 14
     spec: 5

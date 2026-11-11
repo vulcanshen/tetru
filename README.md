@@ -89,7 +89,7 @@ It asks before removing `~/.tetru`, your scores.
 
 1. Run `tetru`.
 2. Press `Enter`: the game starts.
-3. `h` and `l` move the piece, `e` and `i` turn it, `j` takes it down a row and `Enter` drops it.
+3. `h` and `l` move the piece, `k` and `i` turn it, `j` takes it down a row and `Enter` drops it.
 4. Press `Space` to pause and see what you can do; `Esc` closes the menu and the game goes on.
 5. When the game is over, type your name and press `Enter`, or just `Enter` for ANON: the score is kept.
 6. Press `q` to quit; with a game going tetru asks who played first, and keeps its score.
@@ -117,14 +117,16 @@ Playing (the game in the `Play` mode), with the keys as they first are:
 | `h`, `←` | Move the piece left |
 | `l`, `→` | Move it right |
 | `j`, `↓` | Move it down a row: a point a row |
-| `e` | Turn it left (counterclockwise) |
+| `k`, `↑` | Turn it left (counterclockwise) |
 | `i` | Turn it right (clockwise) |
 | `Enter` | Drop it to the bottom and set it there: two points a row |
 | `Space` | Pause, and show what you can do; close it to go on |
 | `Esc` | Pause, out of the game; `Enter` goes on |
 
-On the Settings screen, `Enter` on an action lists the keys it can have; the one chosen is the key from then on, and the
-INFO panel beside the well shows it. `←`, `→` and `↓` always move the piece too. `Space` always pauses.
+On the Settings screen, `Enter` on an action lists the keys: the small letters, `Enter` and `Space`. The one chosen is
+the key from then on, and the INFO panel beside the well shows it; one that already does something while playing
+(another action's, `Space`, `q`) is refused with a warning saying what has it. An arrow does what its letter does
+(`h|j|k|l` are `←|↓|↑|→`): set left to another letter and `←` does nothing. `Space` always pauses.
 
 Clearing 1, 2, 3 or 4 rows at once scores 100, 300, 500 or 800 times the level. A piece that lies on the stack is set half
 a second later; moving or turning it gives it the half second again, a few times.
@@ -162,8 +164,6 @@ A game with no points is not kept. tetru uses none of the family's shared settin
 
 - A game is kept only once it ends: when it reaches the top, is ended or a new one started, when tetru quits, or when its
   terminal is closed. A game in a program killed outright (`kill -9`, a power cut) is lost.
-- A key is a small letter, or `Enter` for the drop; a few letters are kept for moving around the screens (`j k u d g h l`)
-  and `q` for quitting, so `k` cannot turn the piece yet: turning left is `e`.
 - macOS and Linux only (WSL too); there is no Windows build.
 
 ## Links

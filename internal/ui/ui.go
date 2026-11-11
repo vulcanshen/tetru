@@ -360,16 +360,9 @@ func (t *Tetru) quit() tea.Cmd {
 	}
 	return t.askName("Quit", "quit", func() tea.Cmd {
 		t.Finish()
-		// TODO(tgo #5): leave once the popup has closed (tdp F2: 9 frames
-		// of 32ms): tdptest cannot settle a popup of the app's whose
-		// accept quits while it closes; the lib's own quit confirm does not
-		// have it.
-		return t.App.Tick(closing, func(time.Time) tea.Msg { return tea.QuitMsg{} })
+		return tea.Quit
 	}, nil)
 }
-
-// closing is how long a popup takes to close (tdp F2), and a frame more.
-const closing = 10 * 32 * time.Millisecond
 
 // setRows lists the records best first; sel is the ID of the row to put
 // the cursor on, "" to leave it.
@@ -389,18 +382,18 @@ func (t *Tetru) setRows(sel string) {
 // with their arrows too (tdp K12) and the drop, all the way down, are
 // moving: shown in the mode's Space menu, not in the footer, which keeps
 // room for Esc:pause; the turns are things done to the falling piece, run
-// from the Space menu too (tdp K11). k and ↑ do nothing.
-//
-// TODO(tdp #4): rotate left on k and ↑, as the user asked.
+// from the Space menu too (tdp K11). A key that is h, j, k or l takes its
+// arrow too (tdp K12): by default ↑ turns left with k, which has no moving
+// to do in the mode, a piece never going up.
 func (t *Tetru) setModeKeys() {
 	k := t.keys
 	t.play.Keys = []terminu.ModeKey{
-		{Key: k[keys.Left], Keys: []string{k[keys.Left], keys.Arrow(keys.Left)}, Desc: "move left", NoFooter: true, Do: t.do(keys.Left)},
-		{Key: k[keys.Right], Keys: []string{k[keys.Right], keys.Arrow(keys.Right)}, Desc: "move right", NoFooter: true, Do: t.do(keys.Right)},
-		{Key: k[keys.Down], Keys: []string{k[keys.Down], keys.Arrow(keys.Down)}, Desc: "down a row", NoFooter: true, Do: t.do(keys.Down)},
-		{Key: k[keys.RotateLeft], Desc: "rotate left", Item: true, Label: keys.RotateLeft.Label(), MenuDesc: keys.RotateLeft.Desc(), Do: t.do(keys.RotateLeft)},
-		{Key: k[keys.RotateRight], Desc: "rotate right", Item: true, Label: keys.RotateRight.Label(), MenuDesc: keys.RotateRight.Desc(), Do: t.do(keys.RotateRight)},
-		{Key: k[keys.Drop], Desc: "drop to the bottom", NoFooter: true, Do: t.do(keys.Drop)},
+		{Key: k[keys.Left], Keys: k.Keys(keys.Left), Desc: "move left", NoFooter: true, Do: t.do(keys.Left)},
+		{Key: k[keys.Right], Keys: k.Keys(keys.Right), Desc: "move right", NoFooter: true, Do: t.do(keys.Right)},
+		{Key: k[keys.Down], Keys: k.Keys(keys.Down), Desc: "down a row", NoFooter: true, Do: t.do(keys.Down)},
+		{Key: k[keys.RotateLeft], Keys: k.Keys(keys.RotateLeft), Desc: "rotate left", Item: true, Label: keys.RotateLeft.Label(), MenuDesc: keys.RotateLeft.Desc(), Do: t.do(keys.RotateLeft)},
+		{Key: k[keys.RotateRight], Keys: k.Keys(keys.RotateRight), Desc: "rotate right", Item: true, Label: keys.RotateRight.Label(), MenuDesc: keys.RotateRight.Desc(), Do: t.do(keys.RotateRight)},
+		{Key: k[keys.Drop], Keys: k.Keys(keys.Drop), Desc: "drop to the bottom", NoFooter: true, Do: t.do(keys.Drop)},
 	}
 }
 
@@ -507,5 +500,5 @@ func (t *Tetru) step() tea.Cmd {
 // menu, ?, a confirm), or a terminal smaller than tetru's least size.
 func (t *Tetru) hidden() bool {
 	w, h := t.App.Size()
-	return covered(t.App) || w < minW || h < minH
+	return t.App.Covered() || w < minW || h < minH
 }

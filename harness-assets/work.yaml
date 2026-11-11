@@ -44,23 +44,23 @@ tasks:
       tgo App.Tick 每 40 ms 一格推進遊戲（README 的計時器）
     test: [TestPiecesComeSevenToABag, TestSameSeedSameGame, TestPieceComesInAtTheTopInTheMiddle, TestMoveStopsAtTheWalls, TestRotateTurnsAndComesBack, TestRotateKicksOffTheWall, TestDownScoresARow, TestDropSetsThePieceAndScoresTwoARow, TestGravityAtTheLevelsSpeed, TestLockWaitsAndMovingRestartsIt, TestLockResetsRunOut, TestClearScoresAtTheLevelAndGoesUp, TestTheSpeedStopsAtTheLastLevel, TestTheStackAtTheTopEnds, TestEndStopsThePiece, TestTheGameFalls]
   - id: 4
-    spec: 3
+    spec: 7
     implementation: |
       開始或繼續一局時，GAME 進入 tgo 的模式 Play（tgo Panel.EnterMode）：tgo 把外框換成模式色、上框右邊畫 ┫Play┣
-      Play 的鍵（tgo ModeKey）照 Settings 的鍵（task 13），預設：h、← 左一格；l、→ 右一格；j、↓ 往下一格；e 左旋（逆時針）；i 右旋（順時針）；
-      Enter 落到底並固定；←、→、↓ 一直跟著左、右、往下；k、↑ 沒有登記，不作用（TODO(tdp #4)，spec 的 remark）
-      footer 由 tgo 寫：Space:menu ?:help e:rotate left i:rotate right Esc:pause；左右、往下、落到底標成移動鍵，不進 footer，在 ? 與 Space menu
+      Play 的鍵（tgo ModeKey）照 Settings 的鍵（task 13），預設：h、← 左一格；l、→ 右一格；j、↓ 往下一格；k、↑ 左旋（逆時針）；i 右旋（順時針）；
+      Enter 落到底並固定；一個動作的鍵是 h、j、k、l 時，它的方向鍵（←、↓、↑、→）做一樣的事，鍵改成別的字母時就不作用
+      footer 由 tgo 寫：Space:menu ?:help k:rotate left i:rotate right Esc:pause；左右、往下、落到底標成移動鍵，不進 footer，在 ? 與 Space menu
       Play 裡 GAME 的下框不寫 hint（Enter 的 hint 拿掉；panel 上沒有按得動的鍵）
       Enter 在 GAME 上（Play 外）：沒有一局在暫停時開新的一局（task 6），有就繼續（task 5）；hint Enter:play，暫停時 Enter:resume
     test: [TestPlay, TestSpaceMenuRotates, TestTheGameFalls, TestSettingsSetAKey]
   - id: 5
-    spec: 3
+    spec: 7
     implementation: |
-      Play 裡按 Space：tgo 開 Play 的 Space menu，標題 [1] GAME：ITEM OPERATION 的 Rotat[e] left（the falling piece, counterclockwise）、
+      Play 裡按 Space：tgo 開 Play 的 Space menu，標題 [1] GAME：ITEM OPERATION 的 [k] Rotate left（the falling piece, counterclockwise）、
       Rotate r[i]ght（the falling piece, clockwise），選了就等於按那個鍵、回到 Play；PLAY MODE 的 h（move left）、l（move right）、j（down a row）、
       Enter（drop to the bottom）只顯示；[Esc] Pause；寫的都是 Settings 裡現在的鍵
-      遊戲每 40 ms 一格，有任何 popup 開著（Space menu、?、confirm）或終端機比 42×30 小時不往前走，popup 關掉就接著走；有沒有 popup 是讀
-      tgo 的內部狀態（TODO(tgo #3)，spec 的 remark）
+      遊戲每 40 ms 一格，有任何 popup 開著（Space menu、?、confirm）或終端機比 42×30 小時不往前走，popup 關掉就接著走；有沒有 popup 是問
+      tgo App.Covered()（收起動畫播到一半、splash 開著也算）
       Esc 離開 Play（tgo Mode.OnExit）：遊戲停著，場地中間畫兩條 Lavender 的直槓；GAME 的 hint 是 Enter:resume；Space menu 是一般的：
       PANEL OPERATION 的 [Enter] Resume（this game, where it was）、[n]ew game、[x] End game，與 Global operation；Enter 回到 Play
       Tab、數字鍵在 Play 裡暫停（tgo Mode.Pause），tgo 跳 Info toast：Press [Esc] to leave Play first
@@ -78,13 +78,13 @@ tasks:
       0 分的局不問、不記
     test: [TestNameIsAskedAsTheGameEnds, TestNameTypedIsKept, TestEscOnTheNameKeepsAnon, TestNameWithTrickyCharacters, TestNoPointsNotKept]
   - id: 7
-    spec: 4
+    spec: 7
     implementation: |
       分數存在 TETRU__DATA 或 ~/.tetru 底下的 scores.yaml：scores 底下一筆一個 {time, name, score}，time 是 RFC 3339、到秒，照記下的順序；
       每次整個檔重寫（先寫暫存檔再改名），目錄 0755、檔 0644
       一局結束、問了誰玩的之後記一筆（task 6、10），一局只記一次；main 在 tgo App.Run 結束後（連按兩次 Ctrl-C、關掉終端機），
       還沒記的那一局記成 ANON；0 分的不記
-      關掉終端機：main 攔下 SIGHUP、轉成 SIGTERM 送給自己，Run 結束後照樣記（TODO(tgo #4)，spec 的 remark）
+      關掉終端機（SIGHUP）：tgo 的 Run 正常回來，main 在 Run 之後照樣記
       記下時 App Log 記一筆 Success：Kept 12,340 points for vulcan；寫不進去開 error popup：Can't keep the score，檔案路徑與原因
       啟動時 scores.yaml 讀不了：tgo App.MoveAside 問要不要移成 scores.yaml.bak 重新開始；Enter 移開、從空的排行開始，Esc 離開
     test: [TestPathIsInTheDataDirectory, TestSaveThenLoad, TestLoadBroken, TestTopOutKeepsTheScore, TestNoPointsNotKept, TestFinishKeepsTheGameGoing, TestQuitWithAGameAsksAndKeeps, TestBrokenScoresAskToMoveAside]
@@ -107,15 +107,15 @@ tasks:
       兩段動畫都由 tgo App.Tick 每 40 ms 推一格；灰幕不管有沒有 popup 都照走
     test: [TestLineClearFlashesThenGoes, TestTheWipeGoesFromTheMiddleOut, TestTopOutKeepsTheScore, TestTheStackAtTheTopEnds]
   - id: 10
-    spec: 4
+    spec: 7
     implementation: |
       GAME 的 panel operation（Play 外的 Space menu 與熱鍵）：
       [n]ew game（start over from level 1）：有一局有分數時先開 task 6 的 text input，標題 NEW GAME、Enter:start；Enter 記下那一局，接著開新的一局、進 Play；
       Esc 回到遊戲；0 分或沒有一局時直接開新的一局
       [x] End game（keep this score and stop）：有一局有分數時先開同樣的 text input，標題 END GAME、Enter:end；Enter 記下、結束、灰幕開始，
       灰幕落完不再問；Esc 回到遊戲；0 分時直接結束；沒有一局時停用
-      離開流程（tgo App.QuitFlow）：有一局有分數時開同樣的 text input，標題 QUIT、Enter:quit；Enter 記下分數，等 popup 收完再離開
-      （TODO(tgo #5)，spec 的 remark）；Esc 留下；0 分或沒有一局時直接離開；離開流程中再按一次 Ctrl-C 由 tgo 立刻離開，那一局記成 ANON
+      離開流程（tgo App.QuitFlow）：有一局有分數時開同樣的 text input，標題 QUIT、Enter:quit；Enter 記下分數、回 tea.Quit 離開；
+      Esc 留下；0 分或沒有一局時直接離開；離開流程中再按一次 Ctrl-C 由 tgo 立刻離開，那一局記成 ANON
     test: [TestEndGameAsksAndKeeps, TestNewGameAsksWhoPlayed, TestQuitWithAGameAsksAndKeeps, TestQuitWithNoGameLeaves, TestNoPointsNotKept]
   - id: 11
     spec: 1
@@ -134,26 +134,27 @@ tasks:
     test:
       - check: repo
   - id: 13
-    spec: 3
+    spec: 7
     implementation: |
-      Settings 畫面只有 [1] KEYS，tgo Values（一列一個值）：表頭 ACTION、KEY；MOVE LEFT h、MOVE RIGHT l、DOWN A ROW j、ROTATE LEFT e、ROTATE RIGHT i、
+      Settings 畫面只有 [1] KEYS，tgo Values（一列一個值）：表頭 ACTION、KEY；MOVE LEFT h、MOVE RIGHT l、DOWN A ROW j、ROTATE LEFT k、ROTATE RIGHT i、
       DROP Enter，最後 PAUSE Space（tgo Field.Disabled）；每一列有說明（tgo Field.Desc，? 的「每一列」）；hint Enter:edit
-      Enter 在一列上開 tgo Select：標題 KEY: Rotate left，選項是這個動作能用、沒有別的動作在用的鍵，現在的鍵選著（TODO(tdp #5)，spec 的 remark）：
-      小寫字母，不含 q 與 j k u d g h l；左移、右移、往下另外有自己的 h、l、j；落到底另外有 Enter
-      Enter 確定時（tgo Select.Commit）寫進設定檔，寫不進去 popup 不關、tgo 開 error popup，鍵不變；寫進去之後 Play 的鍵、footer、Space menu、
+      Enter 在一列上開 tgo Select：標題 KEY: Rotate left，選項是 a 到 z、Enter、Space，現在的鍵選著
+      選到 Play 裡已經有作用的鍵（別的動作的鍵、它的方向鍵、Space、q）：不寫檔、鍵不變，tgo 跳 Warning toast：
+      Can't use i for Rotate left: it is Rotate right's key（Space 是 it pauses and opens the Space menu，q 是 it quits）
+      其他的 Enter 確定時（tgo Select.Commit）寫進設定檔，寫不進去 popup 不關、tgo 開 error popup，鍵不變；寫進去之後 Play 的鍵、footer、Space menu、
       ? 與 INFO 跟著換，App Log 記一筆 Success：Rotate left is now a
       設定檔：TETRU__CONFIG，不然 $XDG_CONFIG_HOME/tetru，不然 ~/.config/tetru 底下的 config.yaml；keys 底下 move_left、move_right、down、
       rotate_left、rotate_right、drop；沒寫的照預設；寫回時檔裡其他的 key 照留；先寫暫存檔再改名，目錄 0755、檔 0644
-      啟動時設定檔讀不了（YAML 錯、鍵不能用、兩個動作同一個鍵）：tgo App.MoveAside 問要不要移成 config.yaml.bak，Enter 移開、用預設的鍵，
+      啟動時設定檔讀不了（YAML 錯、鍵不是小寫字母或 Enter、是 q 或 Space、兩個動作同一個鍵）：tgo App.MoveAside 問要不要移成 config.yaml.bak，Enter 移開、用預設的鍵，
       Esc 離開；排行的檔也讀不了時接著問它
-    test: [TestDefaultIsTheUsersKeys, TestChoicesKeepTdpsKeys, TestFreeLeavesOutTheOthersKeys, TestPathIsInTheConfigDirectory, TestSaveThenLoadKeepsOtherKeys, TestLoadBadKeys, TestSettingsSetAKey, TestSettingsThatCantBeKept, TestBrokenSettingsAskToMoveAside, TestPauseIsAlwaysSpace]
+    test: [TestDefaultIsTheUsersKeys, TestArrowsGoWithTheirLetters, TestUsedBySaysWhoHasAKey, TestPathIsInTheConfigDirectory, TestSaveThenLoadKeepsOtherKeys, TestLoadBadKeys, TestSettingsSetAKey, TestSettingsThatCantBeKept, TestBrokenSettingsAskToMoveAside, TestPauseIsAlwaysSpace, TestAKeyInUseIsRefused]
   - id: 14
     spec: 5
     implementation: |
       [4] INFO 的 body 自己畫（tgo Body）：從上面一列一列寫，離框一格
       上面一段：Level: 1 / Lines: 0 / Score: 12,340 一行一個，label Overlay0、值 Lavender；沒在玩時是上一局的值，還沒玩過是 1、0、0
       一條 ╌ 的虛線（Overlay0），寬到離框一格
-      下面一段：鍵一欄 5 格（Blue），空兩格，說明：h move left、l move right、j down a row、e rotate left、i rotate right、Enter drop（都照 Settings 現在的鍵）、
+      下面一段：鍵一欄 5 格（Blue），空兩格，說明：h move left、l move right、j down a row、k rotate left、i rotate right、Enter drop（都照 Settings 現在的鍵）、
       Space pause, menu、Esc pause
       沒有 cursor、沒有鍵；玩的時候是串流內容（task 2），其他時候失焦由 tgo 淡化
     test: [TestStatsInInfo, TestInfoShowsTheKeys, TestSettingsSetAKey, TestNextStaysBrightWhilePlaying]
