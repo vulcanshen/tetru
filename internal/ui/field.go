@@ -20,8 +20,9 @@ import (
 // of its own). The field is GAME's and each box a NEXT panel's (user,
 // 2026-11-11: Next 1 and Next 2 at the right); narrow, where GAME is drawn
 // alone, GAME draws the boxes too, a pixel from the field, a pixel apart.
+// A box is 5 × 5 pixels, a square (user, 2026-11-11).
 const (
-	boxW, boxH = 6, 4
+	boxW, boxH = 5, 5
 	// fieldW and sceneH are the field; queueX is where the column of boxes
 	// starts beside it; sceneW is the two side by side, in pixels.
 	fieldW = game.Cols

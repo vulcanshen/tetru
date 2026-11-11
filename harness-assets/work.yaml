@@ -1,29 +1,29 @@
 tasks:
   - id: 1
-    spec: 9
+    spec: 11
     implementation: |
       三個畫面（tgo Screen，Name、Key、Desc）：Tetru（T，the game）、Rank（R，the scores, best first）、Settings（S，the keys to play with）；
       tgo 畫最上面的畫面 chip 列與下面的線，T、R、S 是 global 熱鍵，global operation popup 裡也列出來
       Tetru 畫面四個 panel，tgo Screen.Layout：左邊 [1] GAME（task 2）；右邊一欄由上而下 [2] NEXT 1、[3] NEXT 2（task 2）、[4] INFO（task 14）
       右邊那一欄寬是整個寬度的三分之一、至少 23 欄（INFO 的字與框），GAME 拿剩下的（60 欄 37｜23、77 欄 52｜25、150 欄 100｜50）；
-      NEXT 1、NEXT 2 各 6 列（放大時 10 列），INFO 拿剩下的
+      NEXT 1、NEXT 2 各 7 列（放大時 12 列），INFO 拿剩下的
       Level、Lines、Score 在 INFO 上面那一段（task 14）；GAME 裡只有場地；沒有 statusbar
       啟動時（tgo App.Start）用 tgo App.Focus 把 focus 放到 [1] GAME
-      最低尺寸 42×29（tgo App.MinWidth、MinHeight）；比它小時 tgo 只畫名稱、needs a terminal of at least 42×29、Press [Ctrl-C] twice to quit
+      最低尺寸 42×31（tgo App.MinWidth、MinHeight）；比它小時 tgo 只畫名稱、needs a terminal of at least 42×31、Press [Ctrl-C] twice to quit
       窄寬的門檻 60（tgo Screen.NarrowBelow）：42–59 欄只畫有 focus 的 panel；玩的時候 focus 在 GAME，NEXT 與 INFO 收掉、GAME 自己在場地上面寫一行
       Level: 1   Lines: 0  Score: 0（Level 補到 2 格），場地右邊畫接下來的方塊（task 2）；Tab 依序只畫 NEXT 1、NEXT 2、INFO
       tdptest 在每一格畫面量每一列等於終端機寬度（tdp L4）；版面的測試在 icon 與 powerline 符號 1/1、2/1、2/2 格下各跑一次（tdp E5）
     test: [TestTetruScreen, TestScreensSwitchOnTRS, TestNarrowShowsTheFocusedPanelOnly, TestLeastSizeIsTheGameAlone, TestPictureGrowsTwiceOnALargeTerminal, TestStatsInInfo, TestFirstLaunch]
   - id: 2
-    spec: 9
+    spec: 11
     implementation: |
-      GAME 與 NEXT 1、NEXT 2 的 body 自己畫（tgo Body），從同一張 19×24 像素的圖切出來；一個像素是 nf-fa-square（U+F0C8），icon 佔一格時後面補一個空白，所以一個像素 2 欄 × 1 列
-      圖：場地 12×24（task 3），沒有框，空的地方畫像素，#313244（locku 的底）；隔一個像素是一欄兩格，各 6×4 像素的底、沒有框，兩格之間隔一個像素；
-      每格置中畫一個接下來的方塊，一個方塊一個像素，第一格是下一個（game.Queue 是 2）
+      GAME 與 NEXT 1、NEXT 2 的 body 自己畫（tgo Body），從同一張 18×24 像素的圖切出來；一個像素是 nf-fa-square（U+F0C8），icon 佔一格時後面補一個空白，所以一個像素 2 欄 × 1 列
+      圖：場地 12×24（task 3），沒有框，空的地方畫像素，#313244（locku 的底）；隔一個像素是一欄兩格，各 5×5 像素的底、沒有框，兩格之間隔一個像素；
+      每格置中畫一個接下來的方塊（放不正中時偏左、偏上），一個方塊一個像素，第一格是下一個（game.Queue 是 2）
       方塊的顏色：I #89dceb、O #f9e2af、T #cba6f7、S #a6e3a1、Z #f38ba8、J #89b4fa、L #fab387
-      GAME 畫場地（左邊 12 像素）；NEXT 1、NEXT 2 各畫自己那一格（右邊 6 像素、4 像素高）；各自置中在自己的 panel 裡
+      GAME 畫場地（左邊 12 像素）；NEXT 1、NEXT 2 各畫自己那一格（右邊 5 像素、5 像素高）；各自置中在自己的 panel 裡
       窄寬（42–59 欄，只畫有 focus 的 panel）時 GAME 畫整張圖，場地右邊隔一個像素是兩格；Tab 到 NEXT 1、NEXT 2 時各畫自己那一格
-      GAME 裡放得下 48 欄、48 列，右邊那一欄放得下 24 欄、終端機的高放得下右邊那一欄時，GAME 與兩個 NEXT 一起把一個像素畫成 2×2，NEXT 的高跟著變兩倍；不然都不放大
+      GAME 裡放得下 48 欄、48 列，右邊那一欄放得下 20 欄、終端機的高放得下右邊那一欄時，GAME 與兩個 NEXT 一起把一個像素畫成 2×2，NEXT 的高跟著變兩倍；不然都不放大
       還沒玩過時畫空的場地與空的兩格
       顏色用 tgo 的 Fg 上色；失焦或被 popup 蓋住時由 tgo 淡化；玩的時候（Play 模式裡）NEXT 1、NEXT 2、INFO 標成串流內容（tgo Panel.Stream），失焦也不淡化，
       暫停、結束、還沒玩時拿掉
@@ -81,12 +81,12 @@ tasks:
     implementation: |
       分數存在 TETRU__DATA 或 ~/.tetru 底下的 scores.yaml：scores 底下一筆一個 {time, name, score}，time 是 RFC 3339、到秒，照記下的順序；
       每次整個檔重寫（先寫暫存檔再改名），目錄 0755、檔 0644
-      一局結束、問了誰玩的之後記一筆（task 6、10），一局只記一次；main 在 tgo App.Run 結束後（連按兩次 Ctrl-C、關掉終端機），
+      一局結束、問了誰玩的之後（按 q 離開的直接記成 ANON）記一筆（task 6、10），一局只記一次；main 在 tgo App.Run 結束後（連按兩次 Ctrl-C、關掉終端機），
       還沒記的那一局記成 ANON；0 分的不記
       關掉終端機（SIGHUP）：tgo 的 Run 正常回來，main 在 Run 之後照樣記
       記下時 App Log 記一筆 Success：Kept 12,340 points for vulcan；寫不進去開 error popup：Can't keep the score，檔案路徑與原因
       啟動時 scores.yaml 讀不了：tgo App.MoveAside 問要不要移成 scores.yaml.bak 重新開始；Enter 移開、從空的排行開始，Esc 離開
-    test: [TestPathIsInTheDataDirectory, TestSaveThenLoad, TestLoadBroken, TestTopOutKeepsTheScore, TestNoPointsNotKept, TestFinishKeepsTheGameGoing, TestQuitWithAGameAsksAndKeeps, TestBrokenScoresAskToMoveAside]
+    test: [TestPathIsInTheDataDirectory, TestSaveThenLoad, TestLoadBroken, TestTopOutKeepsTheScore, TestNoPointsNotKept, TestFinishKeepsTheGameGoing, TestQuitWithAGameConfirmsAndKeepsAnon, TestBrokenScoresAskToMoveAside]
   - id: 8
     spec: 3
     implementation: |
@@ -107,16 +107,17 @@ tasks:
       兩段動畫都由 tgo App.Tick 每 40 ms 推一格；灰幕不管有沒有 popup 都照走
     test: [TestLineClearFlashesThenGoes, TestTheWipeGoesFromTheMiddleOut, TestTopOutKeepsTheScore, TestTheStackAtTheTopEnds, TestTopOutWithNoPoints, TestNoPointsNotKept]
   - id: 10
-    spec: 7
+    spec: 11
     implementation: |
       GAME 的 panel operation（Play 外的 Space menu 與熱鍵）：
       [n]ew game（start over from level 1）：有一局有分數時先開 task 6 的 text input，標題 NEW GAME、Enter:start；Enter 記下那一局，接著開新的一局、進 Play；
       Esc 回到遊戲；0 分或沒有一局時直接開新的一局
       [x] End game（keep this score and stop）：有一局有分數時先開同樣的 text input，標題 END GAME、Enter:end；Enter 記下、結束、灰幕開始，
       灰幕落完不再問；Esc 回到遊戲；0 分時直接結束；沒有一局時停用
-      離開流程（tgo App.QuitFlow）：有一局有分數時開同樣的 text input，標題 QUIT、Enter:quit；Enter 記下分數、回 tea.Quit 離開；
-      Esc 留下；0 分或沒有一局時直接離開；離開流程中再按一次 Ctrl-C 由 tgo 立刻離開，那一局記成 ANON
-    test: [TestEndGameAsksAndKeeps, TestNewGameAsksWhoPlayed, TestQuitWithAGameAsksAndKeeps, TestQuitWithNoGameLeaves, TestNoPointsNotKept]
+      離開流程（tgo App.QuitFlow）：有一局在玩（玩著或暫停中）時開 tgo App.Confirm，不問名字：標題 QUIT，內容 The score so far, 12,340, is kept for ANON.
+      （0 分寫 No points so far, so nothing is kept.），問句 Quit tetru?，Enter:quit 把那一局記成 ANON（0 分不記）、回 tea.Quit 離開；
+      Esc:cancel 回到遊戲；沒有一局在玩時直接離開；離開流程中再按一次 Ctrl-C 由 tgo 立刻離開，那一局一樣記成 ANON
+    test: [TestEndGameAsksAndKeeps, TestNewGameAsksWhoPlayed, TestQuitWithAGameConfirmsAndKeepsAnon, TestQuitWithNoGameLeaves, TestNoPointsNotKept]
   - id: 11
     spec: 1
     implementation: |

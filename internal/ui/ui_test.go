@@ -175,7 +175,7 @@ func TestLeastSizeIsTheGameAlone(t *testing.T) {
 		t.Fatalf("%d×%d is under the least size", minW, minH)
 	}
 	d.Resize(minW-1, minH)
-	if !d.Has("needs a terminal of at least 42×29") {
+	if !d.Has("needs a terminal of at least 42×31") {
 		t.Fatal("no size message under the least size")
 	}
 }
@@ -217,6 +217,9 @@ func TestStatsInInfo(t *testing.T) {
 }
 
 func TestPictureIsLockus(t *testing.T) {
+	if boxW != 5 || boxH != 5 {
+		t.Fatalf("a box is %d × %d, not 5 × 5 (user, 2026-11-11)", boxW, boxH)
+	}
 	s := picture(nil)
 	if s.px[0][0] != inkGround || s.px[sceneH-1][fieldW-1] != inkGround || s.px[0][fieldW] != inkNone {
 		t.Fatal("the field is not the ground alone, unframed")
@@ -578,8 +581,12 @@ func TestNoPointsNotKept(t *testing.T) {
 	}
 	play(d)
 	d.Press("q")
-	if !d.Quit() {
-		t.Fatal("q with a game of no points going did not leave")
+	if d.Quit() || !d.Has("Quit tetru?") || !d.Has("No points so far, so nothing is kept.") {
+		t.Fatal("q with a game of no points going did not confirm")
+	}
+	d.Press("Enter")
+	if !d.Quit() || len(kept(t)) != 0 {
+		t.Fatal("Enter did not leave, or kept a game of no points")
 	}
 }
 
@@ -631,22 +638,26 @@ func TestNewGameAsksWhoPlayed(t *testing.T) {
 	}
 }
 
-func TestQuitWithAGameAsksAndKeeps(t *testing.T) {
+func TestQuitWithAGameConfirmsAndKeepsAnon(t *testing.T) {
 	tt, d := open(t, 60, 32)
 	play(d)
 	d.Press("j")
 	d.Press("q")
-	if !d.Has("QUIT") || !d.Has("1 points: who played?") || !d.Has("Enter:quit") {
-		t.Fatal("q with a game going did not ask who played")
+	if !d.Has("QUIT") || !d.Has("Quit tetru?") || !d.Has("The score so far, 1, is kept for ANON.") || !d.Has("Enter:quit") || d.Has("who played") {
+		t.Fatal("q with a game going did not confirm, saying the score is kept for ANON")
 	}
 	y := tt.g.At.Y
 	d.Advance(3 * time.Second)
 	if tt.g.At.Y != y {
-		t.Fatal("the game went on under the question")
+		t.Fatal("the game went on under the confirm")
 	}
-	d.Type("bob")
+	d.Press("Esc")
+	if d.Quit() || !tt.playing() || len(kept(t)) != 0 {
+		t.Fatal("Esc on the confirm did not go back to the game")
+	}
+	d.Press("q")
 	d.Press("Enter")
-	if all := kept(t); len(all) != 1 || all[0].Name != "bob" {
+	if all := kept(t); len(all) != 1 || all[0].Name != "ANON" || all[0].Score != 1 {
 		t.Fatalf("quitting kept %+v", all)
 	}
 	if !d.Quit() {

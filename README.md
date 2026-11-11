@@ -21,7 +21,7 @@ with the player's name and the time, and ranks them, the best first.
 - **Ten levels of speed**: a level every ten rows, from a row a second to ten a second; past the tenth the speed stays.
 - **Every game kept**: the time, the name and the score, the best first on the Rank screen. You play first and say who
   played as the game ends; with no name it is ANON. A game left half way is kept too: quitting, or closing the terminal,
-  keeps the score it had then.
+  keeps the score it had then, for ANON.
 - **Pause whenever**: `Space` pauses and shows what you can do; `Esc` pauses and leaves the game where it is, a box
   saying the level, the rows and the score, `Enter` to go on.
 
@@ -32,8 +32,8 @@ with the player's name and the time, and ranks them, the best first.
 - macOS or Linux (WSL too).
 - A [Nerd Font](https://www.nerdfonts.com) terminal profile: the blocks and the frames are Nerd Font glyphs.
 - A truecolor (24-bit) terminal: the faded colours and the layer colours cannot be told apart in 256 colours.
-- A terminal at least 42 columns wide and 29 rows high, the well alone; the pieces to come and INFO show beside it
-  from 60 columns on. In a
+- A terminal at least 42 columns wide and 31 rows high. Under 60 columns the well shows alone; from 60 on, the pieces
+  to come and INFO show beside it. In a
   smaller one tetru shows only its name, the size it needs and how to quit, and comes back as it was once the terminal
   grows: the game waits meanwhile.
 
@@ -92,7 +92,7 @@ It asks before removing `~/.tetru`, your scores.
 3. `h` and `l` move the piece, `d` and `k` turn it, `j` takes it down a row and `Enter` drops it.
 4. Press `Space` to pause and see what you can do; `Esc` closes the menu and the game goes on.
 5. When the game is over, type your name and press `Enter`, or just `Enter` for ANON: the score is kept.
-6. Press `q` to quit; with a game going tetru asks who played first, and keeps its score.
+6. Press `q` to quit; with a game going tetru asks first, and keeps its score for ANON.
 
 ## Usage
 
@@ -149,7 +149,7 @@ The keys every family app shares:
 | `Tab`, `1`–`9` | The next panel; jump to a panel by its number. While playing, `Esc` first |
 | `j\|k`, `gg\|G` | On Rank and Settings: move, to the top, to the bottom |
 | `Esc` | Close the popup on top, one at a time; it never leaves tetru |
-| `q` | Quit; with a game going, after asking who played it |
+| `q` | Quit; with a game going, after asking, its score kept for ANON |
 
 ## Settings and data
 

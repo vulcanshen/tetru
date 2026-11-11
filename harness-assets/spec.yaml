@@ -1,62 +1,62 @@
-id: 10
+id: 11
 from: v1.2.3
 to: v1.2.3
 tasks:
   - id: 1
-    spec: 9
+    spec: 11
     request: '一個直的空間玩遊戲，右邊是接下來的方塊；排行不在遊戲旁邊，改成另一個分頁：[T]etru、[R]ank、[S]ettings；遊戲的右邊由上而下是 Next 1、Next 2，最下面一個 panel 分上下兩段，上面 Level、Lines、Score、下面操作方式（不叫 Manual）；終端機窄的時候，排行優先收掉；遊戲太小，GAME 的 panel 就是遊戲，不要遊戲自己的外框，縮小上下；空間要用滿，遊戲區域不能這麼小'
     tdp: [tdp terms.2, tdp terms.3, tdp screen.1, tdp screen.2, tdp screen.3, tdp screen.5, tdp screen.7, tdp M4, tdp L1, tdp L2, tdp L3, tdp L4, tdp E5, tdp panel.1, tdp panel.4, tdp K1, tdp K2, tdp P5]
     remark:
       - |
-        Tetru 畫面 60×32（使用者 2026-11-11 提的：分頁、右邊三個 panel、Level 等放進 INFO；場地與 NEXT 都沒有自己的框）：
+        Tetru 畫面 60×32（使用者 2026-11-11 提的：分頁、右邊三個 panel、Level 等放進 INFO；場地與 NEXT 都沒有自己的框；NEXT 是 5×5 的方形）：
          [T]ETRU [R]ANK [S]ETTINGS
         ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         ┏[1] GAME━━━━━━━━━━━━━━━━━━━━━━━━━━━┓┌[2] NEXT 1───────────┐
-        ┃                                   ┃│    ░░░░░░░░░░░░     │
-        ┃                                   ┃│    ░░████████░░     │
-        ┃                                   ┃│    ░░░░░░░░░░░░     │
-        ┃       ░░░░░░░░░░░░░░░░░░░░        ┃│    ░░░░░░░░░░░░     │
-        ┃       ░░░░░░░░██░░░░░░░░░░        ┃└─────────────────────┘
-        ┃       ░░░░░░░░████░░░░░░░░        ┃┌[3] NEXT 2───────────┐
-        ┃       ░░░░░░░░██░░░░░░░░░░        ┃│    ░░░░░░░░░░░░     │
-        ┃       ░░░░░░░░░░░░░░░░░░░░        ┃│    ░░░░████░░░░     │
-        ┃       ░░░░░░░░░░░░░░░░░░░░        ┃│    ░░░░████░░░░     │
-        ┃       ░░░░░░░░░░░░░░░░░░░░        ┃│    ░░░░░░░░░░░░     │
-        ┃       ░░░░░░░░░░░░░░░░░░░░        ┃└─────────────────────┘
-        ┃       ░░░░░░░░░░░░░░░░░░░░        ┃┌[4] INFO─────────────┐
-        ┃       ░░░░░░░░░░░░░░░░░░░░        ┃│ Level: 3            │
-        ┃       ░░░░░░░░░░░░░░░░░░░░        ┃│ Lines: 25           │
-        ┃       ░░░░░░░░░░░░░░░░░░░░        ┃│ Score: 12,340       │
-        ┃       ░░░░░░░░░░░░░░░░░░░░        ┃│ ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌ │
-        ┃       ░░░░░░░░░░░░░░░░░░░░        ┃│ h      move left    │
-        ┃       ░░░░░░░░░░░░░░░░░░░░        ┃│ l      move right   │
-        ┃       ░░░░░░░░░░░░░░░░░░░░        ┃│ j      down a row   │
-        ┃       ░░░░░░░░░░░░░░░░░░░░        ┃│ e      rotate left  │
-        ┃       ██░░░░░░░░░░░░░░░░░░        ┃│ i      rotate right │
-        ┃       ████░░░░░░░░░░░░██░░        ┃│ Enter  drop         │
-        ┃       ██████░░░░░░████████        ┃│ Space  pause, menu  │
+        ┃                                   ┃│     ░░░░░░░░░░      │
+        ┃     ░░░░░░░░░░░░░░░░░░░░░░░░      ┃│     ░░░░░░░░░░      │
+        ┃     ░░░░░░░░░░░░░░░░░░░░░░░░      ┃│     ████████░░      │
+        ┃     ░░░░░░░░░░░░░░░░░░░░░░░░      ┃│     ░░░░░░░░░░      │
+        ┃     ░░░░░░░░░░██░░░░░░░░░░░░      ┃│     ░░░░░░░░░░      │
+        ┃     ░░░░░░░░░░████░░░░░░░░░░      ┃└─────────────────────┘
+        ┃     ░░░░░░░░░░██░░░░░░░░░░░░      ┃┌[3] NEXT 2───────────┐
+        ┃     ░░░░░░░░░░░░░░░░░░░░░░░░      ┃│     ░░░░░░░░░░      │
+        ┃     ░░░░░░░░░░░░░░░░░░░░░░░░      ┃│     ░░████░░░░      │
+        ┃     ░░░░░░░░░░░░░░░░░░░░░░░░      ┃│     ░░████░░░░      │
+        ┃     ░░░░░░░░░░░░░░░░░░░░░░░░      ┃│     ░░░░░░░░░░      │
+        ┃     ░░░░░░░░░░░░░░░░░░░░░░░░      ┃│     ░░░░░░░░░░      │
+        ┃     ░░░░░░░░░░░░░░░░░░░░░░░░      ┃└─────────────────────┘
+        ┃     ░░░░░░░░░░░░░░░░░░░░░░░░      ┃┌[4] INFO─────────────┐
+        ┃     ░░░░░░░░░░░░░░░░░░░░░░░░      ┃│ Level: 3            │
+        ┃     ░░░░░░░░░░░░░░░░░░░░░░░░      ┃│ Lines: 25           │
+        ┃     ░░░░░░░░░░░░░░░░░░░░░░░░      ┃│ Score: 12,340       │
+        ┃     ░░░░░░░░░░░░░░░░░░░░░░░░      ┃│ ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌ │
+        ┃     ░░░░░░░░░░░░░░░░░░░░░░░░      ┃│ h      move left    │
+        ┃     ░░░░░░░░░░░░░░░░░░░░░░░░      ┃│ l      move right   │
+        ┃     ░░░░░░░░░░░░░░░░░░░░░░░░      ┃│ j      down a row   │
+        ┃     ░░░░░░░░░░░░░░░░░░░░░░░░      ┃│ d      rotate left  │
+        ┃     ██░░░░░░░░░░░░░░░░░░░░░░      ┃│ k      rotate right │
+        ┃     ████░░░░░░░░░░░░░░░░██░░      ┃│ Enter  drop         │
+        ┃     ██████░░░░░░░░██████████      ┃│ Space  pause, menu  │
         ┃                                   ┃│ Esc    pause        │
-        ┃                                   ┃│                     │
-        ┃                                   ┃│                     │
         ┃                                   ┃│                     │
         ┗━ Enter:play ━━━━━━━━━━━━━━━━━━━━━━┛└─────────────────────┘
         Space:menu ?:help !:log Tab|1–4:panels q:quit
       - '三個畫面（tdp terms.2：一組同時顯示的 panel；多畫面用 global operation 切換）：[T]etru 是遊戲、[R]ank 是排行（task 8）、[S]ettings 是按鍵（task 13）。最上面一列是畫面 chip（tdp screen.3），chip 列下面一條全寬的線。T、R、S 是 global 熱鍵（tdp M4：沒有 popup 開著時在 panel 上也能直接按；模式裡不作用，玩的時候要先 Esc），大寫是 Shift，跟家族的多畫面 app（sshu、webu）一樣用大寫字母。第一版的 [G]ame 用不了：G 在 tdp K12 保留給「到最底下」'
       - 'Tetru 畫面四個 panel：左邊 [1] GAME（task 2），右邊一欄由上而下 [2] NEXT 1、[3] NEXT 2（task 2）、[4] INFO（task 14）。panel 怎麼拆，app 可以自行決定（tdp L1）；編號照由左到右、由上到下。啟動時 focus 在 [1] GAME：打開 app 就是要玩'
       - '寬度：右邊那一欄是整個寬度的三分之一，至少放得下 INFO（23 欄），GAME 拿剩下的：60 欄 37｜23、77 欄 52｜25、150 欄 100｜50。三分之一照 tdp L1 自己舉的 1:2；遊戲在左邊、佔大半，第一版排行在寬的終端機上佔了七成（使用者 2026-11-11：比例太糟糕）'
-      - '高度：NEXT 1、NEXT 2 各是一格的高（4 列加 panel 的框，6 列；放大時 10 列），INFO 拿剩下的'
+      - '高度：NEXT 1、NEXT 2 各是一格的高（5 列加 panel 的框，7 列；放大時 12 列），INFO 拿剩下的'
       - 'Level、Lines、Score 在 INFO 上面那一段，一行一個（使用者 2026-11-11：GAME 裡只放場地）；不再有 statusbar（tdp screen.4：要不要有，app 可以自行決定；多畫面時它會在 chip 列的右邊，離遊戲很遠）。label Overlay0、值 Lavender（現在玩到哪，同 statusbar）。沒有在玩時寫上一局最後的值，還沒玩過寫第 1 關、0 行、0 分'
       - '遊戲太小、空間要用滿（使用者 2026-11-11，150×32 與 77×32 的終端機）：GAME 裡只有場地（Level 等在 INFO）、場地沒有自己的框。一格方塊是 locku 的方塊 icon，一格只能一列高：場地照使用者說的固定 12 格寬、24 格高（2026-11-11：寬高都是固定的數字，加大一點），32 列時 GAME 裡 27 列，場地 24 列；GAME 裡有 48 列（53 列的終端機）起放大成兩倍。曾經改成實心方塊、一格 1.25 列高填滿 GAME，使用者看了要換回原本的方塊 icon（2026-11-11）'
-      - '最低尺寸 42×29（tdp L1：可以調低）：寬是 GAME 自己（場地與兩個框 38 欄、上面一行 Level 等 38 欄、panel 的框與左右各一格）；高是 chip 列與線 2 列、footer 1 列，加上場地 24 列與框，也剛好放得下右邊那一欄：NEXT 1、NEXT 2 各 6 列、INFO 12 列與框。窄寬的門檻 60（tdp screen.5 的上限）：42–59 欄只畫有 focus 的 panel、佔滿寬度；玩的時候 focus 在 GAME，NEXT 與 INFO 收掉，所以這時 GAME 自己在場地上面寫一行 Level、Lines、Score，場地右邊畫兩個接下來的方塊（task 2）'
+      - '最低尺寸 42×31（tdp L1：可以調低）：寬是 GAME 自己（場地與兩個框 36 欄、上面一行 Level 等 38 欄、panel 的框與左右各一格）；高是 chip 列與線 2 列、footer 1 列，加上右邊那一欄：NEXT 1、NEXT 2 各 7 列、INFO 12 列與框（場地 24 列與框只要 26 列）。窄寬的門檻 60（tdp screen.5 的上限）：42–59 欄只畫有 focus 的 panel、佔滿寬度；玩的時候 focus 在 GAME，NEXT 與 INFO 收掉，所以這時 GAME 自己在場地上面寫一行 Level、Lines、Score，場地右邊畫兩個接下來的方塊（task 2）'
   - id: 2
-    spec: 9
-    request: '顯示方式沿用 locku 的 tetromino：一樣的方塊 icon、一樣的顏色；接下來的方塊在 Next 1、Next 2 兩個 panel，每個只放一個；場地與 Next 都不要自己的外框'
+    spec: 11
+    request: '顯示方式沿用 locku 的 tetromino：一樣的方塊 icon、一樣的顏色；接下來的方塊在 Next 1、Next 2 兩個 panel，每個只放一個，裡面是 5×5 的方形；場地與 Next 都不要自己的外框'
     tdp: [tdp P5, tdp P4, tdp F1, tdp T2, tdp F8, tdp screen.5]
     remark:
-      - '照 locku 的 tetromino 螢幕保護（internal/saver/tetromino.go）：一個像素是 locku 的方塊 icon（nf-fa-square），2 欄 × 1 列；一格方塊一個像素；場地 12×24（task 3），空的地方畫 locku 的底；接下來的方塊一個一格，6×4 像素的底、一個方塊一個像素、置中'
-      - '放大：GAME 與右邊那一欄都放得下兩倍時（GAME 裡 48 欄、48 列，右邊 24 欄），GAME 與兩個 NEXT 一起把一個像素畫成 2×2（4 欄 × 2 列），照 locku 的 fitScene；NEXT 的高跟著變兩倍'
+      - '照 locku 的 tetromino 螢幕保護（internal/saver/tetromino.go）：一個像素是 locku 的方塊 icon（nf-fa-square），2 欄 × 1 列；一格方塊一個像素；場地 12×24（task 3），空的地方畫 locku 的底；接下來的方塊一個一格，5×5 像素的底（使用者 2026-11-11：5×5 的方形）、一個方塊一個像素、置中；放不正中時（兩格寬或高的放在五格裡）偏左、偏上'
+      - '放大：GAME 與右邊那一欄都放得下兩倍時（GAME 裡 48 欄、48 列，右邊 20 欄），GAME 與兩個 NEXT 一起把一個像素畫成 2×2（4 欄 × 2 列），照 locku 的 fitScene；NEXT 的高跟著變兩倍'
       - '場地與接下來的方塊都沒有自己的灰框（使用者 2026-11-11：GAME 的 panel 就是遊戲本身，NEXT 也有自己的 panel，panel 的框就是它們的框）'
-      - 'GAME 畫場地；NEXT 1、NEXT 2 各畫一格（6×4 像素），各放一個接下來的方塊（使用者 2026-11-11：每個 Next 只放一個）；圖各自置中在自己的 panel 裡。接下來的方塊只看兩個（第一版是四個）'
+      - 'GAME 畫場地；NEXT 1、NEXT 2 各畫一格（5×5 像素），各放一個接下來的方塊（使用者 2026-11-11：每個 Next 只放一個）；圖各自置中在自己的 panel 裡。接下來的方塊只看兩個（第一版是四個）'
       - '窄寬時只畫 GAME（tdp screen.5），這時 GAME 把兩格畫在場地右邊、隔一個像素，兩格之間也隔一個像素；玩的時候照樣看得到接下來的方塊。Tab 到 NEXT 1、NEXT 2 時各畫自己的一格'
       - '方塊的顏色照 locku（catppuccin-mocha）：I sky、O yellow、T mauve、S green、Z red、J blue、L peach。內容本身的顏色是領域的，app 可以自行決定（tdp P5）；不碰介面元素用的意義（tdp P4）'
       - '場地與接下來的方塊是 panel 內容自己畫的，不是 popup（tdp F1）。GAME 失焦時照 tdp T2 跟著淡化。玩的時候兩個 NEXT 與 INFO 是串流內容、不淡化（tdp T2：接下來的方塊與分數一直在換，玩家眼睛在場地上、用餘光看它）；暫停、結束、還沒玩時沒有東西在流，照常淡化'
@@ -129,22 +129,25 @@ tasks:
       - '沒有紀錄時空狀態：No scores yet / Press [T] to play（tdp screen.8；到 Tetru 畫面，focus 在 GAME 上，Enter 開始）'
       - 'Enter 在一筆紀錄上沒有動作：紀錄沒有東西可以打開'
   - id: 9
-    spec: 10
-    request: '消行與結束的樣子照 locku：消的那幾行先閃白，再從中間往兩端消失；結束時由上往下變灰。結束用 popup 說，不在遊戲裡寫 END（使用者 2026-11-11：那是 locku 的限制，tetru 是獨立的 app）'
+    spec: 11
+    request: '湊齊一排時，滿排的列從下到上依序向左滑出 panel 1（GAME），然後整個場地往下降、上方補上空的格子；期間不能操作，正在玩的方塊不跟著降（使用者 2026-11-11）。結束時照 locku 由上往下變灰。結束用 popup 說，不在遊戲裡寫 END（使用者 2026-11-11：那是 locku 的限制，tetru 是獨立的 app）'
     tdp: [tdp P5, tdp F1, tdp F6, tdp confirm]
     remark:
-      - '照 locku 的時間：閃白 280 ms、往兩端消失 400 ms；結束時方塊由上往下變灰 5 秒（場地與 NEXT 一起），灰的留在畫面上，場地上不寫字'
+      - '消行（使用者 2026-11-11，取代第一版照 locku 的閃白、從中間往兩端消失）：滿的那幾行從最下面那一行開始，一行一行往左滑，滑過場地左邊的空白、滑出 GAME 的框才不見；一行滑 360 ms，先慢後快，下一行在前一行開始滑 120 ms 後跟著滑（依序，但不用等前一行滑完），滑走的地方留下空的格子。全部滑出去之後，上面的整片往下降，一次一列像素、40 ms 一列，降到補滿空出來的行，最上面補空的格子'
+      - '這段期間不能操作（Play 模式的鍵按了沒反應，不另外說），也不往下掉：下一個方塊在滿行的那一刻就出現在最上面，停在那裡，不跟著場地往下降（使用者 2026-11-11：畫面中正在操作的方塊不跟著下降）；降完才開始掉、才能操作。下一個方塊放不進去（堆到頂）在降完時才判，消掉的行可能讓出位置'
+      - '分數、行數、關卡在降完時才加'
+      - '結束時方塊由上往下變灰 5 秒，照 locku（場地與 NEXT 一起），灰的留在畫面上，場地上不寫字'
       - '堆到頂時灰幕落完才用 popup 說結束：有分數的局是問誰玩的 text input，標題 GAME OVER（task 6）；0 分的局開 confirm（tdp F1、F6）：內容 Game over: no points, so nothing is kept.，問句 Play again?，標題照 tdp confirm.2 寫 Enter 做的動作 PLAY，Enter:play 開下一局，Esc:cancel 回到 GAME（hint Enter:play）'
       - '[x] End game、[n]ew game 結束的，灰幕落完不再開 popup：結束是玩家自己選的，問名字時已經說了（task 10）'
       - '動畫用 tgo App.Tick（README 的計時器），測試推得動'
   - id: 10
-    spec: 7
-    request: '玩家可以中途結束、重新開始或離開，結束或離開時記下當下的分數'
-    tdp: [tdp M2, tdp M3, tdp M5, tdp M6, tdp F6, tdp text, tdp K9]
+    spec: 11
+    request: '玩家可以中途結束、重新開始或離開，結束或離開時記下當下的分數；有一局在玩時按 q 先跳 confirm，記下分數，名字直接用 ANON（使用者 2026-11-11）'
+    tdp: [tdp M2, tdp M3, tdp M5, tdp M6, tdp F6, tdp text, tdp K9, tdp confirm]
     remark:
       - '[x] End game（keep this score and stop）與 [n]ew game（start over from level 1）是 GAME 的 panel operation（tdp M2、M3）；n、x 是領域熱鍵（tdp P5），不佔移動的字母'
       - '有一局有分數時，兩個都先問誰玩的（task 6），那就是確認（tdp F6：哪些要確認 app 可以自行決定）：說出分數，Esc 取消；0 分的局沒有東西會丟，不問，直接結束或重開；沒有一局在玩時 [x] End game 停用（tdp M6）'
-      - '離開流程（tdp K9：離開流程與問什麼，app 可以自行決定）：有一局有分數時問誰玩的，標題 QUIT、Enter:quit，Esc 留下；0 分或沒有一局時直接離開（有 popup 開著時 tgo 先開 Quit tetru?）'
+      - '離開流程（tdp K9：離開流程與問什麼，app 可以自行決定）：有一局在玩（玩著或暫停中）時開 confirm（tdp F6、confirm），不問名字（使用者 2026-11-11：直接用 ANON）：標題照 tdp confirm.2 寫 Enter 做的動作 QUIT，內容 The score so far, 12,340, is kept for ANON.（0 分的局寫 No points so far, so nothing is kept.），問句照 tdp K9 寫 Quit tetru?，Enter:quit 記成 ANON、離開，Esc:cancel 回到遊戲；沒有一局在玩時直接離開（有 popup 開著時 tgo 先開 Quit tetru?）'
   - id: 11
     spec: 1
     request: '跟家族其他 app 一樣有 splash、version、help'
@@ -180,3 +183,9 @@ tasks:
       - '兩段之間一條虛線，跟 menu 分區的線一樣（tdp menu：╌，Overlay0）'
       - '下面一段：一列一個鍵與它做什麼，照使用者在 Settings 設的鍵：移動左右、往下一格、左旋、右旋、落到底，再加 Space（pause, menu）與 Esc（pause）；鍵名照 tdp M5（Enter、Space、Esc），鍵 Blue 跟 hint 一樣、說明是一般的字；鍵一欄 5 格，欄與欄之間兩格（tdp components.2）'
       - '只能讀，沒有 cursor、沒有鍵。玩的時候是串流內容、不淡化（task 2，tdp T2），其他時候失焦照常淡化。它不取代 ? 與 Space menu：能做的事照樣在 Space menu'
+  - id: 15
+    spec: 11
+    request: '[T]ETRU 分頁的 panel 2、3、4（NEXT 1、NEXT 2、INFO）不要標數字，那邊不讓使用者 focus'
+    tdp: [tdp K1, tdp K2, tdp panel.1, tdp screen.1]
+    remark:
+      - {note: 'tdp 規定畫面上每個 panel 都標 [N]，Tab 與數字鍵都到得了（K1、K2、panel.1、screen.1），沒有只顯示、不取得 focus 的 panel；tgo 的 Panel 也沒有這個設定。沒有合 tdp 的暫時做法：照現在，四個 panel 都有 [N]、都能 focus（TODO(tdp #6)）；tdp 放行、tgo 有設定之後，NEXT 1、NEXT 2、INFO 改成只顯示的 panel', issue: 'tdp #6'}

@@ -30,7 +30,7 @@ var icon []byte
 
 const (
 	// minW, minH are tetru's least size (tdp L1, lower than 60 × 32): wide
-	// enough for GAME alone (narrow), the field and the boxes, 38 columns,
+	// enough for GAME alone (narrow), the field and the boxes, 36 columns,
 	// the level, the rows and the score over them, 38, its frame and a
 	// cell's margin each side; high enough for the chip row, its rule and
 	// the footer, and the column at GAME's right: NEXT 1 and NEXT 2 and INFO,
@@ -113,6 +113,9 @@ func NewTetru() *Tetru {
 	t.setModeKeys()
 	t.setActions()
 	t.setRows("")
+	// TODO(tdp #6): NEXT 1, NEXT 2 and INFO only show; the user wants them
+	// with no [N] and the focus never on them (2026-11-11), which tdp K1 and
+	// K2 do not allow yet.
 	a.AddScreen(&terminu.Screen{
 		Name:        "Tetru",
 		Key:         "T",
@@ -367,16 +370,21 @@ func (t *Tetru) Finish() {
 	}
 }
 
-// quit is the quit flow (tdp K9): with a game with points going, ask who
-// played, as the game ending does, Esc staying; else leave.
+// quit is the quit flow (tdp K9: the app's): with a game going, a confirm
+// saying what is kept, its score for ANON with no name asked (user,
+// 2026-11-11), Esc going back to the game; else leave.
 func (t *Tetru) quit() tea.Cmd {
-	if !t.going() || t.g.Score == 0 {
+	if !t.going() {
 		return tea.Quit
 	}
-	return t.askName("Quit", "quit", func() tea.Cmd {
+	kept := "No points so far, so nothing is kept."
+	if t.g.Score > 0 {
+		kept = fmt.Sprintf("The score so far, %s, is kept for %s.", comma(t.g.Score), anon)
+	}
+	return t.App.Confirm(terminu.Ask{Title: "Quit", Question: "Quit tetru?", Verb: "quit", Details: []string{kept}}, func() tea.Cmd {
 		t.Finish()
 		return tea.Quit
-	}, nil)
+	})
 }
 
 // setRows lists the records best first; sel is the ID of the row to put
