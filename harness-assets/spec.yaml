@@ -190,7 +190,7 @@ tasks:
     request: '[T]ETRU 分頁的 panel 2、3、4（NEXT 1、NEXT 2、INFO）不要標數字，那邊不讓使用者 focus（使用者 2026-11-11 再說一次：還是可以被 focus，要移除）'
     tdp: [tdp F1, tdp K1, tdp K2, tdp panel.1, tdp screen.1, tdp screen.2, tdp P5]
     remark:
-      - 'tdp 規定畫面上每個 panel 都標 [N]、Tab 與數字鍵都到得了（K1、K2、panel.1、screen.1），沒有只顯示、不取得 focus 的 panel，tgo 的 Panel 也沒有這個設定；2026-11-11 為此回報了 tdp #6'
+      - 'tdp 規定畫面上每個 panel 都標 [N]、Tab 與數字鍵都到得了（K1、K2、panel.1、screen.1），沒有只顯示、不取得 focus 的 panel，tgo 的 Panel 也沒有這個設定；2026-11-11 為此回報了 tdp #6，改成下面的做法之後使用者說關掉（2026-11-11，not planned）'
       - '不用等 tdp #6：NEXT 1、NEXT 2、INFO 不當 panel，改成 GAME 內容自己畫的框（tdp F1：panel 內容自己畫的框是內容，不是 popup，怎麼畫 app 可以自行決定；按鍵照它所在的 panel）。Tetru 畫面只剩 [1] GAME：三個框沒有 [N]，Tab 與 2–9 到不了（沒有別的 panel），footer 沒有 Tab|1–N（tdp screen.2）'
       - '框的樣子：細線 ┌─┐，Surface2，跟失焦的 panel 的框一樣（tdp color：失焦的框）：只給人看、拿不到 focus；上框左邊隔一段線寫名字，大寫、前後空一格、Overlay0（安靜的字），跟 panel 框上的字一樣不貼著角（tdp panel.1）。框的右邊離 GAME 的框一格，跟 panel 內容左邊離框一格一樣'
       - 'GAME 的框包在右邊那一欄外面，多了 2 列：最低高度從 29 列變 31 列（task 1）'
