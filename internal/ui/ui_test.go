@@ -31,9 +31,13 @@ func open(t *testing.T, w, h int) (*Tetru, *tdptest.Driver) {
 	return tt, tdptest.Start(t, tt.App, w, h)
 }
 
-// play starts a game for name: Enter on GAME, the name, Enter.
-func play(d *tdptest.Driver, name string) {
-	d.Press("Enter")
+// play starts a game: Enter on GAME.
+func play(d *tdptest.Driver) { d.Press("Enter") }
+
+// keepAs answers who played the game over: once the curtain is down, the
+// name typed, Enter.
+func keepAs(d *tdptest.Driver, name string) {
+	d.Advance(game.Curtain)
 	d.Type(name)
 	d.Press("Enter")
 }
@@ -110,7 +114,7 @@ func TestNarrowShowsTheFocusedPanelOnly(t *testing.T) {
 	if d.Has("NEXT") || d.Has("MANUAL") || !d.Has("[1] GAME") {
 		t.Fatal("narrow, another panel shows beside the game")
 	}
-	if got := widest(d); got != sceneW {
+	if got := widest(d); got != fieldW+queueW {
 		t.Fatalf("narrow, GAME draws %d pixels a row, not the field and the boxes", got)
 	}
 	for _, p := range []string{"[2] NEXT 1", "[3] NEXT 2", "[4] MANUAL"} {
@@ -127,7 +131,7 @@ func TestNextStaysBrightWhilePlaying(t *testing.T) {
 	if tt.next1P.Stream || tt.next2P.Stream {
 		t.Fatal("NEXT is streaming with no game")
 	}
-	play(d, "vulcan")
+	play(d)
 	if !streams() {
 		t.Fatal("the NEXT panels dim while playing")
 	}
@@ -148,7 +152,7 @@ func TestLeastSizeIsTheGameAlone(t *testing.T) {
 		t.Fatalf("%d×%d is under the least size", minW, minH)
 	}
 	d.Resize(minW-1, minH)
-	if !d.Has("needs a terminal of at least 42×30") {
+	if !d.Has("needs a terminal of at least 42×28") {
 		t.Fatal("no size message under the least size")
 	}
 }
@@ -169,13 +173,19 @@ func TestPictureGrowsTwiceOnALargeTerminal(t *testing.T) {
 
 func TestStatsInGame(t *testing.T) {
 	tt, d := open(t, 60, 32)
-	if !strings.Contains(row(d, 4), "Level: 1   Lines: 0") || !strings.Contains(row(d, 5), "Score: 0") {
-		t.Fatalf("no level, rows and score over the field:\n%s\n%s", row(d, 4), row(d, 5))
+	at := -1
+	for i, r := range d.Screen() {
+		if strings.Contains(r, "Level: 1   Lines: 0") {
+			at = i
+		}
+	}
+	if at < 0 || !strings.Contains(row(d, at+1), "Score: 0") || strings.Count(row(d, at+3), pixelGlyph) == 0 {
+		t.Fatal("no level, rows and score over the field")
 	}
 	if strings.Contains(row(d, 0), "Level") {
 		t.Fatal("the level is still at the top")
 	}
-	play(d, "vulcan")
+	play(d)
 	d.Press("Enter")
 	if !d.Has("Score: " + comma(tt.g.Score)) {
 		t.Fatal("the score is not GAME's")
@@ -187,21 +197,23 @@ func TestStatsInGame(t *testing.T) {
 
 func TestPictureIsLockus(t *testing.T) {
 	s := picture(nil, false)
-	if s.px[0][0] != inkFrame || s.px[sceneH-1][sceneW-1] != inkFrame || s.px[1][1] != inkGround {
-		t.Fatal("no grey frame round a ground")
+	if s.px[0][0] != inkGround || s.px[sceneH-1][fieldW-1] != inkGround || s.px[0][fieldW] != inkNone {
+		t.Fatal("the field is not the ground alone, unframed")
 	}
-	fw := 2*edge + game.Cols
 	for i := 0; i <= game.Queue; i++ {
-		if s.px[i*(boxH+edge)][fw+1] != inkFrame {
+		if s.px[i*(boxH+edge)][queueX+1] != inkFrame {
 			t.Fatalf("no line over box %d", i)
 		}
+	}
+	if s.px[1][queueX] != inkFrame || s.px[1][sceneW-1] != inkFrame || s.px[1][queueX+1] != inkGround {
+		t.Fatal("a box is not ground framed in grey")
 	}
 	g := game.New(1)
 	s = picture(g, false)
 	for i, p := range g.Next {
 		found := false
 		for y := edge + i*(boxH+edge); y < edge+i*(boxH+edge)+boxH; y++ {
-			for x := fw; x < sceneW-1; x++ {
+			for x := queueX + edge; x < sceneW-1; x++ {
 				found = found || s.px[y][x] == inkPiece+uint8(p)
 			}
 		}
@@ -210,7 +222,7 @@ func TestPictureIsLockus(t *testing.T) {
 		}
 	}
 	for _, b := range g.Blocks() {
-		if s.px[edge+b[1]][edge+b[0]] != inkPiece+uint8(g.Cur) {
+		if s.px[b[1]][b[0]] != inkPiece+uint8(g.Cur) {
 			t.Fatal("the falling piece is not drawn")
 		}
 	}
@@ -219,7 +231,7 @@ func TestPictureIsLockus(t *testing.T) {
 func TestPlay(t *testing.T) {
 	tdptest.EachIconWidth(t, func(t *testing.T) {
 		tt, d := open(t, 60, 32)
-		play(d, "vulcan")
+		play(d)
 		turnable(tt, d)
 		score := tt.g.Score
 		if !tt.playing() || !strings.Contains(row(d, 2), "Play") {
@@ -274,7 +286,7 @@ func TestPlay(t *testing.T) {
 
 func TestTheGameFalls(t *testing.T) {
 	tt, d := open(t, 60, 32)
-	play(d, "vulcan")
+	play(d)
 	y := tt.g.At.Y
 	d.Advance(game.Interval(1) + frame)
 	if tt.g.At.Y != y+1 {
@@ -284,7 +296,7 @@ func TestTheGameFalls(t *testing.T) {
 
 func TestTheGameStopsUnderAPopup(t *testing.T) {
 	tt, d := open(t, 60, 32)
-	play(d, "vulcan")
+	play(d)
 	d.Press("Space")
 	for _, s := range []string{"ITEM OPERATION", "Rotat[e] left", "Rotate r[i]ght", "PLAY MODE", "move left", "drop to the bottom", "[Esc] Pause"} {
 		if !d.Has(s) {
@@ -311,7 +323,7 @@ func TestTheGameStopsUnderAPopup(t *testing.T) {
 
 func TestSpaceMenuRotates(t *testing.T) {
 	tt, d := open(t, 60, 32)
-	play(d, "vulcan")
+	play(d)
 	turnable(tt, d)
 	d.Press("Space")
 	d.Press("Enter") // the first row: Rotate left
@@ -322,13 +334,13 @@ func TestSpaceMenuRotates(t *testing.T) {
 
 func TestEscPausesEnterResumes(t *testing.T) {
 	tt, d := open(t, 60, 32)
-	play(d, "vulcan")
+	play(d)
 	d.Press("Esc")
 	if tt.playing() || !tt.paused() || !d.Has("Enter:resume") || strings.Contains(row(d, 2), "Play") {
 		t.Fatal("Esc did not pause")
 	}
 	s := picture(tt.g, true)
-	if s.px[edge+game.Rows/2][edge+game.Cols/2-2] != inkPause {
+	if s.px[game.Rows/2][game.Cols/2-2] != inkPause {
 		t.Fatal("no pause sign over the game paused")
 	}
 	y := tt.g.At.Y
@@ -344,45 +356,64 @@ func TestEscPausesEnterResumes(t *testing.T) {
 
 func TestTabInPlaySaysToPauseFirst(t *testing.T) {
 	tt, d := open(t, 60, 32)
-	play(d, "vulcan")
+	play(d)
 	d.Press("Tab")
 	if !tt.playing() || !d.Has("Press [Esc] to leave Play first") {
 		t.Fatal("Tab in the Play mode left it, or said nothing")
 	}
 }
 
-func TestNameIsAskedFirstTheLastOffered(t *testing.T) {
+func TestNameIsAskedAsTheGameEnds(t *testing.T) {
 	tt, d := open(t, 60, 32)
 	d.Press("Enter")
-	if !d.Has("NAME") || !d.Has("Who is playing?") {
-		t.Fatal("no name asked")
-	}
-	d.Press("Enter")
-	if !d.Has("Type a name") || tt.g != nil {
-		t.Fatal("an empty name started a game")
-	}
-	d.Type("  amy  ")
-	d.Press("Enter")
-	if tt.name != "amy" {
-		t.Fatalf("name %q, not trimmed", tt.name)
+	if !tt.playing() || d.Has("NAME") {
+		t.Fatal("Enter did not go straight into a game")
 	}
 	topOut(t, tt, d)
+	if len(kept(t)) != 0 || d.Has("GAME OVER") {
+		t.Fatal("kept, or asked, before the curtain came down")
+	}
+	g := tt.g
 	d.Press("Enter")
-	if !d.Has("Tab:edit Backspace:clear") || !d.Has("amy") {
-		t.Fatal("the last name is not offered")
+	d.Press("n")
+	if tt.g != g || d.Has("Enter:play") {
+		t.Fatal("a new game while the last waits to be kept")
+	}
+	d.Advance(game.Curtain)
+	if !d.Has("GAME OVER") || !d.Has(comma(g.Score)+" points: who played?") || !d.Has("ANON") || !d.Has("Enter:keep") {
+		t.Fatal("no name asked once END is up")
 	}
 	d.Press("Enter")
-	if tt.name != "amy" || !tt.playing() {
-		t.Fatal("Enter did not take the name offered")
+	if all := kept(t); len(all) != 1 || all[0].Name != "ANON" || all[0].Score != g.Score {
+		t.Fatalf("Enter on the name offered kept %+v", all)
+	}
+	if !d.Has("Enter:play") {
+		t.Fatal("Enter does not play once the game is kept")
+	}
+	d.Press("Enter")
+	if !tt.playing() || tt.g == g {
+		t.Fatal("Enter did not start the next game")
 	}
 }
 
-func TestEscOnTheNameStartsNothing(t *testing.T) {
+func TestNameTypedIsKept(t *testing.T) {
 	tt, d := open(t, 60, 32)
-	d.Press("Enter")
+	play(d)
+	topOut(t, tt, d)
+	keepAs(d, "  amy  ")
+	if all := kept(t); len(all) != 1 || all[0].Name != "amy" {
+		t.Fatalf("kept %+v, not the name trimmed", all)
+	}
+}
+
+func TestEscOnTheNameKeepsAnon(t *testing.T) {
+	tt, d := open(t, 60, 32)
+	play(d)
+	topOut(t, tt, d)
+	d.Advance(game.Curtain)
 	d.Press("Esc")
-	if tt.g != nil || d.Has("NAME") {
-		t.Fatal("Esc on the name started a game")
+	if all := kept(t); len(all) != 1 || all[0].Name != "ANON" {
+		t.Fatalf("Esc on the name kept %+v", all)
 	}
 }
 
@@ -391,17 +422,13 @@ func TestNameWithTrickyCharacters(t *testing.T) {
 		if strings.TrimSpace(name) == "" || strings.ContainsFunc(name, func(r rune) bool { return r < 0x20 || r == 0x7f || (r >= 0x80 && r < 0xa0) }) {
 			continue // control characters are held back on Enter (tdp input.8)
 		}
-		tt, d := open(t, 60, 32)
+		_, d := open(t, 60, 32)
 		d.Note("name " + name)
-		d.Press("Enter")
-		d.Paste(name)
-		d.Press("Enter")
-		if tt.g == nil {
-			continue // longer than a name may be: the input says so
-		}
+		play(d)
 		d.Press("j")
 		d.Press("Esc")
 		d.Press("x")
+		d.Paste(name)
 		d.Press("Enter")
 		want := []rune(name) // a paste is cut at the most a name has
 		if all := kept(t); len(all) != 1 || all[0].Name != strings.TrimSpace(string(want[:min(len(want), nameLen)])) {
@@ -412,17 +439,10 @@ func TestNameWithTrickyCharacters(t *testing.T) {
 
 func TestTopOutKeepsTheScore(t *testing.T) {
 	tt, d := open(t, 60, 32)
-	play(d, "vulcan")
+	play(d)
 	topOut(t, tt, d)
-	all := kept(t)
-	if len(all) != 1 || all[0].Name != "vulcan" || all[0].Score != tt.g.Score || all[0].Score == 0 {
-		t.Fatalf("kept %+v", all)
-	}
-	if tt.playing() || !d.Has("Enter:play") {
+	if tt.playing() {
 		t.Fatal("still in the Play mode after the end")
-	}
-	if r, ok := tt.list.Current(); !ok || r.Cells[0] != "vulcan" {
-		t.Fatal("the cursor is not on the new score")
 	}
 	if !d.Has("Score: " + comma(tt.g.Score)) {
 		t.Fatal("GAME lost the last game's score")
@@ -438,7 +458,7 @@ func TestTopOutKeepsTheScore(t *testing.T) {
 		for x := range sceneW {
 			if s.px[y][x] == inkRed {
 				red++
-				if x < edge || x >= fieldW-edge {
+				if x >= fieldW {
 					t.Fatalf("END is out of the field at pixel %d", x)
 				}
 			}
@@ -446,6 +466,15 @@ func TestTopOutKeepsTheScore(t *testing.T) {
 	}
 	if !tt.g.Ended() || red == 0 {
 		t.Fatal("no END once the curtain is down")
+	}
+	d.Type("vulcan")
+	d.Press("Enter")
+	all := kept(t)
+	if len(all) != 1 || all[0].Name != "vulcan" || all[0].Score != tt.g.Score || all[0].Score == 0 {
+		t.Fatalf("kept %+v", all)
+	}
+	if r, ok := tt.list.Current(); !ok || r.Cells[0] != "vulcan" {
+		t.Fatal("the cursor is not on the new score")
 	}
 }
 
@@ -472,12 +501,20 @@ func TestScoresBestFirst(t *testing.T) {
 
 func TestNoPointsNotKept(t *testing.T) {
 	tt, d := open(t, 60, 32)
-	play(d, "vulcan")
+	play(d)
 	d.Press("Esc")
 	d.Press("x")
-	d.Press("Enter")
-	if !tt.g.Over || len(kept(t)) != 0 {
-		t.Fatal("a game with no points was kept, or not ended")
+	if !tt.g.Over || len(kept(t)) != 0 || d.Has("END GAME") {
+		t.Fatal("a game with no points asked, was kept, or did not end")
+	}
+	d.Advance(game.Curtain)
+	if d.Has("GAME OVER") || !d.Has("Enter:play") {
+		t.Fatal("a game with no points asked who played")
+	}
+	play(d)
+	d.Press("q")
+	if !d.Quit() {
+		t.Fatal("q with a game of no points going did not leave")
 	}
 }
 
@@ -486,38 +523,42 @@ func TestEndGameAsksAndKeeps(t *testing.T) {
 	if a := tt.gameP.Actions[2]; a.Key != "x" || !a.Disabled() {
 		t.Fatal("End game is not disabled with no game")
 	}
-	play(d, "vulcan")
+	play(d)
 	d.Press("j")
 	d.Press("Esc")
 	d.Press("x")
-	if !d.Has("End this game?") || !d.Has("This game ends with 1 points, kept for vulcan.") || !d.Has("Enter:end") {
-		t.Fatal("End game did not ask, saying what is kept")
+	if !d.Has("END GAME") || !d.Has("1 points: who played?") || !d.Has("Enter:end") {
+		t.Fatal("End game did not ask who played, saying the points")
 	}
 	d.Press("Esc")
-	if tt.g.Over {
-		t.Fatal("Esc on the confirm ended the game")
+	if tt.g.Over || len(kept(t)) != 0 {
+		t.Fatal("Esc on the name ended the game")
 	}
 	d.Press("x")
+	d.Type("amy")
 	d.Press("Enter")
-	if !tt.g.Over || len(kept(t)) != 1 {
-		t.Fatal("End game did not end the game and keep it")
+	if all := kept(t); !tt.g.Over || len(all) != 1 || all[0].Name != "amy" {
+		t.Fatalf("End game kept %+v", all)
+	}
+	d.Advance(game.Curtain)
+	if d.Has("GAME OVER") {
+		t.Fatal("asked again as the curtain came down")
 	}
 }
 
-func TestNewGameAsksThenAsksTheName(t *testing.T) {
+func TestNewGameAsksWhoPlayed(t *testing.T) {
 	tt, d := open(t, 60, 32)
-	play(d, "vulcan")
+	play(d)
 	d.Press("j")
 	d.Press("Esc")
 	d.Press("n")
-	if !d.Has("Start a new game?") {
-		t.Fatal("New game did not ask with a game going")
+	if !d.Has("NEW GAME") || !d.Has("Enter:start") {
+		t.Fatal("New game did not ask who played the game going")
 	}
 	d.Press("Enter")
-	if len(kept(t)) != 1 || !d.Has("Who is playing?") {
-		t.Fatal("New game did not keep the game going and ask the name")
+	if all := kept(t); len(all) != 1 || all[0].Name != "ANON" {
+		t.Fatalf("New game kept %+v", all)
 	}
-	d.Press("Enter")
 	if !tt.playing() || tt.g.Score != 0 {
 		t.Fatal("no new game")
 	}
@@ -525,24 +566,25 @@ func TestNewGameAsksThenAsksTheName(t *testing.T) {
 
 func TestQuitWithAGameAsksAndKeeps(t *testing.T) {
 	tt, d := open(t, 60, 32)
-	play(d, "vulcan")
+	play(d)
 	d.Press("j")
 	d.Press("q")
-	if !d.Has("Quit tetru?") || !d.Has("This game ends with 1 points, kept for vulcan.") {
-		t.Fatal("q with a game going did not ask")
+	if !d.Has("QUIT") || !d.Has("1 points: who played?") || !d.Has("Enter:quit") {
+		t.Fatal("q with a game going did not ask who played")
 	}
 	y := tt.g.At.Y
 	d.Advance(3 * time.Second)
 	if tt.g.At.Y != y {
-		t.Fatal("the game went on under the quit confirm")
+		t.Fatal("the game went on under the question")
 	}
+	d.Type("bob")
 	d.Press("Enter")
-	if len(kept(t)) != 1 {
-		t.Fatal("quitting did not keep the score")
+	if all := kept(t); len(all) != 1 || all[0].Name != "bob" {
+		t.Fatalf("quitting kept %+v", all)
 	}
 	d.Advance(closing)
 	if !d.Quit() {
-		t.Fatal("Enter on Quit tetru? did not leave once the confirm closed")
+		t.Fatal("Enter did not leave once the popup closed")
 	}
 }
 
@@ -556,18 +598,18 @@ func TestQuitWithNoGameLeaves(t *testing.T) {
 
 func TestFinishKeepsTheGameGoing(t *testing.T) {
 	tt, d := open(t, 60, 32)
-	play(d, "vulcan")
+	play(d)
 	d.Press("Enter")
 	tt.Finish() // what main does after Run: Ctrl-C twice, the terminal closed
 	tt.Finish()
-	if all := kept(t); len(all) != 1 || all[0].Score != tt.g.Score {
+	if all := kept(t); len(all) != 1 || all[0].Score != tt.g.Score || all[0].Name != "ANON" {
 		t.Fatalf("kept %+v", all)
 	}
 }
 
 func TestLineClearFlashesThenGoes(t *testing.T) {
 	tt, d := open(t, 60, 32)
-	play(d, "vulcan")
+	play(d)
 	g := tt.g
 	// The foot full but where the piece coming in falls.
 	foot := -1
@@ -589,13 +631,13 @@ func TestLineClearFlashesThenGoes(t *testing.T) {
 	if len(g.Going) != 1 {
 		t.Fatalf("rows going %v", g.Going)
 	}
-	y := edge + game.Rows - 1
-	if picture(g, false).px[y][edge] != inkWhite {
+	y := game.Rows - 1
+	if picture(g, false).px[y][0] != inkWhite {
 		t.Fatal("the row going is not white first")
 	}
 	d.Advance(game.Flash + game.Wipe/2)
 	half := picture(g, false)
-	if half.px[y][edge+game.Cols/2] == inkWhite || half.px[y][edge] != inkWhite {
+	if half.px[y][game.Cols/2] == inkWhite || half.px[y][0] != inkWhite {
 		t.Fatal("halfway, the middle is not gone while the ends stay")
 	}
 	d.Advance(game.Wipe)
@@ -619,8 +661,9 @@ func TestBrokenScoresAskToMoveAside(t *testing.T) {
 	if _, err := os.Stat(path + ".bak"); err != nil {
 		t.Fatal("the broken file was not moved aside")
 	}
-	play(d, "vulcan")
+	play(d)
 	topOut(t, tt, d)
+	keepAs(d, "vulcan")
 	if len(kept(t)) != 1 {
 		t.Fatal("no score kept after starting fresh")
 	}
@@ -646,7 +689,8 @@ func TestPopupsOverTheGameAtEveryWidth(t *testing.T) {
 	tdptest.EachIconWidth(t, func(t *testing.T) {
 		for _, size := range [][2]int{{60, 32}, {minW, minH}, {120, 50}, {200, 60}} {
 			tt, d := open(t, size[0], size[1])
-			play(d, "vulcan")
+			play(d)
+			d.Press("j") // a point: the game is worth asking about
 			d.Press("Space")
 			d.Press("Esc")
 			d.Press("?")
@@ -660,7 +704,7 @@ func TestPopupsOverTheGameAtEveryWidth(t *testing.T) {
 			d.Press("Esc")
 			d.Press("Enter")
 			topOut(t, tt, d)
-			d.Advance(game.Curtain)
+			keepAs(d, "vulcan")
 		}
 	})
 }

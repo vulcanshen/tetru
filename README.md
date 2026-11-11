@@ -19,8 +19,9 @@ with the player's name and the time, and ranks them, the best first.
   and score at the left; at its right the next two pieces, a box each, and the keys to play with.
 - **Your keys**: every key you play with but `Space` can be changed on the Settings screen.
 - **Ten levels of speed**: a level every ten rows, from a row a second to ten a second; past the tenth the speed stays.
-- **Every game kept**: the time, the name and the score, the best first on the Rank screen. A game left half way is kept
-  too: quitting, or closing the terminal, keeps the score it had then.
+- **Every game kept**: the time, the name and the score, the best first on the Rank screen. You play first and say who
+  played as the game ends; with no name it is ANON. A game left half way is kept too: quitting, or closing the terminal,
+  keeps the score it had then.
 - **Pause whenever**: `Space` pauses and shows what you can do; `Esc` pauses and leaves the game where it is.
 
 ## Install
@@ -30,7 +31,7 @@ with the player's name and the time, and ranks them, the best first.
 - macOS or Linux (WSL too).
 - A [Nerd Font](https://www.nerdfonts.com) terminal profile: the blocks and the frames are Nerd Font glyphs.
 - A truecolor (24-bit) terminal: the faded colours and the layer colours cannot be told apart in 256 colours.
-- A terminal at least 42 columns wide and 30 rows high, the well alone; the pieces to come and the keys show beside it
+- A terminal at least 42 columns wide and 28 rows high, the well alone; the pieces to come and the keys show beside it
   from 60 columns on. In a
   smaller one tetru shows only its name, the size it needs and how to quit, and comes back as it was once the terminal
   grows: the game waits meanwhile.
@@ -86,10 +87,11 @@ It asks before removing `~/.tetru`, your scores.
 ## Quick start
 
 1. Run `tetru`.
-2. Press `Enter`, type your name and press `Enter`: the game starts.
+2. Press `Enter`: the game starts.
 3. `h` and `l` move the piece, `e` and `i` turn it, `j` takes it down a row and `Enter` drops it.
 4. Press `Space` to pause and see what you can do; `Esc` closes the menu and the game goes on.
-5. Press `q` to quit; with a game going tetru asks first, and keeps its score.
+5. When the game is over, type your name and press `Enter`, or just `Enter` for ANON: the score is kept.
+6. Press `q` to quit; with a game going tetru asks who played first, and keeps its score.
 
 ## Usage
 
@@ -130,9 +132,9 @@ On the GAME panel, out of the game:
 
 | Key | What it does |
 |---|---|
-| `Enter` | Play a new game, asking who plays (the last name offered), or go on with the one paused |
-| `n` | A new game; with one going, after asking, its score kept |
-| `x` | End the game going, after asking, its score kept |
+| `Enter` | Play a new game at once, or go on with the one paused |
+| `n` | A new game; with one going, after asking who played it, its score kept |
+| `x` | End the game going, after asking who played it, its score kept |
 
 The keys every family app shares:
 
@@ -144,7 +146,7 @@ The keys every family app shares:
 | `Tab`, `1`–`9` | The next panel; jump to a panel by its number. While playing, `Esc` first |
 | `j\|k`, `gg\|G` | On Rank and Settings: move, to the top, to the bottom |
 | `Esc` | Close the popup on top, one at a time; it never leaves tetru |
-| `q` | Quit; with a game going, after asking |
+| `q` | Quit; with a game going, after asking who played it |
 
 ## Settings and data
 

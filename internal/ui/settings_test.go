@@ -72,7 +72,7 @@ func TestSettingsSetAKey(t *testing.T) {
 	if !d.Has("a      rotate left") {
 		t.Fatal("MANUAL did not follow the new key")
 	}
-	play(d, "vulcan")
+	play(d)
 	turnable(tt, d)
 	d.Press("e")
 	if tt.g.At.Turn != 0 {

@@ -6,7 +6,6 @@ package ui
 
 import (
 	_ "embed"
-	"fmt"
 	"math/rand/v2"
 	"strconv"
 	"strings"
@@ -66,7 +65,6 @@ type Tetru struct {
 	scale  int // what a pixel of GAME and the NEXT panels is grown by
 
 	g     *game.Game // the game, nil before the first
-	name  string     // who plays it
 	saved bool       // its score is kept (or it was not worth keeping)
 
 	ticking bool          // a frame is on its way
@@ -209,80 +207,69 @@ func (t *Tetru) paused() bool { return t.going() && t.gameP.InMode() != t.play }
 // eye.
 func (t *Tetru) setActions() {
 	t.next1P.Stream, t.next2P.Stream = t.playing(), t.playing()
-	enter := terminu.Action{Key: "Enter", Label: "Play", Desc: "a new game", Scope: terminu.PanelScope, Hint: "play", Do: t.enter}
+	enter := terminu.Action{Key: "Enter", Label: "Play", Desc: "a new game", Scope: terminu.PanelScope, Hint: "play", Disabled: t.waiting, Do: t.enter}
 	switch {
-	case t.playing():
-		// In the Play mode no key of the panel's works: no hint (tdp
-		// panel.1); the mode's keys are in the footer.
+	case t.playing(), t.waiting():
+		// In the Play mode no key of the panel's works, nor Enter while the
+		// game over waits to be kept: no hint (tdp panel.1); the mode's keys
+		// are in the footer.
 		enter.Hint = ""
 	case t.paused():
 		enter.Label, enter.Desc, enter.Hint = "Resume", "this game, where it was", "resume"
 	}
 	t.gameP.Actions = []terminu.Action{
 		enter,
-		{Key: "n", Label: "New game", Desc: "start over from level 1", Scope: terminu.PanelScope,
-			AskFor: t.askEnding("New game", "Start a new game?", "start"), Do: t.newGame},
+		{Key: "n", Label: "New game", Desc: "start over from level 1", Scope: terminu.PanelScope, Disabled: t.waiting, Do: t.newGame},
 		{Key: "x", Label: "End game", Desc: "keep this score and stop", Scope: terminu.PanelScope,
-			Disabled: func() bool { return !t.going() },
-			AskFor:   t.askEnding("End game", "End this game?", "end"), Do: t.endGame},
+			Disabled: func() bool { return !t.going() }, Do: t.endGame},
 	}
 }
 
-// askEnding is the confirm before what ends the game going, saying what is
-// kept (tdp F6); nothing to ask with no game going.
-func (t *Tetru) askEnding(title, question, verb string) func() *terminu.Ask {
-	return func() *terminu.Ask {
-		if !t.going() {
-			return nil
-		}
-		return &terminu.Ask{Title: title, Question: question, Verb: verb, Details: []string{t.keeping()}}
-	}
-}
+// anon is the name a score is kept for when none is given (user,
+// 2026-11-11).
+const anon = "ANON"
 
-// keeping says what ending the game keeps.
-func (t *Tetru) keeping() string {
-	if t.g.Score == 0 {
-		return "This game has no points yet: nothing is kept."
-	}
-	return "This game ends with " + comma(t.g.Score) + " points, kept for " + t.name + "."
-}
-
-// enter is Enter on GAME: go on with the game paused, or a new one.
+// enter is Enter on GAME: go on with the game paused, or straight into a
+// new one (user, 2026-11-11: no name first; it is asked as the game ends).
 func (t *Tetru) enter() tea.Cmd {
 	if t.paused() {
 		return t.resume()
 	}
-	return t.askName()
+	return t.begin()
 }
 
-// askName asks who plays the new game, the last name kept offered (tdp
-// input.6); a name is asked before the game, not after it: a game left
-// half way is kept too, and leaving is no time to ask (user, 2026-11-11).
-func (t *Tetru) askName() tea.Cmd {
-	last := ""
-	if n := len(t.all); n > 0 {
-		last = t.all[n-1].Name
+// begin starts a new game, in the Play mode.
+func (t *Tetru) begin() tea.Cmd {
+	t.g, t.saved = game.New(t.seed()), false
+	return t.resume()
+}
+
+// askName is what ends a game with points: a text input (tdp text) saying
+// the points and asking who played, ANON offered (tdp input.6). Enter keeps
+// the score for the name typed, for ANON when there is none (user,
+// 2026-11-11), then runs then; Esc runs cancel. A game with no points has
+// nothing to keep: then runs at once.
+func (t *Tetru) askName(title, verb string, then, cancel func() tea.Cmd) tea.Cmd {
+	if t.g.Score == 0 {
+		t.saved = true // nothing to keep, nobody to ask
+		return then()
+	}
+	keep := func(name string) tea.Cmd {
+		if name = strings.TrimSpace(name); name == "" {
+			name = anon
+		}
+		return tea.Batch(t.save(name), then())
 	}
 	return t.App.Text(terminu.TextInput{
-		Title:   "Name",
-		Prompt:  "Who is playing?",
-		Verb:    "play",
-		Suggest: last,
-		MaxLen:  nameLen,
-		Check: func(s string) error {
-			if strings.TrimSpace(s) == "" {
-				return fmt.Errorf("Type a name")
-			}
-			return nil
-		},
-		Done: func(s string) tea.Cmd { return t.begin(strings.TrimSpace(s)) },
+		Title:     title,
+		Prompt:    comma(t.g.Score) + " points: who played?",
+		Verb:      verb,
+		Suggest:   anon,
+		MaxLen:    nameLen,
+		Done:      keep,
+		Unchanged: func() tea.Cmd { return keep("") },
+		OnCancel:  cancel,
 	})
-}
-
-// begin starts a game for name, in the Play mode.
-func (t *Tetru) begin(name string) tea.Cmd {
-	t.g, t.name, t.saved = game.New(t.seed()), name, false
-	return t.resume()
 }
 
 // resume goes into the Play mode: the game runs.
@@ -299,19 +286,23 @@ func (t *Tetru) pause() tea.Cmd {
 	return nil
 }
 
-// newGame ends the game going, its score kept, and asks who plays the next.
+// newGame ends the game going, its score kept for the name asked, and
+// starts the next; Esc on the name goes back to the game.
 func (t *Tetru) newGame() tea.Cmd {
-	cmd := t.finish()
-	return tea.Batch(cmd, t.askName())
+	if !t.going() {
+		return t.begin()
+	}
+	return t.askName("New game", "start", func() tea.Cmd { return tea.Batch(t.finish(), t.begin()) }, nil)
 }
 
-// endGame ends the game going, its score kept.
+// endGame ends the game going, its score kept for the name asked; Esc on
+// the name goes back to the game.
 func (t *Tetru) endGame() tea.Cmd {
-	return t.finish()
+	return t.askName("End game", "end", t.finish, nil)
 }
 
 // finish ends the game going, if any: out of the Play mode, the curtain
-// coming down, its score kept.
+// coming down.
 func (t *Tetru) finish() tea.Cmd {
 	if !t.going() {
 		return nil
@@ -319,54 +310,56 @@ func (t *Tetru) finish() tea.Cmd {
 	t.g.End()
 	t.gameP.LeaveMode()
 	t.setActions()
-	return tea.Batch(t.save(), t.wake())
+	return t.wake()
 }
 
-// save keeps the game's score, once: a game with no points is not kept.
-// The new record is the cursor's on SCORES (tdp K3: the item added).
-func (t *Tetru) save() tea.Cmd {
+// save keeps the game's score for name, once: a game with no points is not
+// kept. The new record is the cursor's on RANK (tdp K3: the item added).
+func (t *Tetru) save(name string) tea.Cmd {
 	if t.g == nil || t.saved {
 		return nil
 	}
 	t.saved = true
+	t.setActions() // Enter plays again
 	if t.g.Score == 0 {
 		return nil
 	}
-	t.all = append(t.all, scores.Score{Time: time.Now().Truncate(time.Second), Name: t.name, Score: t.g.Score})
+	t.all = append(t.all, scores.Score{Time: time.Now().Truncate(time.Second), Name: name, Score: t.g.Score})
 	t.setRows(strconv.Itoa(len(t.all) - 1))
 	if err := scores.Save(t.path, t.all); err != nil {
 		return t.App.Error("Can't keep the score", t.path, err.Error())
 	}
-	t.App.Log(terminu.Success, "Kept "+comma(t.g.Score)+" points for "+t.name)
+	t.App.Log(terminu.Success, "Kept "+comma(t.g.Score)+" points for "+name)
 	return nil
 }
 
-// Finish keeps the score of a game still going when the program ends: q
-// and Ctrl-C ask first and keep it; Ctrl-C pressed twice does not ask
-// (user, 2026-11-11: leaving keeps the score as it is then).
+// Finish keeps the score of a game not kept yet when the program ends, for
+// ANON: nobody was asked (Ctrl-C pressed twice, the terminal closed; user,
+// 2026-11-11: leaving keeps the score as it is then, ANON for no name).
 func (t *Tetru) Finish() {
 	t.done = true
-	if t.going() {
-		t.g.End()
-		t.save()
+	if t.g != nil && !t.saved {
+		if t.going() {
+			t.g.End()
+		}
+		t.save(anon)
 	}
 }
 
-// quit is the quit flow (tdp K9): with a game going, ask, saying what is
-// kept; else leave.
+// quit is the quit flow (tdp K9): with a game with points going, ask who
+// played, as the game ending does, Esc staying; else leave.
 func (t *Tetru) quit() tea.Cmd {
-	if !t.going() {
+	if !t.going() || t.g.Score == 0 {
 		return tea.Quit
 	}
-	return t.App.Confirm(terminu.Ask{Title: "Quit", Question: "Quit tetru?", Verb: "quit", Details: []string{t.keeping()}},
-		func() tea.Cmd {
-			t.Finish()
-			// TODO(tgo #5): leave once the confirm has closed (tdp F2: 9
-			// frames of 32ms): tdptest cannot settle a confirm of the app's
-			// whose accept quits while it closes; the lib's own quit
-			// confirm does not have it.
-			return t.App.Tick(closing, func(time.Time) tea.Msg { return tea.QuitMsg{} })
-		})
+	return t.askName("Quit", "quit", func() tea.Cmd {
+		t.Finish()
+		// TODO(tgo #5): leave once the popup has closed (tdp F2: 9 frames
+		// of 32ms): tdptest cannot settle a popup of the app's whose
+		// accept quits while it closes; the lib's own quit confirm does not
+		// have it.
+		return t.App.Tick(closing, func(time.Time) tea.Msg { return tea.QuitMsg{} })
+	}, nil)
 }
 
 // closing is how long a popup takes to close (tdp F2), and a frame more.
@@ -437,13 +430,22 @@ func (t *Tetru) after() tea.Cmd {
 	return nil
 }
 
-// over is the stack reaching the top: out of the Play mode, the score kept,
-// the curtain coming down.
+// over is the stack reaching the top: out of the Play mode, the curtain
+// coming down; once END is up, who played is asked (step), Esc keeping the
+// score for ANON. Till then the game is waiting to be kept: Enter and New
+// game do nothing. A game with no points has nothing to keep.
 func (t *Tetru) over() tea.Cmd {
 	t.gameP.LeaveMode()
 	t.setActions()
-	return tea.Batch(t.save(), t.wake())
+	if t.g.Score == 0 {
+		t.saved = true
+	}
+	return t.wake()
 }
+
+// waiting says whether a game is over and not kept yet: its curtain coming
+// down, or who played being asked.
+func (t *Tetru) waiting() bool { return t.g != nil && t.g.Over && !t.saved }
 
 // tick is a frame of the game.
 type tick struct{}
@@ -477,6 +479,11 @@ func (t *Tetru) step() tea.Cmd {
 			return nil
 		}
 		t.g.Advance(frame)
+		if t.g.Ended() && !t.saved {
+			// END is up: ask who played now, not as the stack reaches the
+			// top, when the player may still be pressing Enter to drop.
+			return t.askName("Game over", "keep", func() tea.Cmd { return nil }, func() tea.Cmd { return t.save(anon) })
+		}
 		return t.wake()
 	case !t.playing():
 		return nil

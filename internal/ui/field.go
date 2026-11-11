@@ -14,22 +14,23 @@ import (
 
 // The field is drawn as locku's tetromino saver draws its board (user,
 // 2026-11-11): a pixel is a square glyph two columns wide and a row high, a
-// block a pixel; the field framed in grey a pixel thick, the pieces to come
-// in a column of boxes at its right, a box each, the side by the field the
-// field's own. Inside the frame the ground is lit too, in surface0, as
-// locku's board is. The field is GAME's and each box a NEXT panel's (user,
-// 2026-11-11: Next 1 and Next 2 at the right); narrow, where GAME is drawn
-// alone, GAME draws both, as locku's board is.
+// block a pixel; the ground lit too, in surface0, as locku's board is; the
+// pieces to come a box each, framed in grey a pixel thick. The field has no
+// frame of its own: GAME's is it (user, 2026-11-11: the panel is the game,
+// and the rows go to the field). The field is GAME's and each box a NEXT
+// panel's (user, 2026-11-11: Next 1 and Next 2 at the right); narrow, where
+// GAME is drawn alone, GAME draws the boxes too, a pixel from the field.
 const (
-	edge       = 1 // the frame's width in pixels
+	edge       = 1 // a box's frame, in pixels
 	boxW, boxH = 6, 4
-	// fieldW is the field and its frame, queueW the column of boxes and its
-	// frame, its left side the field's right; sceneW and sceneH are the two
+	// fieldW and sceneH are the field; queueX is where the column of boxes
+	// starts beside it, queueW its width with its frame; sceneW is the two
 	// side by side, in pixels; boxTall is a box and its frame.
-	fieldW  = 2*edge + game.Cols
+	fieldW  = game.Cols
+	sceneH  = game.Rows
+	queueX  = fieldW + 1
 	queueW  = 2*edge + boxW
-	sceneW  = fieldW + queueW - edge
-	sceneH  = 2*edge + game.Rows
+	sceneW  = queueX + queueW
 	boxTall = boxH + 2*edge
 	// statsH is the rows over the field in GAME: the level and the rows
 	// cleared, the score, and a row between them and the field (user,
@@ -110,42 +111,33 @@ func (s *scene) stamp(rows []string, x, y int, ink uint8) {
 	}
 }
 
-// picture is the scene of g, nil before the first game: the frame and the
+// picture is the scene of g, nil before the first game: the ground and the
 // boxes, the stack, the rows going, the piece falling, the pieces to come;
 // at the end the pieces grey as far as the curtain is down, then END; the
 // pause sign over a game paused.
 func picture(g *game.Game, paused bool) scene {
 	var s scene
-	fw := fieldW
 	for y := range sceneH {
-		for x := range sceneW {
+		for x := range fieldW {
 			s.px[y][x] = inkGround
 		}
 	}
-	for x := range sceneW {
-		s.px[0][x], s.px[sceneH-1][x] = inkFrame, inkFrame
-	}
-	for y := range sceneH {
-		s.px[y][0], s.px[y][fw-1], s.px[y][sceneW-1] = inkFrame, inkFrame, inkFrame
-	}
-	// The boxes: a line over each and under the last; under the last box
-	// whole, down to the foot, the frame's grey (locku).
+	// The boxes: framed in grey, a line between two (locku).
 	bh := boxH + edge
-	for i := 0; i <= game.Queue; i++ {
-		for x := fw - 1; x < sceneW; x++ {
-			s.put(x, i*bh, inkFrame)
-		}
-	}
-	for y := game.Queue*bh + 1; y < sceneH; y++ {
-		for x := fw - 1; x < sceneW; x++ {
-			s.put(x, y, inkFrame)
+	for y := 0; y <= game.Queue*bh; y++ {
+		for x := queueX; x < sceneW; x++ {
+			ink := inkGround
+			if y%bh == 0 || x == queueX || x == sceneW-1 {
+				ink = inkFrame
+			}
+			s.put(x, y, ink)
 		}
 	}
 	if g == nil {
 		return s
 	}
 	for i, p := range g.Next {
-		preview(&s, p, fw, edge+i*bh)
+		preview(&s, p, queueX+edge, edge+i*bh)
 	}
 	for y := range game.Rows {
 		going := slices.Contains(g.Going, y)
@@ -154,16 +146,16 @@ func picture(g *game.Game, paused bool) scene {
 			switch {
 			case c == 0:
 			case !going:
-				s.put(edge+x, edge+y, inkPiece+c-1)
+				s.put(x, y, inkPiece+c-1)
 			case g.Flashing() || !g.Wiped(x):
-				s.put(edge+x, edge+y, inkWhite)
+				s.put(x, y, inkWhite)
 			}
 		}
 	}
 	if g.Live() {
 		for _, b := range g.Blocks() {
 			if b[1] >= 0 {
-				s.put(edge+b[0], edge+b[1], inkPiece+uint8(g.Cur))
+				s.put(b[0], b[1], inkPiece+uint8(g.Cur))
 			}
 		}
 	}
@@ -179,10 +171,10 @@ func picture(g *game.Game, paused bool) scene {
 			}
 		}
 		if g.Ended() {
-			s.stamp(endWord, edge+(game.Cols-len(endWord[0]))/2, (sceneH-len(endWord))/2, inkRed)
+			s.stamp(endWord, (game.Cols-len(endWord[0]))/2, (sceneH-len(endWord))/2, inkRed)
 		}
 	} else if paused {
-		s.stamp(pauseSign, edge+(game.Cols-len(pauseSign[0]))/2, edge+(game.Rows-len(pauseSign))/2, inkPause)
+		s.stamp(pauseSign, (game.Cols-len(pauseSign[0]))/2, (game.Rows-len(pauseSign))/2, inkPause)
 	}
 	return s
 }
@@ -240,7 +232,7 @@ func (n *next) Draw(w, h int, focused bool) []string {
 		k = 1
 	}
 	y0 := n.i * (boxH + edge)
-	return middle(pixels(&sc, fieldW-edge, sceneW, y0, y0+boxTall, k), 2*queueW*k, w, h)
+	return middle(pixels(&sc, queueX, sceneW, y0, y0+boxTall, k), 2*queueW*k, w, h)
 }
 
 // pixels are columns x0 to x1 of rows y0 to y1 of sc, every pixel k × k
