@@ -1,0 +1,282 @@
+package game
+
+import (
+	"testing"
+	"time"
+)
+
+// with is a game whose falling piece is p, at its spawn, on an empty field.
+func with(p int) *Game {
+	g := New(1)
+	g.Next[0] = p
+	g.come()
+	return g
+}
+
+// fill takes every block of row y but those at the xs.
+func (g *Game) fill(y int, holes ...int) {
+	for x := 0; x < Cols; x++ {
+		g.cells[y*Cols+x] = 1
+	}
+	for _, x := range holes {
+		g.cells[y*Cols+x] = 0
+	}
+}
+
+func TestPiecesComeSevenToABag(t *testing.T) {
+	g := New(7)
+	g.bag = nil // a fresh bag: New dealt the queue from the first
+	seen := map[int]int{}
+	for range 7 * 4 {
+		seen[g.deal()]++
+	}
+	for p := range Pieces {
+		if seen[p] != 4 {
+			t.Fatalf("piece %d came %d times in four bags", p, seen[p])
+		}
+	}
+}
+
+func TestSameSeedSameGame(t *testing.T) {
+	a, b := New(42), New(42)
+	for range 50 {
+		if a.Cur != b.Cur {
+			t.Fatal("two games of one seed differ")
+		}
+		a.Drop()
+		b.Drop()
+		a.Advance(Flash + Wipe)
+		b.Advance(Flash + Wipe)
+	}
+}
+
+func TestPieceComesInAtTheTopInTheMiddle(t *testing.T) {
+	for p := range Pieces {
+		g := with(p)
+		top, lo, hi := Rows, Cols, -1
+		for _, b := range g.Blocks() {
+			top, lo, hi = min(top, b[1]), min(lo, b[0]), max(hi, b[0])
+		}
+		if top != 0 {
+			t.Errorf("piece %d comes in with its top on row %d, not 0", p, top)
+		}
+		if left, right := lo, Cols-1-hi; left-right < -1 || left-right > 1 {
+			t.Errorf("piece %d comes in at columns %d–%d, off the middle", p, lo, hi)
+		}
+	}
+}
+
+func TestMoveStopsAtTheWalls(t *testing.T) {
+	g := with(1) // the square
+	n := 0
+	for g.Move(-1) {
+		n++
+	}
+	if n != 4 {
+		t.Fatalf("the square moved %d left from the middle, not 4", n)
+	}
+	for _, b := range g.Blocks() {
+		if b[0] < 0 {
+			t.Fatal("the square is past the left wall")
+		}
+	}
+}
+
+func TestRotateTurnsAndComesBack(t *testing.T) {
+	g := with(2) // T
+	start := g.At
+	for range 4 {
+		if !g.Rotate(1) {
+			t.Fatal("T could not turn in the open")
+		}
+	}
+	if g.At != start {
+		t.Fatalf("four turns clockwise left T at %+v, not %+v", g.At, start)
+	}
+	g.Rotate(1)
+	g.Rotate(-1)
+	if g.At != start {
+		t.Fatalf("a turn and back left T at %+v", g.At)
+	}
+}
+
+func TestRotateKicksOffTheWall(t *testing.T) {
+	g := with(I)
+	g.Rotate(1) // upright
+	for g.Move(1) {
+	}
+	if !g.Rotate(1) {
+		t.Fatal("the long piece could not turn flat against the right wall")
+	}
+	for _, b := range g.Blocks() {
+		if b[0] >= Cols {
+			t.Fatal("the long piece turned through the wall")
+		}
+	}
+}
+
+func TestDownScoresARow(t *testing.T) {
+	g := with(1)
+	y := g.At.Y
+	if !g.Down() || g.At.Y != y+1 || g.Score != 1 {
+		t.Fatalf("down: at %d, score %d", g.At.Y, g.Score)
+	}
+}
+
+func TestDropSetsThePieceAndScoresTwoARow(t *testing.T) {
+	g := with(1) // the square, two high: 18 rows to fall
+	if n := g.Drop(); n != 18 {
+		t.Fatalf("the square fell %d rows, not 18", n)
+	}
+	if g.Score != 36 {
+		t.Fatalf("score %d, not 36", g.Score)
+	}
+	if g.Cell(4, Rows-1) == 0 || g.Cell(5, Rows-2) == 0 {
+		t.Fatal("the square is not set at the foot")
+	}
+}
+
+func TestGravityAtTheLevelsSpeed(t *testing.T) {
+	g := with(1)
+	y := g.At.Y
+	g.Advance(Interval(1) - time.Millisecond)
+	if g.At.Y != y {
+		t.Fatal("fell before its time")
+	}
+	g.Advance(time.Millisecond)
+	if g.At.Y != y+1 {
+		t.Fatal("did not fall a row in a second at level 1")
+	}
+}
+
+func TestLockWaitsAndMovingRestartsIt(t *testing.T) {
+	g := with(1)
+	for g.Down() {
+	}
+	cur := g.Cur
+	g.Advance(LockDelay - 100*time.Millisecond)
+	g.Move(-1)
+	g.Advance(LockDelay - 100*time.Millisecond)
+	if g.Cur != cur || g.Cell(3, Rows-1) != 0 {
+		t.Fatal("the piece was set though moving restarted the wait")
+	}
+	g.Advance(100 * time.Millisecond)
+	if g.Cell(3, Rows-1) == 0 {
+		t.Fatal("the piece was not set after lying still for the delay")
+	}
+}
+
+func TestLockResetsRunOut(t *testing.T) {
+	g := with(1)
+	for g.Down() {
+	}
+	for i := range LockResets + 5 {
+		g.Advance(LockDelay - time.Millisecond)
+		if !g.Live() || g.At.Y < Rows-2 {
+			break
+		}
+		g.Move(1 - 2*(i%2))
+	}
+	g.Advance(LockDelay)
+	if g.Cell(4, Rows-1) == 0 && g.Cell(3, Rows-1) == 0 && g.Cell(5, Rows-1) == 0 {
+		t.Fatal("moving kept the piece from being set for ever")
+	}
+}
+
+func TestClearScoresAtTheLevelAndGoesUp(t *testing.T) {
+	g := with(I)
+	g.Level, g.Lines = 3, 29
+	for y := Rows - 4; y < Rows; y++ {
+		g.fill(y, 9)
+	}
+	g.Rotate(1) // upright, in column 6 of its box
+	for g.Move(1) {
+	}
+	score := g.Score
+	fell := g.Drop()
+	if len(g.Going) != 4 || !g.Flashing() {
+		t.Fatalf("rows going: %v", g.Going)
+	}
+	g.Advance(Flash + Wipe)
+	if got := g.Score - score; got != 800*3+2*fell {
+		t.Fatalf("four rows at level 3 scored %d", got)
+	}
+	if g.Lines != 33 || g.Level != 4 {
+		t.Fatalf("lines %d level %d after 33 rows", g.Lines, g.Level)
+	}
+	for x := 0; x < Cols; x++ {
+		if g.Cell(x, Rows-1) != 0 {
+			t.Fatal("a cleared row is still there")
+		}
+	}
+}
+
+func TestTheWipeGoesFromTheMiddleOut(t *testing.T) {
+	g := with(1)
+	g.Going = []int{Rows - 1}
+	g.fx = Flash
+	if g.Wiped(0) || g.Wiped(4) {
+		t.Fatal("blocks gone before the wipe began")
+	}
+	g.fx = Flash + Wipe/2
+	if !g.Wiped(4) || !g.Wiped(5) || g.Wiped(0) || g.Wiped(9) {
+		t.Fatal("halfway through, the middle is not gone while the ends stay")
+	}
+	g.fx = Flash + Wipe
+	for x := range Cols {
+		if !g.Wiped(x) {
+			t.Fatalf("block %d not gone at the wipe's end", x)
+		}
+	}
+}
+
+func TestTheSpeedStopsAtTheLastLevel(t *testing.T) {
+	g := with(I)
+	g.Lines = 150
+	g.fill(Rows-1, 0, 1, 2, 3)
+	g.Drop() // flat, in columns 3–6: the row is not full, nothing goes
+	g.Level = MaxLevel
+	g.Lines = 199
+	g.fill(Rows-2, 9)
+	g.Next[0] = I
+	g.come()
+	g.Rotate(1)
+	for g.Move(1) {
+	}
+	g.Drop()
+	g.Advance(Flash + Wipe)
+	if g.Level != MaxLevel {
+		t.Fatalf("level %d past the last", g.Level)
+	}
+	if Interval(MaxLevel+5) != Interval(MaxLevel) {
+		t.Fatal("the speed goes on past the last level")
+	}
+}
+
+func TestTheStackAtTheTopEnds(t *testing.T) {
+	g := with(1)
+	for y := 0; y < Rows; y++ {
+		g.fill(y, 0)
+	}
+	g.Next[0] = 1
+	g.come()
+	if !g.Over {
+		t.Fatal("a piece with no room to come in did not end the game")
+	}
+	g.Advance(Curtain / 2)
+	if d := g.CurtainDone(); d < 0.49 || d > 0.51 || g.Ended() {
+		t.Fatalf("halfway: curtain %v", d)
+	}
+	g.Advance(Curtain)
+	if !g.Ended() {
+		t.Fatal("the curtain did not come down")
+	}
+}
+
+func TestEndStopsThePiece(t *testing.T) {
+	g := with(1)
+	g.End()
+	if g.Move(1) || g.Rotate(1) || g.Down() || g.Drop() != 0 {
+		t.Fatal("the piece moved after the end")
+	}
+}
