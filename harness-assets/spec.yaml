@@ -1,4 +1,4 @@
-id: 15
+id: 16
 from: v1.2.3
 to: v1.2.3
 tasks:
@@ -86,12 +86,12 @@ tasks:
       - 'Enter 在 Play 裡是落到底並固定：K11 的表沒有 Enter，照 tdp K3「對 focus 的東西做最直觀的動作」，Play 裡 focus 的是落下中的方塊，把它放到底就是最直觀的（跟 Drag mode 的 Enter 放下一樣）。Play 外 Enter 在 GAME 上是開始一局或繼續（tdp K3：panel 沒有項目時，對整個 panel 做最直觀的動作）'
       - '旋轉是對落下中的方塊做的事：ITEM OPERATION（tdp K11），在 footer；移動與落到底是移動：只在 ? 與 Space menu 顯示（tdp K6、menu.4），不佔 footer，60 欄時 Esc:pause 才不會被捨掉（footer：Space:menu ?:help d:rotate left k:rotate right Esc:pause）'
   - id: 5
-    spec: 14
-    request: 'Space 暫停，並打開 Space menu；Space 不能改；暫停用 popup 顯示，不畫在遊戲裡（那是 locku 的限制，tetru 是獨立的 app）；玩的時候的 Space menu 不用列 h、l、j、k、Enter，連 d、k 都不用，應該是給 restart、save（使用者 2026-11-11）；後來使用者說列出來的確實是這個模式的鍵，照 tdp 列（2026-11-11）'
+    spec: 16
+    request: 'Space 暫停，並打開 Space menu；Space 不能改；暫停用 popup 顯示，不畫在遊戲裡（那是 locku 的限制，tetru 是獨立的 app）；玩的時候的 Space menu 不用列 h、l、j、k、Enter，連 d、k 都不用，應該是給 restart、save（使用者 2026-11-11）；後來使用者一度說列的確實是這個模式的鍵，再問為什麼 h、l、j、Enter 出現在裡面，選了重新打開 tdp #7（2026-11-11）'
     tdp: [tdp K5, tdp K11, tdp K4, tdp menu.4, tdp M2, tdp M7, tdp L1, tdp screen.7, tdp F1, tdp F6, tdp confirm]
     remark:
       - 'Play 裡按 Space 開 Play 模式的 Space menu（tdp K11、menu.4）：ITEM OPERATION 是對落下中的方塊的 [d] Rotate left、[k] Rotate right（照使用者設的鍵）；PLAY MODE 列移動、往下、落到底（只顯示），[r]estart、[s]ave 與 [Esc] Pause。menu 開著遊戲就停，Esc 或 Space 關掉就接著玩'
-      - 'tdp menu.4、K11：模式的 Space menu 列模式本身的鍵。玩的鍵照列（旋轉在 ITEM OPERATION，移動與落下在 PLAY MODE 只顯示）；restart、save 做成 Play 模式自己的鍵，列在 PLAY MODE、能執行。曾回報 tdp #7 想只列 restart、save，使用者說列的確實是這個模式的鍵，關掉（2026-11-11，not planned）'
+      - {note: 'tdp menu.4、K11：模式的 Space menu 列模式本身的鍵，沒有放行不列（模式裡能按的鍵都是模式的鍵）。暫時照 menu.4：玩的鍵照列（旋轉在 ITEM OPERATION，移動與落下在 PLAY MODE 只顯示）；restart、save 做成 Play 模式自己的鍵，列在 PLAY MODE、能執行（TODO(tdp #7)）；tdp 放行之後只留 restart、save。tdp #7 一度關掉（2026-11-11），使用者再選重新打開', issue: 'tdp #7'}
       - 'Play 模式加兩個鍵（模式的鍵 app 可以自行決定，tdp K11）：r Restart（start over from level 1，跟 GAME 的 [n]ew game 一樣：有分數先問誰玩的，0 分直接重開）；s Save（keep this game and quit; it goes on next time，task 16）。footer 寫 r:restart s:save；放不下時 tgo 先收掉中間的鍵，Esc:pause 留著（60 欄時就是這樣）。r、s 不給玩家設成玩的鍵（task 13）'
       - '遊戲只在 Play 裡、沒有任何 popup、終端機不比最低尺寸小時才走；toast 不是 popup，不擋'
       - '有沒有東西蓋在畫面上用 tgo App.Covered()（popup 開著、收起動畫播到一半、splash 開著都算，toast 不算；tgo #3 回報後 v1.2.3 加的）'
