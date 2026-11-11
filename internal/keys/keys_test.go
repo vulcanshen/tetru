@@ -10,7 +10,7 @@ import (
 
 func TestDefaultIsTheUsersKeys(t *testing.T) {
 	d := Default()
-	if d[Left] != "h" || d[Right] != "l" || d[Down] != "j" || d[RotateLeft] != "k" || d[RotateRight] != "i" || d[Drop] != "Enter" {
+	if d[Left] != "h" || d[Right] != "l" || d[Down] != "j" || d[RotateLeft] != "d" || d[RotateRight] != "k" || d[Drop] != "Enter" {
 		t.Fatalf("default %v", d)
 	}
 	if err := d.Check(); err != nil {
@@ -20,7 +20,7 @@ func TestDefaultIsTheUsersKeys(t *testing.T) {
 
 func TestArrowsGoWithTheirLetters(t *testing.T) {
 	d := Default()
-	for a, want := range map[Action][]string{Left: {"h", "←"}, Right: {"l", "→"}, Down: {"j", "↓"}, RotateLeft: {"k", "↑"}, RotateRight: {"i"}, Drop: {"Enter"}} {
+	for a, want := range map[Action][]string{Left: {"h", "←"}, Right: {"l", "→"}, Down: {"j", "↓"}, RotateLeft: {"d", "PgDn"}, RotateRight: {"k", "↑"}, Drop: {"Enter"}} {
 		if got := d.Keys(a); !slices.Equal(got, want) {
 			t.Fatalf("%s: %v", a.ID(), got)
 		}
@@ -34,9 +34,11 @@ func TestArrowsGoWithTheirLetters(t *testing.T) {
 func TestUsedBySaysWhoHasAKey(t *testing.T) {
 	d := Default()
 	for k, want := range map[string]string{
-		"i":     "it is Rotate right's key",
-		"k":     "it is Rotate left's key",
-		"↑":     "it is Rotate left's key",
+		"k":     "it is Rotate right's key",
+		"↑":     "it is Rotate right's key",
+		"d":     "it is Rotate left's key",
+		"PgDn":  "it is Rotate left's key",
+		"i":     "",
 		"Space": "it pauses and opens the Space menu",
 		"q":     "it quits",
 		"a":     "",
@@ -99,7 +101,7 @@ func TestLoadBadKeys(t *testing.T) {
 	dir := t.TempDir()
 	for name, body := range map[string]string{
 		"core":     "keys:\n  rotate_left: q\n",
-		"twice":    "keys:\n  rotate_left: i\n",
+		"twice":    "keys:\n  rotate_left: k\n",
 		"not yaml": "keys: [\n",
 		"not keys": "keys: 3\n",
 	} {

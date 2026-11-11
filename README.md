@@ -22,7 +22,8 @@ with the player's name and the time, and ranks them, the best first.
 - **Every game kept**: the time, the name and the score, the best first on the Rank screen. You play first and say who
   played as the game ends; with no name it is ANON. A game left half way is kept too: quitting, or closing the terminal,
   keeps the score it had then.
-- **Pause whenever**: `Space` pauses and shows what you can do; `Esc` pauses and leaves the game where it is.
+- **Pause whenever**: `Space` pauses and shows what you can do; `Esc` pauses and leaves the game where it is, a box
+  saying the level, the rows and the score, `Enter` to go on.
 
 ## Install
 
@@ -88,7 +89,7 @@ It asks before removing `~/.tetru`, your scores.
 
 1. Run `tetru`.
 2. Press `Enter`: the game starts.
-3. `h` and `l` move the piece, `k` and `i` turn it, `j` takes it down a row and `Enter` drops it.
+3. `h` and `l` move the piece, `d` and `k` turn it, `j` takes it down a row and `Enter` drops it.
 4. Press `Space` to pause and see what you can do; `Esc` closes the menu and the game goes on.
 5. When the game is over, type your name and press `Enter`, or just `Enter` for ANON: the score is kept.
 6. Press `q` to quit; with a game going tetru asks who played first, and keeps its score.
@@ -116,16 +117,16 @@ Playing (the game in the `Play` mode), with the keys as they first are:
 | `h`, `←` | Move the piece left |
 | `l`, `→` | Move it right |
 | `j`, `↓` | Move it down a row: a point a row |
-| `k`, `↑` | Turn it left (counterclockwise) |
-| `i` | Turn it right (clockwise) |
+| `d`, `PgDn` | Turn it left (counterclockwise) |
+| `k`, `↑` | Turn it right (clockwise) |
 | `Enter` | Drop it to the bottom and set it there: two points a row |
 | `Space` | Pause, and show what you can do; close it to go on |
-| `Esc` | Pause, out of the game; `Enter` goes on |
+| `Esc` | Pause, out of the game, where it stands in a box; `Enter` goes on |
 
 On the Settings screen, `Enter` on an action lists the keys: the small letters, `Enter` and `Space`. The one chosen is
 the key from then on, and the INFO panel beside the well shows it; one that already does something while playing
 (another action's, `Space`, `q`) is refused with a warning saying what has it. An arrow does what its letter does
-(`h|j|k|l` are `←|↓|↑|→`): set left to another letter and `←` does nothing. `Space` always pauses.
+(`h|j|k|l` are `←|↓|↑|→`, `u|d` are `PgUp|PgDn`): set left to another letter and `←` does nothing. `Space` always pauses.
 
 Clearing 1, 2, 3 or 4 rows at once scores 100, 300, 500 or 800 times the level. A piece that lies on the stack is set half
 a second later; moving or turning it gives it the half second again, a few times.

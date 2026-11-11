@@ -40,14 +40,12 @@ const (
 	inkPiece // inkPiece + p is piece p's
 	inkWhite = inkPiece + 7
 	inkFrame = inkWhite + 1
-	inkRed   = inkFrame + 1
-	inkPause = inkRed + 1
 )
 
 // inks are the colours of the inks, locku's: the ground surface0, the
 // pieces in the colours they usually have in catppuccin-mocha's (the long
 // one sky, the square yellow, T mauve, S green, Z red, J blue, L peach), a
-// row going white, the frame overlay1, END red, the pause Lavender.
+// row going white, the curtain overlay1.
 var inks = []terminu.Color{
 	{},
 	terminu.Hex("#313244"),
@@ -55,22 +53,7 @@ var inks = []terminu.Color{
 	terminu.Hex("#f38ba8"), terminu.Hex("#89b4fa"), terminu.Hex("#fab387"),
 	terminu.Hex("#ffffff"),
 	terminu.Hex("#7f849c"),
-	terminu.Hex("#f38ba8"),
-	terminu.Lavender,
 }
-
-// endWord is END in locku's short pixel face, a pixel apart, the E a pixel
-// narrower than locku's: the word fits inside the field, ten pixels.
-var endWord = []string{
-	"##.###.##.",
-	"#..#.#.#.#",
-	"##.#.#.#.#",
-	"#..#.#.#.#",
-	"##.#.#.##.",
-}
-
-// pauseSign is two bars, the pause.
-var pauseSign = []string{"##.##", "##.##", "##.##", "##.##", "##.##"}
 
 // field is the GAME panel's body: the level, the rows and the score over
 // the field of t's game; the boxes beside the field too when GAME is drawn
@@ -92,22 +75,12 @@ func (s *scene) put(x, y int, ink uint8) {
 	}
 }
 
-// stamp lights the '#' of rows in ink, its top left at x, y.
-func (s *scene) stamp(rows []string, x, y int, ink uint8) {
-	for dy, row := range rows {
-		for dx := range row {
-			if row[dx] == '#' {
-				s.put(x+dx, y+dy, ink)
-			}
-		}
-	}
-}
-
 // picture is the scene of g, nil before the first game: the ground and the
 // boxes, the stack, the rows going, the piece falling, the pieces to come;
-// at the end the pieces grey as far as the curtain is down, then END; the
-// pause sign over a game paused.
-func picture(g *game.Game, paused bool) scene {
+// at the end the pieces grey as far as the curtain is down. A pause and the
+// end are said by popups, not drawn here (user, 2026-11-11: locku draws
+// them as it has no popups; tetru does).
+func picture(g *game.Game) scene {
 	var s scene
 	for y := range sceneH {
 		for x := range fieldW {
@@ -159,11 +132,6 @@ func picture(g *game.Game, paused bool) scene {
 				}
 			}
 		}
-		if g.Ended() {
-			s.stamp(endWord, (game.Cols-len(endWord[0]))/2, (sceneH-len(endWord))/2, inkRed)
-		}
-	} else if paused {
-		s.stamp(pauseSign, (game.Cols-len(pauseSign[0]))/2, (game.Rows-len(pauseSign))/2, inkPause)
 	}
 	return s
 }
@@ -188,7 +156,7 @@ func preview(s *scene, p, x, y int) {
 // rows and the score over the field and the boxes beside it.
 func (f *field) Draw(w, h int, focused bool) []string {
 	t := f.t
-	sc := picture(t.g, t.paused())
+	sc := picture(t.g)
 	if t.narrow() {
 		row := t.statsRow()
 		cols := max(2*sceneW, terminu.Width(row))
@@ -228,7 +196,7 @@ func (t *Tetru) statsRow() string {
 // Draw is the box in the middle of w × h cells, at GAME's scale.
 func (n *next) Draw(w, h int, focused bool) []string {
 	t := n.t
-	sc := picture(t.g, t.paused())
+	sc := picture(t.g)
 	k := t.scale
 	if t.narrow() {
 		k = 1

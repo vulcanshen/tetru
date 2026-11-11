@@ -33,7 +33,7 @@ func TestScreensSwitchOnTRS(t *testing.T) {
 
 func TestInfoShowsTheKeys(t *testing.T) {
 	_, d := open(t, 60, 32)
-	for _, s := range []string{"h      move left", "l      move right", "j      down a row", "k      rotate left", "i      rotate right", "Enter  drop", "Space  pause, menu", "Esc    pause"} {
+	for _, s := range []string{"h      move left", "l      move right", "j      down a row", "d      rotate left", "k      rotate right", "Enter  drop", "Space  pause, menu", "Esc    pause"} {
 		if !d.Has(s) {
 			t.Fatalf("INFO has no %q", s)
 		}
@@ -75,10 +75,10 @@ func TestSettingsSetAKey(t *testing.T) {
 	}
 	play(d)
 	turnable(tt, d)
-	d.Press("k")
-	d.Press("↑")
+	d.Press("d")
+	d.Press("PgDn")
 	if tt.g.At.Turn != 0 {
-		t.Fatal("k or ↑ still turns")
+		t.Fatal("d or PgDn still turns")
 	}
 	d.Press("a")
 	if tt.g.At.Turn == 0 {
@@ -147,7 +147,7 @@ func TestAKeyInUseIsRefused(t *testing.T) {
 	d.Press("j")
 	d.Press("j") // Rotate left
 	for _, c := range []struct{ key, why string }{
-		{"i", "Rotate right's key"},
+		{"k", "Rotate right's key"},
 		{"Space", "the Space menu"},
 	} {
 		d.Press("Enter")
@@ -155,10 +155,10 @@ func TestAKeyInUseIsRefused(t *testing.T) {
 		d.Type(c.key)
 		d.Press("Enter")
 		d.Press("Enter")
-		if !d.Has("Can't use "+c.key+" for Rotate left") || !d.Has(c.why) || tt.keys[keys.RotateLeft] != "k" {
+		if !d.Has("Can't use "+c.key+" for Rotate left") || !d.Has(c.why) || tt.keys[keys.RotateLeft] != "d" {
 			t.Fatalf("%s for Rotate left: kept %q, no Warning", c.key, tt.keys[keys.RotateLeft])
 		}
-		if s, err := keys.Load(tt.cfg); err != nil || s[keys.RotateLeft] != "k" {
+		if s, err := keys.Load(tt.cfg); err != nil || s[keys.RotateLeft] != "d" {
 			t.Fatalf("a refused key was written: %v %v", s, err)
 		}
 		d.Advance(5 * time.Second) // the toast goes

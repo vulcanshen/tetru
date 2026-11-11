@@ -6,6 +6,7 @@ package ui
 
 import (
 	_ "embed"
+	"fmt"
 	"math/rand/v2"
 	"strconv"
 	"strings"
@@ -67,8 +68,9 @@ type Tetru struct {
 	play   *terminu.Mode
 	scale  int // what a pixel of GAME and the NEXT panels is grown by
 
-	g     *game.Game // the game, nil before the first
-	saved bool       // its score is kept (or it was not worth keeping)
+	g      *game.Game // the game, nil before the first
+	saved  bool       // its score is kept (or it was not worth keeping)
+	topped bool       // it ended reaching the top: a popup says so once the curtain is down
 
 	ticking bool          // a frame is on its way
 	done    bool          // the program is ending: no more frames
@@ -243,7 +245,7 @@ func (t *Tetru) enter() tea.Cmd {
 
 // begin starts a new game, in the Play mode.
 func (t *Tetru) begin() tea.Cmd {
-	t.g, t.saved = game.New(t.seed()), false
+	t.g, t.saved, t.topped = game.New(t.seed()), false, false
 	return t.resume()
 }
 
@@ -282,11 +284,27 @@ func (t *Tetru) resume() tea.Cmd {
 	return t.wake()
 }
 
-// pause is Esc leaving the Play mode (tdp K4): the game waits, the pause
-// sign on it, Enter to go on.
+// pause is Esc leaving the Play mode (tdp K4): the game waits, and a
+// confirm says so (user, 2026-11-11: a pause is a popup, not drawn in the
+// game), the level, the rows and the score in it. A confirm is titled by
+// what Enter does (tdp confirm.2): RESUME; Esc leaves the game paused,
+// Enter on GAME going on then.
 func (t *Tetru) pause() tea.Cmd {
 	t.setActions()
-	return nil
+	if !t.paused() {
+		return nil
+	}
+	return t.App.Confirm(terminu.Ask{
+		Title:    "Resume",
+		Question: "Go on with the game?",
+		Verb:     "resume",
+		Details:  []string{fmt.Sprintf("Paused: level %d, %d lines, %s points.", t.g.Level, t.g.Lines, comma(t.g.Score))},
+	}, func() tea.Cmd {
+		if t.paused() {
+			return t.resume()
+		}
+		return nil
+	})
 }
 
 // newGame ends the game going, its score kept for the name asked, and
@@ -427,15 +445,16 @@ func (t *Tetru) after() tea.Cmd {
 }
 
 // over is the stack reaching the top: out of the Play mode, the curtain
-// coming down; once END is up, who played is asked (step), Esc keeping the
+// coming down; once it is down, who played is asked (step), Esc keeping the
 // score for ANON. Till then the game is waiting to be kept: Enter and New
 // game do nothing. A game with no points has nothing to keep.
 func (t *Tetru) over() tea.Cmd {
 	t.gameP.LeaveMode()
-	t.setActions()
+	t.topped = true
 	if t.g.Score == 0 {
 		t.saved = true
 	}
+	t.setActions()
 	return t.wake()
 }
 
@@ -475,10 +494,18 @@ func (t *Tetru) step() tea.Cmd {
 			return nil
 		}
 		t.g.Advance(frame)
-		if t.g.Ended() && !t.saved {
-			// END is up: ask who played now, not as the stack reaches the
-			// top, when the player may still be pressing Enter to drop.
-			return t.askName("Game over", "keep", func() tea.Cmd { return nil }, func() tea.Cmd { return t.save(anon) })
+		if t.g.Ended() && t.topped {
+			// The curtain is down: the end is said now, not as the stack
+			// reaches the top, when the player may still be pressing Enter to
+			// drop (user, 2026-11-11: the end is a popup, not drawn in the
+			// game). With points, who played is asked; with none, a confirm
+			// says nothing is kept and offers the next game, titled by what
+			// Enter does (tdp confirm.2): PLAY.
+			t.topped = false
+			if !t.saved {
+				return t.askName("Game over", "keep", func() tea.Cmd { return nil }, func() tea.Cmd { return t.save(anon) })
+			}
+			return t.App.Confirm(terminu.Ask{Title: "Play", Question: "Play again?", Verb: "play", Details: []string{"Game over: no points, so nothing is kept."}}, t.begin)
 		}
 		return t.wake()
 	case !t.playing():

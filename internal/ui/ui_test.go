@@ -75,6 +75,29 @@ func topOut(t *testing.T, tt *Tetru, d *tdptest.Driver) {
 	t.Fatal("the stack never reached the top")
 }
 
+// topOutBare fills the well but its left column and the piece falling, then
+// drops the piece where it is: it falls no row, so no points, and the next
+// has no room.
+func topOutBare(t *testing.T, tt *Tetru, d *tdptest.Driver) {
+	t.Helper()
+	g := tt.g
+	piece := map[[2]int]bool{}
+	for _, b := range g.Blocks() {
+		piece[b] = true
+	}
+	for y := range game.Rows {
+		for x := 1; x < game.Cols; x++ {
+			if !piece[[2]int{x, y}] {
+				g.Put(x, y, 1)
+			}
+		}
+	}
+	d.Press("Enter")
+	if !g.Over || g.Score != 0 {
+		t.Fatalf("not over with no points: over %v, %d points", g.Over, g.Score)
+	}
+}
+
 // widest is the most pixels on a row of the screen.
 func widest(d *tdptest.Driver) int {
 	most := 0
@@ -194,7 +217,7 @@ func TestStatsInInfo(t *testing.T) {
 }
 
 func TestPictureIsLockus(t *testing.T) {
-	s := picture(nil, false)
+	s := picture(nil)
 	if s.px[0][0] != inkGround || s.px[sceneH-1][fieldW-1] != inkGround || s.px[0][fieldW] != inkNone {
 		t.Fatal("the field is not the ground alone, unframed")
 	}
@@ -208,7 +231,7 @@ func TestPictureIsLockus(t *testing.T) {
 		t.Fatal("no pixel between the boxes")
 	}
 	g := game.New(1)
-	s = picture(g, false)
+	s = picture(g)
 	for i, p := range g.Next {
 		found := false
 		for y := i * (boxH + 1); y < i*(boxH+1)+boxH; y++ {
@@ -236,7 +259,7 @@ func TestPlay(t *testing.T) {
 		if !tt.playing() || !strings.Contains(row(d, 2), "Play") {
 			t.Fatal("not in the Play mode")
 		}
-		if r := row(d, 31); !strings.HasPrefix(r, "Space:menu ?:help k:rotate left i:rotate right Esc:pause") {
+		if r := row(d, 31); !strings.HasPrefix(r, "Space:menu ?:help d:rotate left k:rotate right Esc:pause") {
 			t.Fatalf("footer %q", r)
 		}
 		if strings.Contains(row(d, 30), "Enter:") {
@@ -262,22 +285,26 @@ func TestPlay(t *testing.T) {
 		if tt.g.At.Y != at.Y+2 || tt.g.At.Turn != at.Turn {
 			t.Fatal("e did something")
 		}
-		d.Press("i")
-		if tt.g.At.Turn != 1 {
-			t.Fatal("i did not turn clockwise")
-		}
 		d.Press("k")
+		if tt.g.At.Turn != 1 {
+			t.Fatal("k did not turn clockwise")
+		}
+		d.Press("d")
 		if tt.g.At.Turn != 0 {
-			t.Fatal("k did not turn back")
+			t.Fatal("d did not turn back")
+		}
+		d.Press("PgDn")
+		if tt.g.At.Turn != 3 || tt.g.At.Y != at.Y+2 {
+			t.Fatal("PgDn did not turn left as d does (tdp K12)")
 		}
 		d.Press("↑")
-		if tt.g.At.Turn != 3 || tt.g.At.Y != at.Y+2 {
-			t.Fatal("↑ did not turn left as k does (tdp K12)")
+		if tt.g.At.Turn != 0 || tt.g.At.Y != at.Y+2 {
+			t.Fatal("↑ did not turn right as k does (tdp K12)")
 		}
 		before := tt.g.Score
-		d.Press("d")
-		if tt.g.Score != before {
-			t.Fatal("d did something")
+		d.Press("i")
+		if tt.g.Score != before || tt.g.At.Turn != 0 {
+			t.Fatal("i did something")
 		}
 		d.Press("Enter")
 		if tt.g.Score-before < 2*10 {
@@ -300,7 +327,7 @@ func TestTheGameStopsUnderAPopup(t *testing.T) {
 	tt, d := open(t, 60, 32)
 	play(d)
 	d.Press("Space")
-	for _, s := range []string{"ITEM OPERATION", "[k] Rotate left", "Rotate r[i]ght", "PLAY MODE", "move left", "drop to the bottom", "[Esc] Pause"} {
+	for _, s := range []string{"ITEM OPERATION", "[d] Rotate left", "[k] Rotate right", "PLAY MODE", "move left", "drop to the bottom", "[Esc] Pause"} {
 		if !d.Has(s) {
 			t.Fatalf("the Play mode's Space menu has no %q", s)
 		}
@@ -338,12 +365,11 @@ func TestEscPausesEnterResumes(t *testing.T) {
 	tt, d := open(t, 60, 32)
 	play(d)
 	d.Press("Esc")
-	if tt.playing() || !tt.paused() || !d.Has("Enter:resume") || strings.Contains(row(d, 2), "Play") {
+	if tt.playing() || !tt.paused() || strings.Contains(row(d, 2), "Play") {
 		t.Fatal("Esc did not pause")
 	}
-	s := picture(tt.g, true)
-	if s.px[game.Rows/2][game.Cols/2-2] != inkPause {
-		t.Fatal("no pause sign over the game paused")
+	if !d.Has("RESUME") || !d.Has("Go on with the game?") || !d.Has("Paused: level 1, 0 lines, 0 points.") || !d.Has("Enter:resume") {
+		t.Fatal("no popup says the game is paused")
 	}
 	y := tt.g.At.Y
 	d.Advance(3 * time.Second)
@@ -351,8 +377,17 @@ func TestEscPausesEnterResumes(t *testing.T) {
 		t.Fatal("the game went on paused")
 	}
 	d.Press("Enter")
+	if !tt.playing() || d.Has("RESUME") {
+		t.Fatal("Enter on the popup did not resume")
+	}
+	d.Press("Esc")
+	d.Press("Esc")
+	if !tt.paused() || d.Has("RESUME") || !d.Has("Enter:resume") {
+		t.Fatal("Esc on the popup did not leave the game paused, Enter on GAME to resume")
+	}
+	d.Press("Enter")
 	if !tt.playing() {
-		t.Fatal("Enter did not resume")
+		t.Fatal("Enter on GAME did not resume")
 	}
 }
 
@@ -383,7 +418,7 @@ func TestNameIsAskedAsTheGameEnds(t *testing.T) {
 	}
 	d.Advance(game.Curtain)
 	if !d.Has("GAME OVER") || !d.Has(comma(g.Score)+" points: who played?") || !d.Has("ANON") || !d.Has("Enter:keep") {
-		t.Fatal("no name asked once END is up")
+		t.Fatal("no name asked once the curtain is down")
 	}
 	d.Press("Enter")
 	if all := kept(t); len(all) != 1 || all[0].Name != "ANON" || all[0].Score != g.Score {
@@ -429,6 +464,7 @@ func TestNameWithTrickyCharacters(t *testing.T) {
 		play(d)
 		d.Press("j")
 		d.Press("Esc")
+		d.Press("Esc") // the popup: paused
 		d.Press("x")
 		d.Paste(name)
 		d.Press("Enter")
@@ -450,24 +486,20 @@ func TestTopOutKeepsTheScore(t *testing.T) {
 		t.Fatal("GAME lost the last game's score")
 	}
 	d.Advance(game.Curtain / 2)
-	if tt.g.Ended() {
-		t.Fatal("END before the curtain came down")
+	if tt.g.Ended() || d.Has("GAME OVER") {
+		t.Fatal("the end was said before the curtain came down")
 	}
 	d.Advance(game.Curtain)
-	s := picture(tt.g, false)
-	red := 0
+	if !tt.g.Ended() || !d.Has("GAME OVER") {
+		t.Fatal("no popup once the curtain is down")
+	}
+	s := picture(tt.g)
 	for y := range sceneH {
-		for x := range sceneW {
-			if s.px[y][x] == inkRed {
-				red++
-				if x >= fieldW {
-					t.Fatalf("END is out of the field at pixel %d", x)
-				}
+		for x := range fieldW {
+			if p := s.px[y][x]; p != inkGround && p != inkFrame {
+				t.Fatalf("pixel %d,%d is neither the ground nor the grey stack: the end is drawn in the game", x, y)
 			}
 		}
-	}
-	if !tt.g.Ended() || red == 0 {
-		t.Fatal("no END once the curtain is down")
 	}
 	d.Type("vulcan")
 	d.Press("Enter")
@@ -477,6 +509,36 @@ func TestTopOutKeepsTheScore(t *testing.T) {
 	}
 	if r, ok := tt.list.Current(); !ok || r.Cells[0] != "vulcan" {
 		t.Fatal("the cursor is not on the new score")
+	}
+}
+
+func TestTopOutWithNoPoints(t *testing.T) {
+	tt, d := open(t, 60, 32)
+	play(d)
+	g := tt.g
+	topOutBare(t, tt, d)
+	d.Advance(game.Curtain / 2)
+	if d.Has("Play again?") {
+		t.Fatal("the end was said before the curtain came down")
+	}
+	d.Advance(game.Curtain)
+	if !d.Has("PLAY") || !d.Has("Play again?") || !d.Has("Game over: no points, so nothing is kept.") || !d.Has("Enter:play") || d.Has("who played") {
+		t.Fatal("no popup saying the game is over with nothing kept")
+	}
+	d.Press("Esc")
+	if d.Has("Play again?") || !d.Has("Enter:play") || len(kept(t)) != 0 {
+		t.Fatal("Esc on the popup did not leave GAME to play from")
+	}
+	topOutAgain := func() {
+		play(d)
+		g = tt.g
+		topOutBare(t, tt, d)
+		d.Advance(game.Curtain)
+	}
+	topOutAgain()
+	d.Press("Enter")
+	if !tt.playing() || tt.g == g {
+		t.Fatal("Enter on the popup did not start the next game")
 	}
 }
 
@@ -505,6 +567,7 @@ func TestNoPointsNotKept(t *testing.T) {
 	tt, d := open(t, 60, 32)
 	play(d)
 	d.Press("Esc")
+	d.Press("Esc") // the popup: paused
 	d.Press("x")
 	if !tt.g.Over || len(kept(t)) != 0 || d.Has("END GAME") {
 		t.Fatal("a game with no points asked, was kept, or did not end")
@@ -528,6 +591,7 @@ func TestEndGameAsksAndKeeps(t *testing.T) {
 	play(d)
 	d.Press("j")
 	d.Press("Esc")
+	d.Press("Esc") // the popup: paused
 	d.Press("x")
 	if !d.Has("END GAME") || !d.Has("1 points: who played?") || !d.Has("Enter:end") {
 		t.Fatal("End game did not ask who played, saying the points")
@@ -553,6 +617,7 @@ func TestNewGameAsksWhoPlayed(t *testing.T) {
 	play(d)
 	d.Press("j")
 	d.Press("Esc")
+	d.Press("Esc") // the popup: paused
 	d.Press("n")
 	if !d.Has("NEW GAME") || !d.Has("Enter:start") {
 		t.Fatal("New game did not ask who played the game going")
@@ -633,11 +698,11 @@ func TestLineClearFlashesThenGoes(t *testing.T) {
 		t.Fatalf("rows going %v", g.Going)
 	}
 	y := game.Rows - 1
-	if picture(g, false).px[y][0] != inkWhite {
+	if picture(g).px[y][0] != inkWhite {
 		t.Fatal("the row going is not white first")
 	}
 	d.Advance(game.Flash + game.Wipe/2)
-	half := picture(g, false)
+	half := picture(g)
 	if half.px[y][game.Cols/2] == inkWhite || half.px[y][0] != inkWhite {
 		t.Fatal("halfway, the middle is not gone while the ends stay")
 	}
@@ -698,6 +763,7 @@ func TestPopupsOverTheGameAtEveryWidth(t *testing.T) {
 			d.Press("Esc")
 			d.Press("q")
 			d.Press("Esc")
+			d.Press("Esc") // pauses: the popup
 			d.Press("Esc")
 			d.Press("x")
 			d.Press("Esc")
@@ -706,6 +772,10 @@ func TestPopupsOverTheGameAtEveryWidth(t *testing.T) {
 			d.Press("Enter")
 			topOut(t, tt, d)
 			keepAs(d, "vulcan")
+			play(d)
+			topOutBare(t, tt, d)
+			d.Advance(game.Curtain) // game over with no points: the popup
+			d.Press("Enter")
 		}
 	})
 }

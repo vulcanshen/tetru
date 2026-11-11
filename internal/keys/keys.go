@@ -53,13 +53,14 @@ func (a Action) Desc() string { return about[a].desc }
 type Set [len(about)]string
 
 // Default is the keys the user asked for (2026-11-11): h left, l right, j a
-// row down, k rotate left, i rotate right, Enter drop. k has no moving to do
-// in the Play mode, a piece never going up: the mode may take it (tdp K12).
-func Default() Set { return Set{"h", "l", "j", "k", "i", "Enter"} }
+// row down, d rotate left, k rotate right, Enter drop. d and k have no moving
+// to do in the Play mode, a piece never going up nor a half page down: the
+// mode may take them (tdp K12).
+func Default() Set { return Set{"h", "l", "j", "d", "k", "Enter"} }
 
-// arrows are the arrow keys of the letters that have one: h|j|k|l are
-// ←|↓|↑|→ (tdp K12).
-var arrows = map[string]string{"h": "←", "j": "↓", "k": "↑", "l": "→"}
+// arrows are the keys that move as a letter does: h|j|k|l are ←|↓|↑|→,
+// u|d are PgUp|PgDn (tdp K12).
+var arrows = map[string]string{"h": "←", "j": "↓", "k": "↑", "l": "→", "u": "PgUp", "d": "PgDn"}
 
 // Keys are the keys that do a in s: its key, and that key's arrow when it
 // has one (tdp K12: an arrow does what its letter does).
