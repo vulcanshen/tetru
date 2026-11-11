@@ -15,8 +15,9 @@ with the player's name and the time, and ranks them, the best first.
 
 ## Features
 
-- **Drawn as locku's falling blocks**: the same square pixels and colours. The well at the left; at its right the
-  next two pieces, a panel each, and INFO: the level, the rows and the score, and the keys to play with.
+- **A well as large as the terminal**: the well fills its panel, every block a solid square in locku's colours, the
+  squares told apart as a checkerboard; it grows with the terminal. At its right the next two pieces, a panel each, and
+  INFO: the level, the rows and the score, and the keys to play with.
 - **Your keys**: every key you play with but `Space` can be changed on the Settings screen.
 - **Ten levels of speed**: a level every ten rows, from a row a second to ten a second; past the tenth the speed stays.
 - **Every game kept**: the time, the name and the score, the best first on the Rank screen. You play first and say who

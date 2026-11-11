@@ -7,6 +7,7 @@ import (
 	"testing"
 	"time"
 
+	terminu "github.com/vulcanshen/terminu-go"
 	"github.com/vulcanshen/terminu-go/tdptest"
 
 	"github.com/vulcanshen/tetru/internal/game"
@@ -75,11 +76,11 @@ func topOut(t *testing.T, tt *Tetru, d *tdptest.Driver) {
 	t.Fatal("the stack never reached the top")
 }
 
-// widest is the most pixels on a row of the screen.
+// widest is the most full blocks on a row of the screen.
 func widest(d *tdptest.Driver) int {
 	most := 0
 	for _, r := range d.Screen() {
-		most = max(most, strings.Count(r, pixelGlyph))
+		most = max(most, strings.Count(r, "█"))
 	}
 	return most
 }
@@ -98,7 +99,7 @@ func TestTetruScreen(t *testing.T) {
 		}
 		for _, c := range []struct{ w, g, r int }{{60, 37, 23}, {77, 52, 25}, {150, 100, 50}} {
 			got := tt.layout(c.w, 29)
-			nh := boxH + 2
+			nh := rowsFor(boxH, tt.e) + 2
 			if got[0].W != c.g || got[1].X != c.g || got[1].W != c.r || got[1].H != nh || got[2].Y != nh || got[3].Y != 2*nh || got[3].H != 29-2*nh {
 				t.Fatalf("at %d columns: %+v", c.w, got)
 			}
@@ -114,8 +115,8 @@ func TestNarrowShowsTheFocusedPanelOnly(t *testing.T) {
 	if d.Has("NEXT") || d.Has("INFO") || !d.Has("[1] GAME") || !d.Has("Level: 1   Lines: 0  Score: 0") {
 		t.Fatal("narrow, another panel shows beside the game")
 	}
-	if got := widest(d); got != fieldW+boxW {
-		t.Fatalf("narrow, GAME draws %d pixels a row, not the field and the boxes", got)
+	if got := widest(d); got != 2*(fieldW+boxW) {
+		t.Fatalf("narrow, GAME draws %d blocks a row, not the field and the boxes, a pixel two", got)
 	}
 	for _, p := range []string{"[2] NEXT 1", "[3] NEXT 2", "[4] INFO"} {
 		d.Press("Tab")
@@ -157,17 +158,65 @@ func TestLeastSizeIsTheGameAlone(t *testing.T) {
 	}
 }
 
-func TestPictureGrowsTwiceOnALargeTerminal(t *testing.T) {
-	tt, d := open(t, 150, 52)
-	if tt.scale != 2 || widest(d) != 2*(fieldW+boxW) {
-		t.Fatalf("150×52: GAME and NEXT %d times, %d pixels a row", tt.scale, widest(d))
+func TestPixelsFillGame(t *testing.T) {
+	tt, d := open(t, 150, 32)
+	// GAME has 27 rows: a pixel 10 eighths high, the field 25 rows, 3
+	// columns wide, about square; the boxes the same.
+	if tt.cw != 3 || tt.e != 10 {
+		t.Fatalf("150×32: a pixel %d columns, %d eighths", tt.cw, tt.e)
 	}
-	if got := tt.layout(150, 49); got[1].H != 2*boxH+2 {
-		t.Fatalf("NEXT 1 is %d high, twice", got[1].H)
+	if got := tt.layout(150, 29); got[1].H != rowsFor(boxH, 10)+2 {
+		t.Fatalf("NEXT 1 is %d high", got[1].H)
 	}
-	d.Resize(150, 40)
-	if tt.scale != 1 || widest(d) != fieldW+boxW {
-		t.Fatalf("150×40, too low for twice: %d times, %d pixels a row", tt.scale, widest(d))
+	rows, gw := 0, tt.layout(150, 29)[0].W
+	for _, r := range d.Screen() {
+		if rs := []rune(r); len(rs) >= gw && strings.ContainsAny(string(rs[:gw]), "█▁▂▃▄▅▆▇") {
+			rows++
+		}
+	}
+	if rows != rowsFor(sceneH, 10) {
+		t.Fatalf("the field is %d rows high, not 25", rows)
+	}
+	d.Resize(150, 52)
+	if tt.cw != 5 || tt.e != 18 {
+		t.Fatalf("150×52: a pixel %d columns, %d eighths", tt.cw, tt.e)
+	}
+	d.Resize(60, minH)
+	if tt.cw != 2 || tt.e != rowE {
+		t.Fatalf("at the least height, a pixel %d columns, %d eighths, not a row", tt.cw, tt.e)
+	}
+}
+
+func TestFitKeepsAPixelSquareAndInside(t *testing.T) {
+	for _, c := range []struct{ cols, rows, cw, e int }{
+		{47, 27, 3, 10}, // 77×32
+		{35, 24, 2, 8},  // 60×29
+		{25, 40, 2, 8},  // narrow and high: the columns hold it to a row
+		{98, 47, 5, 18}, // 150×52
+	} {
+		if cw, e := fit(fieldW, sceneH, c.cols, c.rows); cw != c.cw || e != c.e || e%2 != 0 || cw*fieldW > c.cols || rowsFor(sceneH, e) > c.rows {
+			t.Fatalf("fit in %d×%d: %d columns, %d eighths", c.cols, c.rows, cw, e)
+		}
+	}
+}
+
+func TestSolidSplitsARowBetweenTwoPixels(t *testing.T) {
+	var sc scene
+	for y := range 4 {
+		sc.px[y][0] = inkPiece + uint8(y%2)
+	}
+	lines := solid(&sc, 0, 1, 0, 4, 1, 10) // 40 eighths: 5 rows
+	if len(lines) != 5 {
+		t.Fatalf("%d rows", len(lines))
+	}
+	want := []string{"█", "▆", "▄", "▂", "█"}
+	for i, l := range lines {
+		if got := terminu.StripStyles(l); got != want[i] {
+			t.Fatalf("row %d is %q, not %q", i, got, want[i])
+		}
+	}
+	if !strings.Contains(lines[1], "48;2") || !strings.Contains(lines[1], "38;2") {
+		t.Fatal("a split row is not the lower pixel's colour on the upper one's")
 	}
 }
 
