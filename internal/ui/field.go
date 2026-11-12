@@ -223,21 +223,24 @@ func framed(title string, body []string, w int) []string {
 var crumble = [game.Cols]int{7, 2, 10, 4, 0, 9, 5, 11, 1, 6, 3, 8}
 
 // broken are the glyphs a block goes through as it crumbles, after the
-// square and before it is gone: split in four, grains, dust (user,
-// 2026-11-12: the square itself breaking; nf-md-view_grid, nf-md-grain,
-// nf-md-blur).
-var broken = []string{string(rune(0xF0570)), string(rune(0xF0D7C)), string(rune(0xF00B5))}
+// square and before it is gone: grains, dust (user, 2026-11-12: the square
+// itself breaking; nf-md-grain, nf-md-blur; first nf-md-view_grid before
+// them, then taken out).
+var broken = [...]string{string(rune(0xF0D7C)), string(rune(0xF00B5))}
+
+// shattered is the shape of a block gone, past the broken ones.
+const shattered = uint8(len(broken)) + 1
 
 // breaking is the shape at t of a block that is gone at gone, breaking
-// over span before it: 0 whole, 1 to 3 broken[0] to broken[2], 4 gone.
+// over span before it: 0 whole, 1 on broken[0] on, shattered gone.
 func breaking(t, gone, span float64) uint8 {
 	switch {
 	case t >= gone:
-		return 4
+		return shattered
 	case t < gone-span:
 		return 0
 	}
-	return 1 + uint8((t-(gone-span))/span*3)
+	return 1 + uint8((t-(gone-span))/span*float64(len(broken)))
 }
 
 // clearRows draws the rows going over out, w wide, where the scene sc is
@@ -307,7 +310,7 @@ func clearRows(out []string, g *game.Game, sc *scene, w, k, x1, left, top, right
 			for x := range game.Cols {
 				// Each starts breaking after the flash, the first at once.
 				gone := 0.25 + float64(crumble[(x+5*i)%game.Cols])/game.Cols*0.75
-				if s := breaking(p, gone, 0.25); s < 4 {
+				if s := breaking(p, gone, 0.25); s < shattered {
 					block(x, inkWhite, s)
 				}
 			}
@@ -326,7 +329,7 @@ func clearRows(out []string, g *game.Game, sc *scene, w, k, x1, left, top, right
 				} else if c := crumble[(x+5*i)%game.Cols]; c < game.Cols/2 {
 					shape = breaking(f, 0.4+0.2*float64(c)/float64(game.Cols/2), 0.35)
 				}
-				if shape == 4 {
+				if shape == shattered {
 					continue
 				}
 				u := x*k + offR
