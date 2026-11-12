@@ -137,11 +137,15 @@ tasks:
       命令列：tetru version、-v、--version 印 Display()；tetru help、-h、--help 印用法（含分數與存檔的位置）；其他字印 unknown command 與用法，exit 2
     test: [TestSplashIsTheIcon, TestVersionAndHelp, TestFirstLaunch]
   - id: 12
-    spec: 1
+    spec: 42
     implementation: |
       repo 照 harness project.3；family.mk、release.yml、.goreleaser.yaml、install.sh、uninstall.sh、internal/version/version.go、.gitignore 照 harness 範本，
-      只改表上允許的地方（goreleaser 的 description、caveats 寫分數的位置）
-      README.md、README-zh_TW.md 照 tdp E7 的 12 段；demo gif 在 docs/demo.gif，VHS tape 在 .local/demos/demo.tape
+      只改表上允許的地方（goreleaser 的 description、caveats 寫分數的位置）；出 Windows 版：.goreleaser.yaml 打開標著 Windows 的註解（scoop 的 description 同 brews 的），
+      release.yml 的 matrix 加 windows-latest（Windows 跑 go test，不帶 -race），install.sh 的 WINDOWS="yes"
+      install.ps1、uninstall.ps1（照 ccdrawu 的寫法）：執行檔裝在 %LOCALAPPDATA%\tetru、加進使用者的 PATH；移除時拿掉執行檔與 PATH，再逐一問要不要刪
+      設定（TETRU__CONFIG、$XDG_CONFIG_HOME\tetru 或 %USERPROFILE%\.config\tetru）與資料（TETRU__DATA 或 %USERPROFILE%\.tetru）
+      Windows 上的測試：預設路徑的測試同時設 HOME 與 USERPROFILE、用 filepath.Join 比；把目錄設成唯讀來讓設定寫不進去的測試在 Windows 上跳過（Windows 的目錄不能設成唯讀）
+      README.md、README-zh_TW.md 照 tdp E7 的 12 段（需求寫 macOS、Linux 或 Windows，安裝與移除有 Homebrew、Scoop、install.sh、install.ps1）；demo gif 在 docs/demo.gif，VHS tape 在 .local/demos/demo.tape
       CHANGELOG.md 開頭照 harness project.6，改動寫在 Unreleased
     test:
       - check: repo

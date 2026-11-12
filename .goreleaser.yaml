@@ -22,7 +22,7 @@ builds:
       # unix-first: no Windows build unless the app needs one.
       - linux
       - darwin
-      # - windows   # Windows
+      - windows   # Windows
     goarch:
       - amd64
       - arm64
@@ -35,10 +35,10 @@ builds:
 archives:
   - formats:
       - tar.gz
-    # format_overrides:   # Windows
-    #   - goos: windows
-    #     formats:
-    #       - zip
+    format_overrides:   # Windows
+      - goos: windows
+        formats:
+          - zip
     name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
 
 checksum:
@@ -76,17 +76,17 @@ brews:
       Scores are kept in ~/.tetru/scores.yaml (TETRU__DATA to move it).
 
       A Nerd Font terminal profile and a truecolor (24-bit) terminal are
-      required. macOS and Linux (WSL too).
+      required. macOS, Linux (WSL too) and Windows.
     # app: dependencies, when the app calls other programs.
     test: |
       system "#{bin}/tetru", "version"
 
-# scoops:   # Windows
-#   - repository:
-#       owner: vulcanshen
-#       name: scoop-bucket
-#       token: "{{ .Env.GITHUB_TOKEN }}"
-#     skip_upload: auto
-#     homepage: "https://github.com/vulcanshen/tetru"
-#     # app: the same line as the brews description above.
-#     description: "tetru: what it is (terminu family)"
+scoops:   # Windows
+  - repository:
+      owner: vulcanshen
+      name: scoop-bucket
+      token: "{{ .Env.GITHUB_TOKEN }}"
+    skip_upload: auto
+    homepage: "https://github.com/vulcanshen/tetru"
+    # app: the same line as the brews description above.
+    description: "tetru: a falling-block game for the terminal (terminu family)"

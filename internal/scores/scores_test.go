@@ -10,12 +10,14 @@ import (
 
 func TestPathIsInTheDataDirectory(t *testing.T) {
 	t.Setenv("TETRU__DATA", "/somewhere")
-	if got := Path(); got != "/somewhere/scores.yaml" {
+	if got := Path(); got != filepath.Join("/somewhere", "scores.yaml") {
 		t.Errorf("with TETRU__DATA: %s", got)
 	}
 	t.Setenv("TETRU__DATA", "")
+	// The home is HOME, and on Windows USERPROFILE (tdp E3).
 	t.Setenv("HOME", "/home/someone")
-	if got := Path(); got != "/home/someone/.tetru/scores.yaml" {
+	t.Setenv("USERPROFILE", "/home/someone")
+	if got := Path(); got != filepath.Join("/home/someone", ".tetru", "scores.yaml") {
 		t.Errorf("by default: %s", got)
 	}
 }

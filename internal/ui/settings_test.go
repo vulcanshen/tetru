@@ -3,6 +3,7 @@ package ui
 import (
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 	"time"
@@ -103,6 +104,9 @@ func TestSettingsHaveNoPauseRow(t *testing.T) {
 }
 
 func TestSettingsThatCantBeKept(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("a directory can't be made read-only on Windows")
+	}
 	t.Setenv("TETRU__DATA", t.TempDir())
 	dir := t.TempDir()
 	os.Chmod(dir, 0o555) // read, but nothing written in it

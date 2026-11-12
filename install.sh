@@ -10,7 +10,7 @@ set -e
 APP="tetru"
 REPO="vulcanshen/$APP"
 # yes when the app ships a Windows build and an install.ps1.
-WINDOWS="no"
+WINDOWS="yes"
 
 # Detect OS
 OS=$(uname -s | tr '[:upper:]' '[:lower:]')

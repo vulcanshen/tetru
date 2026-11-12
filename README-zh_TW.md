@@ -29,7 +29,7 @@
 
 ### 前置需求
 
-- macOS 或 Linux（WSL 也可以）。
+- macOS、Linux（WSL 也可以）或 Windows。Windows 上請用 Windows Terminal：舊的主控台沒有 truecolor。
 - 終端機用 [Nerd Font](https://www.nerdfonts.com)：方塊與框線都是 Nerd Font 的字。
 - 終端機支援 truecolor（24-bit 色）：256 色分不出淡化與各層 popup 的顏色。
 - 終端機至少 42 欄寬、32 列高。不到 60 欄時只畫井；60 欄以上，接下來的方塊、INFO 與 KEYS 會並排在旁邊。比這個小時，tetru 只畫出名字、需要的大小
@@ -49,13 +49,22 @@ tetru 啟動時會自己量一個 icon、一個 powerline 符號佔幾格。量�
 icon 與 powerline 符號各自照表上的順序，用第一個有設的；都沒設才自己量。在家族 app 的終端機裡跑 tetru 時，外層的 app
 會替它設好 `TERMINU__` 的兩個；從家族 app 經 ssh 連過來時，拿到的是 `LC_TERMINU_` 的兩個。
 
-### Homebrew
+### Homebrew（macOS / Linux）
 
 ```sh
 brew install vulcanshen/tap/tetru
 ```
 
+### Scoop（Windows）
+
+```powershell
+scoop bucket add vulcanshen https://github.com/vulcanshen/scoop-bucket
+scoop install tetru
+```
+
 ### 安裝腳本
+
+macOS / Linux：
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/vulcanshen/tetru/main/install.sh | sh
@@ -63,10 +72,18 @@ curl -fsSL https://raw.githubusercontent.com/vulcanshen/tetru/main/install.sh | 
 
 不用 sudo：裝在 `~/.local/bin`。
 
+Windows PowerShell：
+
+```powershell
+irm https://raw.githubusercontent.com/vulcanshen/tetru/main/install.ps1 | iex
+```
+
+裝在 `%LOCALAPPDATA%\tetru`，並把它加進 `PATH`。
+
 ### 第一次啟動
 
 一打開就是 Tetru 畫面，focus 在井上，可以直接開始玩。有分數的一局結束之前，tetru 什麼都不寫：第一次記分數時才建立
-`~/.tetru/scores.yaml`，第一次改按鍵時才建立 `~/.config/tetru/config.yaml`，存一局時才建立 `~/.tetru/game.yaml`。
+`~/.tetru/scores.yaml`，第一次改按鍵時才建立 `~/.config/tetru/config.yaml`，存一局時才建立 `~/.tetru/game.yaml`。Windows 上的 `~` 是 `%USERPROFILE%`。
 
 ### 移除
 
@@ -74,10 +91,18 @@ curl -fsSL https://raw.githubusercontent.com/vulcanshen/tetru/main/install.sh | 
 brew uninstall tetru
 ```
 
+```powershell
+scoop uninstall tetru
+```
+
 用安裝腳本裝的：
 
 ```sh
+# macOS / Linux
 curl -fsSL https://raw.githubusercontent.com/vulcanshen/tetru/main/uninstall.sh | sh
+
+# Windows PowerShell
+irm https://raw.githubusercontent.com/vulcanshen/tetru/main/uninstall.ps1 | iex
 ```
 
 刪掉 `~/.tetru`（你的分數紀錄）之前會先問。
@@ -163,7 +188,6 @@ tetru 有三個畫面，按它的鍵切換，或從 `Space` menu 的 Global oper
 
 - 一局要結束才會記下：堆到頂、結束這一局或開新局、離開 tetru，或關掉它所在的終端機。程式被直接砍掉（`kill -9`、
   斷電）時，那一局的分數會不見。
-- 只有 macOS 與 Linux（WSL 也可以），沒有 Windows 版。
 
 ## 相關連結
 

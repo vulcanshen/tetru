@@ -36,7 +36,7 @@ with the player's name and the time, and ranks them, the best first.
 
 ### Requirements
 
-- macOS or Linux (WSL too).
+- macOS, Linux (WSL too) or Windows. On Windows, Windows Terminal: the old console has no truecolor.
 - A [Nerd Font](https://www.nerdfonts.com) terminal profile: the blocks and the frames are Nerd Font glyphs.
 - A truecolor (24-bit) terminal: the faded colours and the layer colours cannot be told apart in 256 colours.
 - A terminal at least 42 columns wide and 32 rows high. Under 60 columns the well shows alone; from 60 on, the pieces
@@ -59,13 +59,22 @@ For an icon and for a powerline symbol each, tetru takes the first one set in th
 only when none is. Run inside a family app's terminal, tetru gets the `TERMINU__` ones from the app around it; reached
 over ssh from one, the `LC_TERMINU_` ones.
 
-### Homebrew
+### Homebrew (macOS / Linux)
 
 ```sh
 brew install vulcanshen/tap/tetru
 ```
 
+### Scoop (Windows)
+
+```powershell
+scoop bucket add vulcanshen https://github.com/vulcanshen/scoop-bucket
+scoop install tetru
+```
+
 ### Script
+
+macOS / Linux:
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/vulcanshen/tetru/main/install.sh | sh
@@ -73,11 +82,19 @@ curl -fsSL https://raw.githubusercontent.com/vulcanshen/tetru/main/install.sh | 
 
 No sudo: it installs to `~/.local/bin`.
 
+Windows PowerShell:
+
+```powershell
+irm https://raw.githubusercontent.com/vulcanshen/tetru/main/install.ps1 | iex
+```
+
+It installs to `%LOCALAPPDATA%\tetru` and adds it to your `PATH`.
+
 ### The first start
 
 tetru opens on the Tetru screen with the focus on the well, ready to play. It writes nothing until a game with points
 ends, then `~/.tetru/scores.yaml`, or until a key is changed, then `~/.config/tetru/config.yaml`, or until a game is
-saved, then `~/.tetru/game.yaml`.
+saved, then `~/.tetru/game.yaml`. On Windows `~` is `%USERPROFILE%`.
 
 ### Uninstall
 
@@ -85,10 +102,18 @@ saved, then `~/.tetru/game.yaml`.
 brew uninstall tetru
 ```
 
+```powershell
+scoop uninstall tetru
+```
+
 Installed with the script:
 
 ```sh
+# macOS / Linux
 curl -fsSL https://raw.githubusercontent.com/vulcanshen/tetru/main/uninstall.sh | sh
+
+# Windows PowerShell
+irm https://raw.githubusercontent.com/vulcanshen/tetru/main/uninstall.ps1 | iex
 ```
 
 It asks before removing `~/.tetru`, your scores.
@@ -176,7 +201,6 @@ The best twenty scores are kept; a game with no points, or too few for them, is 
 
 - A game is kept only once it ends: when it reaches the top, is ended or a new one started, when tetru quits, or when its
   terminal is closed. A game in a program killed outright (`kill -9`, a power cut) is lost.
-- macOS and Linux only (WSL too); there is no Windows build.
 
 ## Links
 
