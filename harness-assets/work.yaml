@@ -67,7 +67,7 @@ tasks:
       Settings 沒有 Pause 那一列（task 13）；INFO 寫 Space menu、Esc pause（task 14）
     test: [TestTheGameStopsUnderAPopup, TestEscPausesEnterResumes, TestTabInPlaySaysToPauseFirst, TestSpaceMenuRunsRestartAndTheKeysAreInHelp, TestSettingsHaveNoPauseRow, TestRestartFromThePlayModesSpaceMenu, TestPlay]
   - id: 6
-    spec: 19
+    spec: 30
     implementation: |
       PLAYGROUND 上按 Enter（沒有暫停中的一局時）直接開一局、進 Gaming，不問名字
       一局值得記（有分數、擠得進前二十名：scores.Makes，task 7）時，結束的時候開 tgo 的 text input 問誰玩的：Prompt 是 12,340 points: who played?，建議值（tgo TextInput.Suggest）ANON，
@@ -75,7 +75,7 @@ tasks:
       堆到頂：灰幕落完時才開，標題 GAME OVER、Enter:keep；Esc 也記成 ANON（tgo TextInput.OnCancel）；
       灰幕落下到記下之前，PLAYGROUND 的 Enter 與 [n]ew game 停用（tgo Action.Disabled），Enter:play 的 hint 拿掉，記下之後回來
       [x] End game、[n]ew game、離開流程：見 task 10
-      不值得記的局不問、不記；有分數的跳 tgo Info toast：150 points, not in the best 20, so nothing is kept.
+      不值得記的局不問、不記；[x] End game 時有分數的跳 tgo Info toast：150 points, not in the best 20, so nothing is kept.；重新開始（Gaming 的 r、[n]ew game）時什麼都不說，直接重開
     test: [TestNameIsAskedAsTheGameEnds, TestNameTypedIsKept, TestEscOnTheNameKeepsAnon, TestNameWithTrickyCharacters, TestNoPointsNotKept, TestRankKeepsTheBestTwentyWithTheirPlaces]
   - id: 7
     spec: 19
@@ -118,7 +118,7 @@ tasks:
       兩段動畫都由 tgo App.Tick 推：消行時每 16 ms 一格，灰幕每 40 ms 一格；消 1 行 0.32 秒、2 行 0.37、3 行 0.42、4 行 0.47 秒（game.ClearTime）；灰幕不管有沒有 popup 都照走
     test: [TestOneRowFlashesFadesThenTheStackComesDown, TestClearsByHowManyRows, TestFourBurstThenTheStackComesDownAtOnce, TestClearSlidesThenTheStackComesDown, TestClearScoresAtTheLevelAndGoesUp, TestTopOutKeepsTheScore, TestTheStackAtTheTopEnds, TestTopOutWithNoPoints, TestNoPointsNotKept]
   - id: 10
-    spec: 19
+    spec: 30
     implementation: |
       PLAYGROUND 的 panel operation（Gaming 外的 Space menu 與熱鍵）：
       [n]ew game（start over from level 1）：有一局值得記時先開 task 6 的 text input，標題 NEW GAME、Enter:start；Enter 記下那一局，接著開新的一局、進 Gaming；
@@ -128,7 +128,7 @@ tasks:
       離開流程（tgo App.QuitFlow）：有一局在玩（玩著或暫停中）時開 tgo App.Confirm，不問名字：標題 QUIT，內容 The score so far, 12,340, is kept for ANON.
       （0 分寫 No points so far, so nothing is kept.，擠不進前二十名寫 The score so far, 150, is not in the best 20, so nothing is kept.），問句 Quit tetru?，Enter:quit 把那一局記成 ANON（不值得記的不記）、回 tea.Quit 離開；
       Esc:cancel 回到遊戲；沒有一局在玩時直接離開；離開流程中再按一次 Ctrl-C 由 tgo 立刻離開，那一局一樣記成 ANON
-    test: [TestEndGameAsksAndKeeps, TestNewGameAsksWhoPlayed, TestQuitWithAGameConfirmsAndKeepsAnon, TestQuitWithNoGameLeaves, TestNoPointsNotKept]
+    test: [TestEndGameAsksAndKeeps, TestNewGameAsksWhoPlayed, TestQuitWithAGameConfirmsAndKeepsAnon, TestQuitWithNoGameLeaves, TestNoPointsNotKept, TestRestartNotInTheRankSaysNothing]
   - id: 11
     spec: 1
     implementation: |

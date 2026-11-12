@@ -1166,3 +1166,28 @@ func TestClearsByHowManyRows(t *testing.T) {
 		t.Fatalf("what is left of four rows does not go out, half to the right: %q", r)
 	}
 }
+
+func TestRestartNotInTheRankSaysNothing(t *testing.T) {
+	dir := t.TempDir()
+	t.Setenv("TETRU__DATA", dir)
+	t.Setenv("TETRU__CONFIG", t.TempDir())
+	var all []scores.Score
+	for i := range scores.Most {
+		all = append(all, scores.Score{Time: time.Date(2026, 11, 1, 0, i, 0, 0, time.UTC), Name: "p" + strconv.Itoa(i), Score: 100 * (i + 1)})
+	}
+	if err := scores.Save(scores.Path(), all); err != nil {
+		t.Fatal(err)
+	}
+	tt := NewTetru()
+	d := tdptest.Start(t, tt.App, 80, 32)
+	play(d)
+	g := tt.g
+	g.Score = 50 // under the twentieth
+	d.Press("r")
+	if tt.g == g || !tt.playing() || d.Has("NEW GAME") || d.Has("not in the best") {
+		t.Fatal("restart with a game not in the best twenty asked, said so, or did not start over")
+	}
+	if len(kept(t)) != scores.Most {
+		t.Fatal("the scores were written")
+	}
+}

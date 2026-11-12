@@ -335,10 +335,16 @@ func (t *Tetru) pause() tea.Cmd {
 }
 
 // newGame ends the game going, its score kept for the name asked, and
-// starts the next; Esc on the name goes back to the game.
+// starts the next; Esc on the name goes back to the game. A game not worth
+// keeping starts over at once, nothing said (user, 2026-11-12: restarting,
+// no Info that it is not in the rank).
 func (t *Tetru) newGame() tea.Cmd {
 	if !t.going() {
 		return t.begin()
+	}
+	if !t.worth() {
+		t.saved = true
+		return tea.Batch(t.finish(), t.begin())
 	}
 	return t.askName("New game", "start", func() tea.Cmd { return tea.Batch(t.finish(), t.begin()) }, nil)
 }
