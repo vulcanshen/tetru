@@ -1,4 +1,4 @@
-id: 21
+id: 22
 from: v1.2.3
 to: v1.2.3
 tasks:
@@ -122,13 +122,14 @@ tasks:
       - '分數是 0 的那一局不記：一行都沒消、沒有往下或落到底，排行上只會多一列 0'
       - '記下時在 App Log 記一筆（tdp note.7）；寫不進去開 error popup（tdp F5）；讀不了時照 tdp E3 問要不要移開（tgo MoveAside）'
   - id: 8
-    spec: 20
+    spec: 22
     request: '排行改成另一個分頁 [R]ank'
     tdp: [tdp panel.5, tdp screen.2, tdp screen.8, tdp K3, tdp K12, tdp M5]
     remark:
       - 'Rank 畫面只有一個 panel：[1] RANK，一般清單（tdp panel.5）：#（名次 1 到 20，數字靠右；使用者 2026-11-12：第一欄名次）、NAME（可截短）、SCORE（數字靠右）、TIME（2006-01-02 15:04），欄放不下先拿掉 TIME；只有一個 panel 的畫面，footer 沒有 Tab|1–N（tdp screen.2）'
       - '順序固定：分數高的在前，同分照時間早的在前（tdp panel.5 的「順序要固定」）'
-      - {note: '前三名整列的字上色（使用者 2026-11-12）：第一名 Yellow #f9e2af、第二名 Green #a6e3a1、第三名 Sky #89dceb；內容本身的顏色，app 可以自行決定（tdp P4、P5）。使用者也要 cursor 停在前三名時照那個顏色反色（色塊的底是那一列的顏色）：tdp color 規定 panel 的 cursor 色塊是 Subtext1 底、字 Base，原本的顏色不保留，沒有放行；暫時照 tdp，cursor 照樣 Subtext1（TODO(tdp #8)），tdp 放行、tgo 有設定之後改。tdp #8 定案（使用者 2026-11-12 選 A；tdp b486a86，color.2 的 A row with a colour of its own、color-27，terminu 的 session 2026-11-12 來說，還沒發版）：cursor 停在那一列時，色塊用那一列自己的顏色當底，字 Base 粗體、右邊的箭頭同色；沒有 focus 時跟一般 cursor 一樣淡化；panel 在模式裡時回到 Subtext1。等 tgo v1.2.4-beta.2 的設定再改，現在照舊', issue: 'tdp #8'}
+      - '前三名整列的字上色（使用者 2026-11-12）：第一名 Yellow #f9e2af、第二名 Green #a6e3a1、第三名 Sky #89dceb；內容本身的顏色，app 可以自行決定（tdp P4、P5）'
+      - 'cursor 停在前三名時照那個顏色反色（使用者 2026-11-12）：色塊的底是那一列的顏色，字 Base 粗體，右邊的箭頭同色；只用那一列自己的顏色。沒有 focus 時跟一般 cursor 一樣淡化，RANK 在模式裡時回到 Subtext1。原本 tdp color 規定 panel 的 cursor 一律 Subtext1，回報 tdp #8，使用者 2026-11-12 選 A：tdp b486a86 的 color.2（A row with a colour of its own）、color-27，還沒發版；tgo v1.2.4-beta.2 的 Row.CursorColor 做到。harness 讀的還是 tdp v1.2.3：panel-47、panel-50 照舊寫 cursor 一律 Subtext1，等 tdp 發版再拿新版對'
       - '記下一筆之後，RANK 的 cursor 移到那一筆（tdp K3：新增一項之後 cursor 移到新的那一項）；畫面與 focus 不換（tdp K3：背景發生的事不換畫面）'
       - '沒有紀錄時空狀態：No scores yet / Press [T] to play（tdp screen.8；到 Tetru 畫面，focus 在 PLAYGROUND 上，Enter 開始）'
       - 'Enter 在一筆紀錄上沒有動作：紀錄沒有東西可以打開'

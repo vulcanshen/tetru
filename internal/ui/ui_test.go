@@ -1033,6 +1033,12 @@ func TestRankColoursTheFirstThree(t *testing.T) {
 	tt := NewTetru()
 	d := tdptest.Start(t, tt.App, 60, 32)
 	d.Press("R")
+	for n, rgb := range []string{"249;226;175", "166;227;161", "137;220;235"} {
+		if r := tt.rankP.Body.Draw(58, 27, true)[1+n]; !strings.Contains(r, "48;2;"+rgb) {
+			t.Fatalf("the cursor on place %d is not in its colour: %q", n+1, r)
+		}
+		d.Press("j")
+	}
 	d.Press("G") // the cursor off the first three
 	rows := tt.rankP.Body.Draw(58, 27, true)
 	for n, rgb := range []string{"249;226;175", "166;227;161", "137;220;235"} {

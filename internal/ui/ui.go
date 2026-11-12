@@ -440,6 +440,7 @@ func (t *Tetru) setRows(sel string) {
 			for _, c := range r.Cells {
 				r.Styled = append(r.Styled, []terminu.Span{{Text: c, Style: terminu.Fg(podium[n])}})
 			}
+			r.CursorColor = podium[n] // the row's own colour, none other (tdp color.2)
 		}
 		rows = append(rows, r)
 	}
@@ -451,9 +452,9 @@ func (t *Tetru) setRows(sel string) {
 
 // podium are the colours of the first three places' rows on RANK (user,
 // 2026-11-12): Yellow, Green, Sky; a content's colours, the app's (tdp P4,
-// P5). TODO(tdp #8): the user wants the cursor on them in their colour too;
-// tdp color has a panel's cursor block Subtext1 with Base on it, so for
-// now it is.
+// P5). The cursor on one of them is in its colour too, Base on it (user,
+// 2026-11-12; tdp #8, color.2): Subtext1 again while RANK is in a mode,
+// dimmed with it unfocused, both by tgo.
 var podium = []terminu.Color{terminu.Yellow, terminu.Green, terminu.Hex("#89dceb")}
 
 // setModeKeys are the Gaming mode's keys, the player's (Settings): the moves

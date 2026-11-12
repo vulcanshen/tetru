@@ -91,13 +91,13 @@ tasks:
       啟動時 scores.yaml 讀不了：tgo App.MoveAside 問要不要移成 scores.yaml.bak 重新開始；Enter 移開、從空的排行開始，Esc 離開
     test: [TestPathIsInTheDataDirectory, TestSaveThenLoad, TestLoadBroken, TestBestKeepsTheTwenty, TestRankKeepsTheBestTwentyWithTheirPlaces, TestTopOutKeepsTheScore, TestNoPointsNotKept, TestFinishKeepsTheGameGoing, TestQuitWithAGameConfirmsAndKeepsAnon, TestBrokenScoresAskToMoveAside]
   - id: 8
-    spec: 20
+    spec: 22
     implementation: |
       Rank 畫面只有 [1] RANK，tgo List：#（名次，1 起，數字靠右）、NAME（可截短，最少 6 格）、SCORE（數字靠右，每三位一個逗號）、TIME（2006-01-02 15:04，本地時間，放不下第一個拿掉）
       footer 由 tgo 寫只有一個 panel 的那一種：Space:menu ?:help !:log q:quit
       順序：分數高的在前，同分時間早的在前；不能排序、不能篩選
       記下一筆後 cursor 移到那一筆（tgo List.Select），畫面與 focus 不換
-      前三名整列的字上色（tgo Row.Styled）：Yellow #f9e2af、Green #a6e3a1、Sky #89dceb；cursor 照 tgo，Subtext1 底、Base 字（TODO(tdp #8)）
+      前三名整列的字上色（tgo Row.Styled）：Yellow #f9e2af、Green #a6e3a1、Sky #89dceb；cursor 停在這三列時 tgo Row.CursorColor 給那一列的顏色（tgo v1.2.4-beta.2）：色塊與箭頭是那個顏色，字 Base 粗體，淡化與模式裡改回 Subtext1 由 tgo 做
       空的時候：No scores yet / Press [T] to play
       沒有 Enter 與其他動作；j|k、gg|G 由 tgo 移動
     test: [TestScoresBestFirst, TestTopOutKeepsTheScore, TestScreensSwitchOnTRS, TestRankKeepsTheBestTwentyWithTheirPlaces, TestRankColoursTheFirstThree]
