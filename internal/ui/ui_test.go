@@ -5,7 +5,6 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
-	"slices"
 	"strconv"
 	"strings"
 	"testing"
@@ -1102,16 +1101,20 @@ func TestClearsByHowManyRows(t *testing.T) {
 	plain := regexp.MustCompile("\x1b\\[[0-9;]*m")
 	const white, ground = "255;255;255", "49;50;68"
 
-	// goesRight says whether a block is right of the field, before KEYS.
-	goesRight := func(r string) bool {
+	// glyphs is the glyphs in r from column a to column b, the blanks left
+	// out.
+	glyphs := func(r string, a, b int) string {
 		rs := []rune(plain.ReplaceAllString(r, ""))
+		at := ""
 		for i, c := range rs {
-			if col := terminu.Width(string(rs[:i])); string(c) == pixelGlyph && col >= 38 && col < 52 {
-				return true
+			if col := terminu.Width(string(rs[:i])); col >= a && col < b && c != ' ' {
+				at += string(c)
 			}
 		}
-		return false
+		return at
 	}
+	// goesRight says whether anything is right of the field, before KEYS.
+	goesRight := func(r string) bool { return glyphs(r, 38, 52) != "" }
 	// pieceColoured says whether the field (KEYS beside it has Blue keys)
 	// has a piece's colour.
 	pieceColoured := func(r string) bool {
@@ -1156,30 +1159,17 @@ func TestClearsByHowManyRows(t *testing.T) {
 	if !strings.Contains(bottom(), white) {
 		t.Fatal("four rows do not go white first")
 	}
-	// All four at once crumble where they are, then burst in the middle,
-	// then what is left goes out (user, 2026-11-12).
-	// middle is the glyphs of the four blocks in the middle of the field.
-	middle := func(r string) []string {
-		rs := []rune(plain.ReplaceAllString(r, ""))
-		var at []string
-		for i, c := range rs {
-			if col := terminu.Width(string(rs[:i])); col >= 22 && col < 30 && c != ' ' {
-				at = append(at, string(c))
-			}
-		}
-		return at
-	}
+	// All four at once break to grains where they are, every block, then
+	// burst in the middle, then the grains left go out (user, 2026-11-12).
 	span := game.ClearTime(4) - game.Settle - game.Flash
 	g.Advance(game.Flash + span/4)
-	if r := bottom(); !strings.Contains(r, white) || !strings.Contains(r, ground) || !breaks(r) || goesRight(r) ||
-		strings.Join(middle(r), "") != strings.Repeat(pixelGlyph, 4) {
-		t.Fatalf("four rows do not crumble where they are first, the middle whole: %q", r)
-	}
-	if !breaks(tt.gameP.Body.Draw(78, 27, true)[1+game.Rows-4]) {
-		t.Fatal("the top row of four does not crumble with the bottom one")
+	for _, y := range []int{game.Rows - 1, game.Rows - 4} {
+		if r := tt.gameP.Body.Draw(78, 27, true)[1+y]; glyphs(r, 14, 38) != strings.Repeat(broken[0], game.Cols) || !strings.Contains(r, white) {
+			t.Fatalf("four rows do not all break to grains at once, in white: %q", r)
+		}
 	}
 	g.Advance(span / 4)
-	if r := bottom(); !slices.ContainsFunc(middle(r), func(s string) bool { return slices.Contains(broken[:], s) }) || goesRight(r) {
+	if r := bottom(); !strings.Contains(glyphs(r, 22, 30), broken[1]) || goesRight(r) {
 		t.Fatalf("four rows do not burst in the middle next, where they are: %q", r)
 	}
 	g.Advance(span * 7 / 20)

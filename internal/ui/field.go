@@ -253,11 +253,11 @@ func breaking(t, gone, span float64) uint8 {
 //   - two burst from their middle, ring by ring outwards;
 //   - three crumble, a block at a time in no order, each breaking (broken)
 //     before it is gone (user, 2026-11-12);
-//   - four, all together, crumble where they are, breaking, about half of
-//     each row gone, then burst in the middle, then what is left of the
-//     halves goes out to either side, the right one as far as the blank
-//     there (user, 2026-11-12: not a row at a time; crumbling, bursting,
-//     going out, in that order).
+//   - four, all together, break where they are, every block at once to
+//     grains, then burst in the middle, then the grains left of the halves
+//     go out to either side, the right one as far as the blank there
+//     (user, 2026-11-12: not a row at a time; all breaking together, then
+//     bursting, then going out).
 //
 // The ground shows where they were.
 func clearRows(out []string, g *game.Game, sc *scene, w, k, x1, left, top, right int) {
@@ -314,21 +314,21 @@ func clearRows(out []string, g *game.Game, sc *scene, w, k, x1, left, top, right
 					block(x, inkWhite, s)
 				}
 			}
-		default: // crumble, burst in the middle, then what is left splits
-			// The halves go out over the last 40%, once the others have
-			// broken where they were.
+		default: // break, burst in the middle, then what is left splits
+			// The halves go out over the last 40%, once the middle has
+			// gone.
 			s := max(0, (p-0.6)/0.4)
 			offL, offR := int(s*float64(lead+half)+0.5), int(s*float64(right+half)+0.5)
 			for x := range game.Cols {
-				// Half the others crumble first, in the first 37%; then
-				// the four in the middle burst, the two inmost first, over
-				// 15% each (user, 2026-11-12: about 50 ms, the shapes
-				// seen); the rest go out whole.
-				shape := uint8(0)
+				// Every block breaks to grains at once after the flash
+				// (user, 2026-11-12: all together, not half) and lies
+				// there; at 40% the four in the middle burst, the two
+				// inmost first, dust for 15% each (user, 2026-11-12: about
+				// 50 ms, the shapes seen); the rest go out as grains.
+				shape := uint8(1)
 				if d := max(2*x-(game.Cols-1), game.Cols-1-2*x); d <= 3 {
-					shape = breaking(p, 0.55+0.05*float64(d-1)/2, 0.15)
-				} else if c := crumble[(x+5*i)%game.Cols]; c < game.Cols/2 {
-					shape = breaking(p, 0.2+0.2*float64(c)/float64(game.Cols/2), 0.2)
+					// Grains till 15% before it is gone, then dust.
+					shape = max(1, breaking(p, 0.55+0.05*float64(d-1)/2, 0.3))
 				}
 				if shape == shattered {
 					continue
