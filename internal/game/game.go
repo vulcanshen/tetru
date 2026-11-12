@@ -35,7 +35,7 @@ const (
 	// Settle till the rows they left are filled. About half what they were
 	// (user, 2026-11-11: too slow, not smooth): a row 0.32 s. How the rows
 	// go is by how many there are (user, 2026-11-12), in the same time:
-	// one slides out, two split, three crumble and four burst (Along), the
+	// one slides out, two burst, three crumble (Along) and four split, the
 	// stack over four coming down at once, Settle after.
 	Flash   = 100 * time.Millisecond
 	Slide   = 200 * time.Millisecond
@@ -469,7 +469,7 @@ func (g *Game) Slid(i int) float64 {
 }
 
 // Along is how far the rows going are on their way out, all of them
-// together, 0 to 1, after the flash: three crumbling, four bursting.
+// together, 0 to 1, after the flash: two bursting, three crumbling.
 func (g *Game) Along() float64 {
 	n := len(g.Going)
 	if n == 0 {

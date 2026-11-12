@@ -228,15 +228,16 @@ var crumble = [game.Cols]int{7, 2, 10, 4, 0, 9, 5, 11, 1, 6, 3, 8}
 // drawn from its column 0 to its column x1, every pixel k × k glyphs, at
 // column left and line top, with right glyphs blank right of the field to
 // go into. How they go is by how many they are (user, 2026-11-12: a way
-// and a colour each, none a piece's colour), in about the same time:
+// and a colour each, none a piece's colour; then two's way and four's
+// swapped), in about the same time:
 //   - one, white, slides out to the left over the blank left of the field
 //     and out past PLAYGROUND's frame (user, 2026-11-11);
-//   - two, Flamingo, split in the middle, the halves going out to either
-//     side, the right one as far as the blank there;
+//   - two, Flamingo, burst from their middle: white, then ring by ring
+//     outwards, white as each goes;
 //   - three, Pink, crumble, a block at a time in no order, each going
 //     white before it is gone;
-//   - four, Lavender, burst from their middle: white, then ring by ring
-//     outwards, white as each goes.
+//   - four, Lavender, split in the middle, the halves going out to either
+//     side, the right one as far as the blank there.
 //
 // Each bottom row first where they go one by one; the ground shows where
 // they were.
@@ -265,49 +266,51 @@ func clearRows(out []string, g *game.Game, sc *scene, w, k, x1, left, top, right
 				put(x*k+j, ink)
 			}
 		}
-		switch n := len(g.Going); {
-		case n == 1:
+		n := len(g.Going)
+		ink := []uint8{inkWhite, inkFlamingo, inkPink, inkLavender}[min(n, 4)-1]
+		switch n {
+		case 1: // slide
 			if f := g.Slid(i); f < 1 {
 				from := -int(f*float64(lead+strip) + 0.5)
 				for u := from; u < from+strip; u++ {
-					put(u, inkWhite)
+					put(u, ink)
 				}
 			}
-		case n == 2:
-			if f := g.Slid(i); f < 1 {
-				l := -int(f*float64(lead+half) + 0.5)
-				for u := l; u < l+half; u++ {
-					put(u, inkFlamingo)
-				}
-				r := half + int(f*float64(right+half)+0.5)
-				for u := r; u < r+half && u < strip+right; u++ {
-					put(u, inkFlamingo)
-				}
-			}
-		case n == 3:
+		case 2: // burst
 			p := g.Along()
 			for x := range game.Cols {
-				at := float64(crumble[(x+5*i)%game.Cols]) / game.Cols * 0.85
-				switch {
-				case p <= at:
-					block(x, inkPink)
-				case p < at+0.15:
-					block(x, inkWhite)
-				}
-			}
-		default:
-			p := g.Along()
-			for x := range game.Cols {
-				// The ring: twice the steps from the middle of the four rows.
+				// The ring: twice the steps from the middle of the rows.
 				d := max(2*x-(game.Cols-1), game.Cols-1-2*x) + max(2*i-(n-1), n-1-2*i)
 				at := float64(d) / float64(game.Cols-1+n-1) * 0.85
 				switch {
 				case p == 0:
 					block(x, inkWhite)
 				case p <= at:
-					block(x, inkLavender)
+					block(x, ink)
 				case p < at+0.15:
 					block(x, inkWhite)
+				}
+			}
+		case 3: // crumble
+			p := g.Along()
+			for x := range game.Cols {
+				at := float64(crumble[(x+5*i)%game.Cols]) / game.Cols * 0.85
+				switch {
+				case p <= at:
+					block(x, ink)
+				case p < at+0.15:
+					block(x, inkWhite)
+				}
+			}
+		default: // split
+			if f := g.Slid(i); f < 1 {
+				l := -int(f*float64(lead+half) + 0.5)
+				for u := l; u < l+half; u++ {
+					put(u, ink)
+				}
+				r := half + int(f*float64(right+half)+0.5)
+				for u := r; u < r+half && u < strip+right; u++ {
+					put(u, ink)
 				}
 			}
 		}

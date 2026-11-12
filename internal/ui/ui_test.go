@@ -1090,18 +1090,36 @@ func TestClearsByHowManyRows(t *testing.T) {
 	plain := regexp.MustCompile("\x1b\\[[0-9;]*m")
 	const flamingo, pink, white, ground = "242;205;205", "245;194;231", "255;255;255", "49;50;68"
 
-	g := clearOf(t, tt, 2)
-	g.Advance(game.Flash + game.Slide/2)
-	r := bottom()
-	rs := []rune(plain.ReplaceAllString(r, ""))
-	right := false
-	for i, c := range rs {
-		if col := terminu.Width(string(rs[:i])); string(c) == pixelGlyph && col >= 38 && col < 52 {
-			right = true
+	const lavender = "180;190;254"
+	// goesRight says whether a block is right of the field, before KEYS.
+	goesRight := func(r string) bool {
+		rs := []rune(plain.ReplaceAllString(r, ""))
+		for i, c := range rs {
+			if col := terminu.Width(string(rs[:i])); string(c) == pixelGlyph && col >= 38 && col < 52 {
+				return true
+			}
 		}
+		return false
 	}
-	if !strings.Contains(r, flamingo) || !right {
-		t.Fatalf("two rows do not split in Flamingo, half going right: %q", r)
+	// pieceColoured says whether the field (KEYS beside it has Blue keys)
+	// has a piece's colour.
+	pieceColoured := func(r string) bool {
+		field, _, _ := strings.Cut(r, "│")
+		for _, c := range inks[inkPiece : inkPiece+7] {
+			if strings.Contains(field, fmt.Sprintf("%d;%d;%d", c.R(), c.G(), c.B())) {
+				return true
+			}
+		}
+		return false
+	}
+
+	g := clearOf(t, tt, 2)
+	if r := bottom(); !strings.Contains(r, white) {
+		t.Fatal("two rows do not go white first")
+	}
+	g.Advance(game.Flash + (game.ClearTime(2)-game.Flash)/2)
+	if r := bottom(); !strings.Contains(r, flamingo) || !strings.Contains(r, ground) || pieceColoured(r) {
+		t.Fatalf("two rows do not burst in Flamingo alone, the middle gone: %q", r)
 	}
 
 	g = clearOf(t, tt, 3)
@@ -1114,17 +1132,8 @@ func TestClearsByHowManyRows(t *testing.T) {
 	}
 
 	g = clearOf(t, tt, 4)
-	if r := bottom(); !strings.Contains(r, white) {
-		t.Fatal("four rows do not go white first")
-	}
-	g.Advance(game.Flash + (game.ClearTime(4)-game.Flash)/2)
-	if r := bottom(); !strings.Contains(r, "180;190;254") || !strings.Contains(r, ground) {
-		t.Fatalf("four rows do not burst in Lavender, the middle gone: %q", r)
-	}
-	field, _, _ := strings.Cut(bottom(), "│") // KEYS beside it has Blue keys
-	for _, c := range inks[inkPiece : inkPiece+7] {
-		if strings.Contains(field, fmt.Sprintf("%d;%d;%d", c.R(), c.G(), c.B())) {
-			t.Fatal("four rows burst in a piece's colour (user, 2026-11-12: one colour)")
-		}
+	g.Advance(game.Flash + game.Slide/2)
+	if r := bottom(); !strings.Contains(r, lavender) || !goesRight(r) || pieceColoured(r) {
+		t.Fatalf("four rows do not split in Lavender, half going right: %q", r)
 	}
 }
