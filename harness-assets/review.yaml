@@ -1,4 +1,4 @@
-spec: 51
+spec: 52
 tasks:
   - id: 1
     accepted: true
@@ -25,7 +25,8 @@ tasks:
   - id: 12
     accepted: true
   - id: 13
-    accepted: true
+    accepted: false
+    reason: '違反：（1）Settings 的 KEY select 可以選 Enter，Drop 也能從 Enter 改成字母；tdp v1.2.6 的 K11 表加了 Enter 這一列，Enter 是「上表的 core key」，使用者選的鍵不能是 core key、core key 不給使用者改（K11、K11-14；v1.2.5 的表沒有 Enter）。（2）Drop 改成字母（例 s）後，60 欄的 footer 放不下：Space:menu ?:help d:rotate left k:rotate right s:drop Esc:pause 有 63 欄，tgo 收掉 s:drop，Gaming 的 Space menu 又只有 [r]estart、[q]uit，Drop 不在 Space menu 也不在 60 欄的 footer（K11-20）。另外 tdp 不清楚：（3）Move left、Move right、Down a row 能改到 h、l、j 以外的字母（例 a）；K11 寫 app 自己的模式裡移動照 K12、K11-20 只放過照 K12 移動的移動鍵，沒寫模式裡有移動可做的鍵能不能讓使用者改到 K12 以外的字母、改過的鍵還算不算移動鍵、空出來的 h、j、l 能不能給別的動作'
   - id: 14
     accepted: true
   - id: 15

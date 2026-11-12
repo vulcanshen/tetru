@@ -77,7 +77,7 @@ tasks:
   - id: 4
     spec: 50
     request: '遊戲的按鍵：h 左、l 右、j 下一格、d 左旋、k 右旋、Enter 快速向下；這是遊戲，要讓使用者好玩，跟 tdp 衝突就請 tdp 調整'
-    tdp: [tdp K11, tdp K12, tdp K3, tdp P5, tdp M5, tdp panel.3, tdp screen.2, tdp menu.4, tdp K6, tdp panel.1, tdp M6, tdp K9]
+    tdp: [tdp K11, tdp K12, tdp K3, tdp P5, tdp M5, tdp panel.3, tdp screen.2, tdp menu.4, tdp K6, tdp panel.1, tdp M6, tdp K9, tdp panel.16, tdp M3]
     remark:
       - '遊戲進行中是 PLAYGROUND 的模式 Gaming（tdp K11：進入之後一部分鍵換成模式自己的意思，Esc 離開）：外框換成模式色、上框右邊 ┫Gaming┣（tdp panel.3）；只有 Gaming 的鍵與 core key 作用，亂按的其他鍵不出聲'
       - 'Gaming 的鍵是使用者在 Settings 設的（task 13），預設照使用者 2026-11-11 說的：h 左、l 右、j 往下一格、d 左旋、k 右旋、Enter 落到底（原本是 k 左旋、i 右旋，使用者玩過之後改的）'
@@ -92,7 +92,7 @@ tasks:
   - id: 5
     spec: 52
     request: 'Space 暫停，並打開 Space menu；Space 不能改；暫停用 popup 顯示，不畫在遊戲裡（那是 locku 的限制，tetru 是獨立的 app）；玩的時候的 Space menu 不用列 h、l、j、k、Enter，連 d、k 都不用，應該是給 restart、save（使用者 2026-11-11）；後來使用者一度說列的確實是這個模式的鍵，再問為什麼 h、l、j、Enter 出現在裡面，選了重新打開 tdp #7（2026-11-11）；save 不給使用者操作，Gaming 中的 Space menu 只有 restart 和 quit（使用者 2026-11-12：save 存完直接 quit，玩到一半不小心按到 s 就慘了）'
-    tdp: [tdp K5, tdp K11, tdp K4, tdp menu.4, tdp M2, tdp M7, tdp L1, tdp screen.7, tdp F1, tdp F6, tdp confirm, tdp K12, tdp K6, tdp screen.2, tdp M5, tdp toast, tdp K9, tdp K1, tdp K2, tdp P5]
+    tdp: [tdp K5, tdp K11, tdp K4, tdp menu.4, tdp M2, tdp M7, tdp L1, tdp screen.7, tdp F1, tdp F6, tdp confirm, tdp K12, tdp K6, tdp screen.2, tdp M5, tdp toast, tdp K9, tdp K1, tdp K2, tdp P5, tdp M3, tdp panel.16]
     remark:
       - 'Gaming 裡按 Space 開 Gaming 模式的 Space menu（tdp K11：app 自己的模式，Space menu 列什麼 app 可以自行決定；標題與樣子照 menu.4）：只有 GAMING MODE 的 [r]estart、[q]uit（使用者 2026-11-12：Gaming 中的 Space menu 應該只有 restart 和 quit；原本是 restart、save），選了等於按 r、q。玩的鍵不列，都在 ? 與 INFO；[Esc] Pause 那一列也不列（K11：留不留 app 決定；使用者要的只有這兩列，Esc:pause 在 footer）。menu 開著遊戲就停，Esc 或 Space 關掉就接著玩'
       - 'tdp #7：原本 tdp menu.4、K11 要模式的 Space menu 列模式本身的鍵，tetru 暫時照列（TODO(tdp #7)）。使用者 2026-11-11 把 #7 改成問 app 自己的模式，選 A：tdp v1.2.4 定案（K11 的 app 自己的模式的 Space menu、K11-15），列什麼 app 可以自行決定；要守的：Space 照樣打開、至少一列，標題與樣子照 menu.4，模式的每個鍵照樣在 ?，footer 照舊。tgo v1.2.4 的 ModeKey.NoMenu、Mode.NoLeaveRow 做到（v1.2.4-beta.1 起，2026-11-12）'
@@ -110,7 +110,7 @@ tasks:
         issue: tdp #12
       - note: 'footer 寫 q:quit（使用者 2026-11-12：Gaming 模式中 footer 加入 q:quit）。q 是 core key，在任何模式裡都是進入 K9 的離開流程，不是 Gaming 自己的鍵；這裡只是把它寫在 footer 上。v1.2.4 的 screen.2 只准寫模式自己的鍵（2026-11-12 review），回報 tdp #13，使用者選 A，tdp v1.2.5 定案：app 自己的模式，footer 在 Space:menu ?:help 與最後的 Esc:<離開的動詞> 中間寫哪些鍵由 app 自行決定，模式裡能按的鍵都可以，core key 也可以（例：q:quit），每個鍵做的事照它在模式裡的作用（K11、screen.2、screen-36）。tgo v1.2.5：沒有 Do 的 ModeKey {Key: q, Desc: quit}'
         issue: tdp #13
-      - 'Gaming 是 app 自己的模式（tdp v1.2.6：P5 的開口，K11 的「app 自己的模式」）：玩遊戲是 tdp 的元件和規則都沒有的事（K11-17）；只由使用者的動作進入，PLAYGROUND 的 Enter（Play、Resume）、[n]ew game、RESUME 與 PLAY 的 Enter、模式裡的 r，啟動時有存檔也只停在暫停（K11-18）；模式的鍵與 Space menu 只作用在遊戲上，最多離開模式，[q]uit 與 q:quit 是 core key q（K11-19）；除了 core key 與移動鍵，每個鍵都在 Space menu 或 60 欄時的 footer：d、k、Enter、r 在 footer，r 也在 Space menu（K11-20）；一次只有這一個模式（K11-22）'
+      - 'Gaming 是 app 自己的模式（tdp v1.2.6：P5 的開口，K11 的「app 自己的模式」）：玩遊戲是 tdp 的元件和規則都沒有的事（K11-17）；只由使用者的動作進入，PLAYGROUND 的 Enter（Play、Resume）、[n]ew game、RESUME 與 PLAY 的 Enter、模式裡的 r，啟動時有存檔也只停在暫停（K11-18）；模式的鍵與 Space menu 只作用在遊戲上，最多離開模式，[q]uit 與 q:quit 是 core key q（K11-19）；除了 core key 與移動鍵，每個鍵都在 Space menu 或 60 欄時的 footer：60 欄時 footer 放得下 d、k，Enter 是 core key（v1.2.6 K11 的表），r 在 Space menu（K11-20）；一次只有這一個模式（K11-22）'
 
   - id: 6
     spec: 47
@@ -150,7 +150,7 @@ tasks:
   - id: 9
     spec: 52
     request: '湊齊一排時，滿排的列先變白色，再從下到上依序向左滑出 panel 1（GAME），然後整個場地往下降、上方補上空的格子；期間不能操作，正在玩的方塊不跟著降（使用者 2026-11-11）；這段動畫原本太慢、不流暢（使用者 2026-11-11）；消除排的特效依照 1、2、3、4 排給不同顏色及特效，不一定要左滑，時間要差不多，顏色用和方塊不衝突的（使用者 2026-11-12）。結束時照 locku 由上往下變灰。結束用 popup 說，不在遊戲裡寫 END（使用者 2026-11-11：那是 locku 的限制，tetru 是獨立的 app）'
-    tdp: [tdp P5, tdp F1, tdp F6, tdp confirm, tdp K11, tdp K4, tdp M6]
+    tdp: [tdp P5, tdp F1, tdp F6, tdp confirm, tdp K11, tdp K4, tdp M6, tdp panel.16]
     remark:
       - '消行（使用者 2026-11-11，取代第一版照 locku 的閃白、從中間往兩端消失；2026-11-12 統一）：不管消幾行，都是閃白 100 ms → 照消幾行用不同的動作消失 → 上面整片一次降下（使用者 2026-11-12：下降都是整片降）；顏色都是白 #ffffff（使用者 2026-11-12：先全部改成 rosewater，再改成白色），走掉的地方畫底，時間跟只有向左滑時差不多（消 1 行 0.32 秒、2 行 0.37、3 行 0.42、4 行 0.47 秒）：'
       - '1 行：閃白 → 消失 → 下降（使用者 2026-11-12）：消失是在原地由白分四段淡成底色，200 ms；不往旁邊滑（原本向左滑出）'
@@ -170,7 +170,7 @@ tasks:
   - id: 10
     spec: 47
     request: '玩家可以中途結束、重新開始或離開，結束或離開時記下當下的分數；有一局在玩時按 q 先跳 confirm，記下分數，名字直接用 ANON（使用者 2026-11-11）。後來（使用者 2026-11-12）：要 quit 的時候正在遊戲，app 自動存檔，也不用問，下次進來使用者不想繼續直接 restart 就好'
-    tdp: [tdp M2, tdp M3, tdp M5, tdp M6, tdp F6, tdp text, tdp K9, tdp confirm, tdp popup.1, tdp K4, tdp input.1, tdp note.6, tdp F5, tdp M4, tdp P5, tdp K12, tdp T1, tdp note.7]
+    tdp: [tdp M2, tdp M3, tdp M5, tdp M6, tdp F6, tdp text, tdp K9, tdp confirm, tdp popup.1, tdp K4, tdp input.1, tdp note.6, tdp F5, tdp M4, tdp P5, tdp K12, tdp T1, tdp note.7, tdp panel.16]
     remark:
       - '[x] End game（keep this score and stop）與 [n]ew game（start over from level 1）是 PLAYGROUND 的 panel operation（tdp M2、M3）；n、x 是領域熱鍵（tdp P5），不佔移動的字母'
       - '有一局值得記時（task 7），兩個都先問誰玩的（task 6），那就是確認（tdp F6：哪些要確認 app 可以自行決定）：說出分數，Esc 取消；不值得記的局沒有東西會丟，不問，直接結束（有分數的跳 task 6 的 Info toast）或重開（什麼都不說，task 6）；沒有一局在玩時 [x] End game 停用（tdp M6）'
@@ -195,7 +195,7 @@ tasks:
   - id: 13
     spec: 51
     request: '除了 Space 是暫停並打開 Space menu，其他的鍵都在 Settings 裡讓使用者自己設定'
-    tdp: [tdp panel.12, tdp select, tdp popup.7, tdp toast, tdp E2, tdp E3, tdp F5, tdp note.7, tdp K1, tdp K11, tdp K12, tdp P5, tdp M5, tdp popup.1]
+    tdp: [tdp panel.12, tdp select, tdp popup.7, tdp toast, tdp E2, tdp E3, tdp F5, tdp note.7, tdp K1, tdp K11, tdp K12, tdp P5, tdp M5, tdp popup.1, tdp screen.2]
     remark:
       - '讓玩家改 Gaming 的鍵、能選哪些、怎麼設定，app 可以自行決定（tdp K11，K11-14；tdp #5 回報後 v1.2.3 放行）；要守的：選到 Gaming 裡已經有作用的鍵（別的動作的鍵與它的方向鍵、core key）就跳 Warning、寫出被誰用了、不設定；? 與 footer 寫的是目前的鍵；core key 與 panel 的鍵不給改'
       - 'Settings 畫面只有一個 panel：[1] KEYS，一列一個值（tdp panel.12）：表頭 ACTION、KEY；Move left、Move right、Down a row、Rotate left、Rotate right、Drop 各一列。沒有 Pause 那一列（使用者 2026-11-12：PAUSE 跟 Space menu 是兩件事；不需要 pause 鍵，使用 Esc 就好）：暫停是 Esc 離開 Gaming（tdp K4），Space 打開 Space menu，menu 開著遊戲停著是因為 Gaming 時開任何 popup 遊戲都停（task 5）'
@@ -205,10 +205,13 @@ tasks:
       - '設定檔讀不了（格式錯、鍵不能用、兩個動作同一個鍵）時照 tdp E3 問要不要移開（tgo MoveAside），移開就用預設的鍵；排行的檔也讀不了時接著問它'
       - '改了馬上生效：Gaming 的鍵、footer、? 與 INFO 寫的都是現在的鍵'
       - 'Gaming 的 Space menu 不列玩的鍵（task 5；tdp v1.2.4 K11：app 自己的模式的 Space menu 列什麼由 app 決定）；改了鍵之後，? 與提示（footer、KEYS）寫現在的鍵（tdp K11-14）'
+      - note: 'tdp v1.2.6 的 K11 表加了 Enter 這一列（Enter 是 core key，使用者選的鍵不能是 core key、core key 不給使用者改）：Settings 可以選 Enter、Drop 能離開 Enter 不合 v1.2.6；Drop 改成字母後 60 欄的 footer 放不下它（K11-20）；Move left、Move right、Down a row 能不能改到 h、l、j 以外的字母，tdp 沒寫（K11 的移動照 K12、K11-20 的移動鍵）。2026-11-12 review 判不合，回報 tdp #14（使用者 2026-11-11：有衝突就發 terminu issue 吧）。暫時照現在的做法，等回覆；合 v1.2.6 的暫時做法是 Drop 固定 Enter、移動固定 h、l、j，會拿掉使用者要的改鍵，先不做'
+        issue: tdp #14
+
   - id: 14
     spec: 20
     request: '遊戲右下的 panel 分上下兩段：上面 Level、Lines、Score，下面操作方式；不叫 Manual。後來（使用者 2026-11-12）：INFO 裡的 level、lines、score 和下方的 manual 拆成兩個不同 block（之前用 panel 做，為了節省空間才那樣安排）'
-    tdp: [tdp P5, tdp F1, tdp M5, tdp components.2, tdp screen.4, tdp menu]
+    tdp: [tdp P5, tdp F1, tdp M5, tdp components.2, tdp screen.4, tdp menu, tdp panel.16]
     remark:
       - 'NEXT 2 下面是兩個 PLAYGROUND 自己畫的框（task 15），內容 app 可以自行決定（tdp P5、F1）：INFO 與 KEYS。三個 NEXT 與 INFO 還是 panel 時擠在一個 panel 裡分兩段、中間一條虛線，現在是框，各自一個（使用者 2026-11-12）。名字照使用者說的不用 Manual：玩到哪叫 INFO，怎麼玩叫 KEYS'
       - 'INFO：Level、Lines、Score 一行一個，label Overlay0、值 Lavender（task 1），框的高就是三行'
@@ -228,7 +231,7 @@ tasks:
   - id: 16
     spec: 47
     request: '把當前分數和 panel 1 已經落地的格子位置存起來；重新啟動後接著玩，地上的格子直接是白色，不用分色（使用者 2026-11-11）；這一局先不記排行，下次開 tetru 接著玩，讀回來就刪掉存檔（使用者選的）。save 和 quit 要分開：不需要作 save 給使用者操作，save 是 app 的背景行為；要 quit 的時候正在遊戲，app 自動存檔，也不用問，下次進來使用者不想繼續直接 restart 就好（使用者 2026-11-12）'
-    tdp: [tdp E3, tdp E2, tdp P5, tdp F6, tdp K9, tdp note, tdp note.7, tdp M4]
+    tdp: [tdp E3, tdp E2, tdp P5, tdp F6, tdp K9, tdp note, tdp note.7, tdp M4, tdp K11]
     remark:
       - '存在 app 自己的資料（tdp E3）：TETRU__DATA 或 ~/.tetru 的 game.yaml，跟 scores.yaml 放一起；level、lines、score 與 stack：24 列字串，一列 12 個字，# 有方塊、. 沒有，由上往下。只有一局'
       - '存的是落地的格子（使用者 2026-11-11：panel 1 已經落地的格子）：正在掉的方塊、接下來的方塊不存。消行動畫還沒做完時存，存的是做完之後的樣子'
@@ -242,7 +245,7 @@ tasks:
   - id: 17
     spec: 39
     request: '「提示」功能：第 5 關以下都有，第 6 關開始消失；方塊落下的樣子：背景的黑格子會變成落下的樣子，用淺一點的灰色呈現，就是使用者如果在這個點按下 Enter，會落地成怎樣的樣子的提示（使用者 2026-11-12）'
-    tdp: [tdp P5]
+    tdp: [tdp P5, tdp panel.16]
     remark:
       - '場地裡的格子畫什麼、什麼顏色是遊戲的內容與內容本身的顏色，app 可以自行決定（tdp P5）'
       - '畫法：正在掉的方塊按快速落下（預設 Enter，task 13 可以改鍵）會落定的那四格，在場地的底上用 Overlay0 #6c7086 畫同一個方塊 icon（nf-fa-square）：比底的 Surface0 #313244 亮，比結束灰幕的 Overlay1 #7f849c 暗一點（使用者 2026-11-12：原本的 Surface2 #585b70 再淡一點，用 Overlay0），也不是任何一種方塊的顏色；正在掉的方塊蓋在它上面，已經落到那裡時就看不到'
