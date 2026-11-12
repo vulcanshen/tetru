@@ -66,7 +66,7 @@ func TestSettingsSetAKey(t *testing.T) {
 		t.Fatalf("not kept in the settings: %v %v", s, err)
 	}
 	d.Press("!")
-	if !d.Has("Rotate left is now a") {
+	if !d.Has("Rotate left is now [a]") {
 		t.Fatal("no App Log entry")
 	}
 	d.Press("Esc")
@@ -151,14 +151,14 @@ func TestAKeyInUseIsRefused(t *testing.T) {
 	d.Press("j")
 	d.Press("j") // Rotate left
 	for _, c := range []struct{ key, why string }{
-		{"k", "Rotate right's key"},
+		{"k", "Rotate right's"}, // key wraps to the next line at 60 columns
 	} {
 		d.Press("Enter")
 		d.Press("/")
 		d.Type(c.key)
 		d.Press("Enter")
 		d.Press("Enter")
-		if !d.Has("Can't use "+c.key+" for Rotate left") || !d.Has(c.why) || tt.keys[keys.RotateLeft] != "d" {
+		if !d.Has("Can't use ["+c.key+"] for Rotate left") || !d.Has(c.why) || tt.keys[keys.RotateLeft] != "d" {
 			t.Fatalf("%s for Rotate left: kept %q, no Warning", c.key, tt.keys[keys.RotateLeft])
 		}
 		if s, err := keys.Load(tt.cfg); err != nil || s[keys.RotateLeft] != "d" {

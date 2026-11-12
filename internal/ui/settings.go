@@ -55,10 +55,10 @@ func (t *Tetru) chooseKey(a keys.Action) tea.Cmd {
 		},
 		Done: func(i int) tea.Cmd {
 			if t.keys[a] != opts[i] {
-				return t.App.Toast(terminu.Warning, "Can't use "+opts[i]+" for "+a.Label()+": "+t.keys.UsedBy(a, opts[i]))
+				return t.App.Toast(terminu.Warning, "Can't use ["+opts[i]+"] for "+a.Label()+": "+t.keys.UsedBy(a, opts[i]))
 			}
 			t.setModeKeys()
-			t.App.Log(terminu.Success, a.Label()+" is now "+opts[i])
+			t.App.Log(terminu.Success, a.Label()+" is now ["+opts[i]+"]")
 			return nil
 		},
 	})
