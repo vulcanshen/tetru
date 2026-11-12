@@ -10,7 +10,7 @@ tasks:
     accepted: true
   - id: 5
     accepted: false
-    reason: tdp 不清楚：Esc 離開 Gaming 時接著開 RESUME confirm；tdp K11 的表寫 Esc「離開模式（K4），回到進入前的狀態」，K4 寫「沒有 popup 就退出當前模式」，沒寫離開模式時能不能接著開一個 popup（回報 tdp #9）
+    reason: tdp 不清楚：Esc 離開 Gaming 時接著開 RESUME confirm；tdp K11 的表寫 Esc「離開模式（K4），回到進入前的狀態」，K4 寫「沒有 popup 就退出當前模式」，沒寫離開模式時能不能接著開一個 popup（回報 tdp #9；使用者 2026-11-12 選 A：app 可以自行決定，tdp 本機改了、還沒發版，tetru 照現在的做法就合新條文）
   - id: 6
     accepted: true
   - id: 7

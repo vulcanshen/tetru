@@ -132,7 +132,7 @@ func TestBrokenSettingsAskToMoveAside(t *testing.T) {
 	os.WriteFile(path, []byte("keys:\n  rotate_left: q\n"), 0o644)
 	tt := NewTetru()
 	d := tdptest.Start(t, tt.App, 60, 32)
-	if !d.Has("can't be read") || !d.Has("config.yaml") {
+	if !d.Has("MOVE ASIDE") || !d.Has("config.yaml.bak") {
 		t.Fatal("broken settings did not ask to move them aside")
 	}
 	d.Press("Enter")

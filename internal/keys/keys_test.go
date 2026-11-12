@@ -3,6 +3,7 @@ package keys
 import (
 	"os"
 	"path/filepath"
+	"runtime"
 	"slices"
 	"strings"
 	"testing"
@@ -99,7 +100,8 @@ func TestSaveThenLoadKeepsOtherKeys(t *testing.T) {
 	if got, err := Load(path); err != nil || got != s {
 		t.Fatalf("saved %v, read %v %v", s, got, err)
 	}
-	if fi, _ := os.Stat(path); fi.Mode().Perm() != 0o644 {
+	// Windows has no Unix modes: a file there is always rw-rw-rw-.
+	if fi, _ := os.Stat(path); runtime.GOOS != "windows" && fi.Mode().Perm() != 0o644 {
 		t.Fatalf("mode %v", fi.Mode())
 	}
 }

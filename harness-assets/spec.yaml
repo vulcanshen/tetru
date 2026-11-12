@@ -101,7 +101,7 @@ tasks:
       - '暫停時 PLAYGROUND 的 Space menu 是一般的（tdp M2）：PANEL OPERATION 的 [Enter] Resume、[n]ew game、[x] End game、[s]ave（task 16），與 Global operation（換畫面也在這裡）'
       - 'Tab、數字鍵在 Gaming 裡暫停（tdp K11），按了 tgo 跳 Info toast：Press [Esc] to leave Gaming first'
       - 'Space 一直是 Space（使用者 2026-11-11：除了 Space 以外都能設），也是 tdp K1、P5 的 core key：Settings 不列它（task 13）'
-      - note: 'Esc 離開 Gaming 時接著開 RESUME confirm：tdp K11、K4 沒寫離開模式時能不能開 popup（2026-11-12 review）。暫時照現在的做法；使用者 2026-11-12：回報，也先發 beta'
+      - note: 'Esc 離開 Gaming 時接著開 RESUME confirm：tdp K11、K4 沒寫離開模式時能不能開 popup（2026-11-12 review）。使用者 2026-11-12 選 A：離開 app 自己的模式時要不要跳 popup，app 可以自行決定（tdp 本機改了 K4、K11、K11-3，加了 K11-16，還沒發版）。要守的三點 tetru 都做到（TestEscPausesEnterResumes）：只跳一個 popup；跳出來時模式已經離開，PLAYGROUND 的模式名、外框顏色都恢復；RESUME 上按 Esc 是關掉它、留在模式外面（暫停），回到 Gaming 是 popup 的 Enter:resume。等 tdp 發版再拿新版對'
         issue: tdp #9
       - note: '清單 K11-8「模式裡沒有任何可以執行的按鍵清單」跟 K11 本文、K11-15、menu.4 矛盾（Space menu 的 [r]estart、[s]ave 能執行）；照本文，不改。tdp 回覆：K11-8 是模式還沒有 Space menu 時留下的，tdp 本機已拿掉（7ebc24f，還沒發版），能不能執行由 menu-24、menu-25 寫'
         issue: tdp #12

@@ -3,6 +3,7 @@ package saved
 import (
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 
@@ -33,7 +34,8 @@ func TestSaveLoadRemove(t *testing.T) {
 	if !strings.Contains(string(data), "#...........") || !strings.Contains(string(data), "...........#") {
 		t.Fatalf("not a row a line of # and .:\n%s", data)
 	}
-	if fi, _ := os.Stat(path); fi.Mode().Perm() != 0o644 {
+	// Windows has no Unix modes: a file there is always rw-rw-rw-.
+	if fi, _ := os.Stat(path); runtime.GOOS != "windows" && fi.Mode().Perm() != 0o644 {
 		t.Fatalf("mode %v", fi.Mode().Perm())
 	}
 	back, err := Load(path)
