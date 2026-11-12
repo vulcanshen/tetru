@@ -86,7 +86,7 @@ tasks:
       - '方向鍵跟著字母：h|j|k|l 就是 ←|↓|↑|→，u|d 就是 PgUp|PgDn（tdp K12），哪個動作的鍵是這幾個字母，它的方向鍵或 PgUp|PgDn 就做那個動作；預設 ← 左、→ 右、↓ 往下、PgDn 左旋、↑ 右旋。動作設成別的字母時，原本那個字母與它的方向鍵就不作用'
       - 'Enter 在 Gaming 裡是落到底並固定：K11 的表沒有 Enter，照 tdp K3「對 focus 的東西做最直觀的動作」，Gaming 裡 focus 的是落下中的方塊，把它放到底就是最直觀的（跟 Drag mode 的 Enter 放下一樣）。Gaming 外 Enter 在 PLAYGROUND 上是開始一局或繼續（tdp K3：panel 沒有項目時，對整個 panel 做最直觀的動作）'
       - '旋轉與落到底是對落下中的方塊做的事，在 footer；左右與往下一格是移動，不在 footer（見下面的 footer 那一條）。這些鍵都在 ?（tdp K6），不列在 Space menu（task 5）'
-      - note: 'footer 寫 q:quit：使用者 2026-11-12「q 雖然是 core key，但是在模式中以模式 key 優先，讓 q 也是模式內的 key，Gaming 模式中 footer 加入 q:quit」；q 做的事照 K9 的離開流程不變。review 判違反 tdp screen.2（模式的 footer 只寫模式自己的鍵），回報問 app 自己的模式能不能把 core key 當成模式自己的鍵列進 footer；暫時照使用者的'
+      - note: 'footer 寫 q:quit（使用者 2026-11-12：Gaming 模式中 footer 加入 q:quit）。q 是 core key，在任何模式裡都是進入 K9 的離開流程，不是 Gaming 自己的鍵；這裡只是把它寫在 footer 上。review 判違反 tdp v1.2.4 的 screen.2（模式的 footer 只寫模式自己的鍵），回報 tdp #13，使用者 2026-11-12 選 A：app 自己的模式 footer 要不要寫 q:quit，app 可以自行決定，q 做的事照 K9 不變（tdp 本機改了 K11、screen.2、screen-8，加了 screen-36，還沒發版）。要守的：q:quit 排在 Esc:<離開的動詞> 前面，tetru 的「… r:restart q:quit Esc:pause」合。等 tdp 發版再拿新版對'
         issue: tdp #13
 
   - id: 5
@@ -96,7 +96,7 @@ tasks:
     remark:
       - 'Gaming 裡按 Space 開 Gaming 模式的 Space menu（tdp K11：app 自己的模式，Space menu 列什麼 app 可以自行決定；標題與樣子照 menu.4）：只有 GAMING MODE 的 [r]estart、[q]uit（使用者 2026-11-12：Gaming 中的 Space menu 應該只有 restart 和 quit；原本是 restart、save），選了等於按 r、q。玩的鍵不列，都在 ? 與 INFO；[Esc] Pause 那一列也不列（K11：留不留 app 決定；使用者要的只有這兩列，Esc:pause 在 footer）。menu 開著遊戲就停，Esc 或 Space 關掉就接著玩'
       - 'tdp #7：原本 tdp menu.4、K11 要模式的 Space menu 列模式本身的鍵，tetru 暫時照列（TODO(tdp #7)）。使用者 2026-11-11 把 #7 改成問 app 自己的模式，選 A：tdp v1.2.4 定案（K11 的 app 自己的模式的 Space menu、K11-15），列什麼 app 可以自行決定；要守的：Space 照樣打開、至少一列，標題與樣子照 menu.4，模式的每個鍵照樣在 ?，footer 照舊。tgo v1.2.4 的 ModeKey.NoMenu、Mode.NoLeaveRow 做到（v1.2.4-beta.1 起，2026-11-12）'
-      - 'Gaming 模式加兩個鍵（模式的鍵 app 可以自行決定，tdp K11）：r Restart（start over from level 1，跟 PLAYGROUND 的 [n]ew game 一樣：值得記的（task 7）先問誰玩的，不然直接重開）；q Quit（leave tetru; a game going goes on next time），q 在模式裡本來就照 tdp K11 進離開流程，這裡只是把它列進 Space menu，選了就是離開流程（task 10）。footer 寫 r:restart q:quit；放不下時 tgo 先收掉中間的鍵，Esc:pause 留著（60 欄時就是這樣）。r 不給玩家設成玩的鍵（task 13）。原本還有 s Save（存檔並離開），使用者 2026-11-12 拿掉：玩到一半不小心按到 s 就離開了（task 16）'
+      - 'Gaming 模式加兩個鍵（模式的鍵 app 可以自行決定，tdp K11）：r Restart（start over from level 1，跟 PLAYGROUND 的 [n]ew game 一樣：值得記的（task 7）先問誰玩的，不然直接重開）；q Quit（leave tetru; a game going goes on next time）：q 是 core key，在模式裡照 tdp K11 本來就進離開流程，不是 Gaming 自己的鍵；這裡只是把它列進 Space menu（K11-15）與 footer（tdp #13），選了就是離開流程（task 10）。footer 寫 r:restart q:quit；放不下時 tgo 先收掉中間的鍵，Esc:pause 留著（60 欄時就是這樣）。r 不給玩家設成玩的鍵（task 13）。原本還有 s Save（存檔並離開），使用者 2026-11-12 拿掉：玩到一半不小心按到 s 就離開了（task 16）'
       - '遊戲只在 Gaming 裡、沒有任何 popup、終端機不比最低尺寸小時才走；toast 不是 popup，不擋'
       - '有沒有東西蓋在畫面上用 tgo App.Covered()（popup 開著、收起動畫播到一半、splash 開著都算，toast 不算；tgo #3 回報後 v1.2.3 加的）'
       - 'Esc 離開 Gaming＝暫停（tdp K4：Esc 是安全的出口，不會丟掉這一局），開 confirm 說遊戲停了（使用者 2026-11-11：暫停用 popup，場地上什麼都不畫）：內容 Paused: level 3, 25 lines, 12,340 points.，問句 Go on with the game?，Enter:resume 回到 Gaming，Esc:cancel 留在暫停。讀一段提醒、Enter 接受、Esc 取消就是 confirm（tdp F1），要不要問 app 可以自行決定（tdp F6）；標題照 tdp confirm.2 寫 Enter 做的動作 RESUME，不寫 PAUSED'
@@ -108,7 +108,7 @@ tasks:
         issue: tdp #9
       - note: '清單 K11-8「模式裡沒有任何可以執行的按鍵清單」跟 K11 本文、K11-15、menu.4 矛盾（Space menu 的 [r]estart、[s]ave 能執行）；照本文，不改。tdp 回覆：K11-8 是模式還沒有 Space menu 時留下的，tdp 本機已拿掉（7ebc24f，還沒發版），能不能執行由 menu-24、menu-25 寫（現在能執行的是 [r]estart、[q]uit）'
         issue: tdp #12
-      - note: 'footer 寫 q:quit：使用者 2026-11-12「q 雖然是 core key，但是在模式中以模式 key 優先，讓 q 也是模式內的 key，Gaming 模式中 footer 加入 q:quit」；q 做的事照 K9 的離開流程不變。review 判違反 tdp screen.2（模式的 footer 只寫模式自己的鍵），回報問 app 自己的模式能不能把 core key 當成模式自己的鍵列進 footer；暫時照使用者的'
+      - note: 'footer 寫 q:quit（使用者 2026-11-12：Gaming 模式中 footer 加入 q:quit）。q 是 core key，在任何模式裡都是進入 K9 的離開流程，不是 Gaming 自己的鍵；這裡只是把它寫在 footer 上。review 判違反 tdp v1.2.4 的 screen.2（模式的 footer 只寫模式自己的鍵），回報 tdp #13，使用者 2026-11-12 選 A：app 自己的模式 footer 要不要寫 q:quit，app 可以自行決定，q 做的事照 K9 不變（tdp 本機改了 K11、screen.2、screen-8，加了 screen-36，還沒發版）。要守的：q:quit 排在 Esc:<離開的動詞> 前面，tetru 的「… r:restart q:quit Esc:pause」合。等 tdp 發版再拿新版對'
         issue: tdp #13
 
   - id: 6

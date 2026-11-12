@@ -8,10 +8,10 @@ tasks:
     accepted: true
   - id: 4
     accepted: false
-    reason: 違反：Gaming 的 footer 寫了 q:quit；tdp screen.2 寫模式的 footer 是「Space:menu ?:help、模式自己的鍵、最後 Esc:<離開的動詞>」（screen-8），q 是 K11 表上的 core key。使用者 2026-11-12 要把 q 當成 Gaming 自己的鍵寫進 footer（做的事照 K9 不變），回報 tdp #13
+    reason: 違反：Gaming 的 footer 寫了 q:quit；tdp screen.2 寫模式的 footer 是「Space:menu ?:help、模式自己的鍵、最後 Esc:<離開的動詞>」（screen-8），q 是 K11 表上的 core key。使用者 2026-11-12 要 footer 寫 q:quit（q 做的事照 K9 不變），回報 tdp #13；使用者選 A：app 可以自行決定，tdp 本機改了、還沒發版，tetru 照現在的做法就合新條文
   - id: 5
     accepted: false
-    reason: 違反：footer 的 q:quit，同 task 4（回報 tdp #13）；tdp 不清楚：Esc 離開 Gaming 時接著開 RESUME confirm，v1.2.4 的 K11、K4 沒寫離開模式時能不能開 popup（回報 tdp #9；使用者 2026-11-12 選 A：app 可以自行決定，tdp 本機改了、還沒發版，tetru 照現在的做法就合新條文）
+    reason: 違反：footer 的 q:quit，同 task 4（回報 tdp #13，使用者選 A，tdp 還沒發版）；tdp 不清楚：Esc 離開 Gaming 時接著開 RESUME confirm，v1.2.4 的 K11、K4 沒寫離開模式時能不能開 popup（回報 tdp #9；使用者 2026-11-12 選 A：app 可以自行決定，tdp 本機改了、還沒發版，tetru 照現在的做法就合新條文）
   - id: 6
     accepted: true
   - id: 7
