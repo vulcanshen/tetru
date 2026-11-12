@@ -1180,6 +1180,40 @@ func TestClearsByHowManyRows(t *testing.T) {
 	}
 }
 
+func TestTheHintIsALighterGreyToLevelFive(t *testing.T) {
+	tt, d := open(t, 80, 32)
+	play(d)
+	tok := regexp.MustCompile("\x1b\\[[0-9;]*m|.")
+	// hinted says whether row y of the field has a block in the hint's
+	// grey: at 80 × 32 the field is columns 14 to 38 of PLAYGROUND's body
+	// (the boxes beside it have frames in that grey).
+	hinted := func(y int) bool {
+		fg, col := "", 0
+		for _, m := range tok.FindAllString(tt.gameP.Body.Draw(78, 27, true)[1+y], -1) {
+			if m[0] == 0x1b {
+				if strings.Contains(m, "38;2;") {
+					fg = m
+				}
+				continue
+			}
+			if col >= 14 && col < 38 && m != " " && strings.Contains(fg, "38;2;88;91;112") {
+				return true
+			}
+			col += terminu.Width(m)
+		}
+		return false
+	}
+	if !hinted(game.Rows-1) || hinted(0) {
+		t.Fatal("at level 1 the bottom has no hint, or the top has one")
+	}
+	tt.g.Level = game.HintLevels + 1
+	for y := range game.Rows {
+		if hinted(y) {
+			t.Fatalf("a hint at level 6, row %d", y)
+		}
+	}
+}
+
 func TestRestartNotInTheRankSaysNothing(t *testing.T) {
 	dir := t.TempDir()
 	t.Setenv("TETRU__DATA", dir)

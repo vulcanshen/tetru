@@ -190,3 +190,9 @@ tasks:
       game.yaml 讀不了（YAML 錯、不是 24 列、一列不是 12 個 # 或 .、關卡不在 1–10、行數或分數是負的）：tgo App.MoveAside 問要不要移成 game.yaml.bak，
       排在設定、排行的檔後面問；Enter 移開、沒有存檔，Esc 離開；讀進來之後刪不掉：tgo App.Error 開 CAN'T REMOVE THE PLAYGROUND SAVED，說下次啟動還會再接一次
     test: [TestPathIsBesideTheScores, TestSaveLoadRemove, TestLoadBroken, TestStackIsWhatASaveKeepsAndResumeTakesUp, TestSaveQuitsAndTheNextStartGoesOn, TestSaveFromThePanelWhenPaused, TestBrokenSaveAsksToMoveAside]
+  - id: 17
+    spec: 38
+    implementation: |
+      提示：game.Landing 是正在掉的方塊快速落下會落定的四格（從現在的位置一格一格往下試到放不下為止）；關卡大於 game.HintLevels（5）、消行動畫中、結束後是 nil
+      ui picture 先把這四格畫成 inkHint（#585b70，同一個 nf-fa-square），再畫正在掉的方塊蓋在上面；寬窄兩種排法畫的是同一張圖
+    test: [TestLandingIsWhereADropSetsToLevelFive, TestTheHintIsALighterGreyToLevelFive]

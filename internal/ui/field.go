@@ -44,6 +44,7 @@ const (
 	inkWhite = inkPiece + 7 // game.Kept's too: inkPiece + game.Kept - 1
 	inkFrame = inkWhite + 1
 	inkFade  = inkFrame + 1 // inkFade + f, f 0 to 2: white a quarter, a half, three quarters to the ground
+	inkHint  = inkFade + 3
 )
 
 // inks are the colours of the inks, locku's: the ground surface0, the
@@ -51,8 +52,9 @@ const (
 // one sky, the square yellow, T mauve, S green, Z red, J blue, L peach), a
 // block of a game saved and taken up and the rows going white, a colour no
 // piece has (user, 2026-11-11; 2026-11-12: the rows going all one colour,
-// rosewater, then white), the curtain overlay1, and three steps of white
-// fading to the ground.
+// rosewater, then white), the curtain overlay1, three steps of white
+// fading to the ground, and the hint surface2, a grey lighter than the
+// ground and darker than the curtain (user, 2026-11-12: a lighter grey).
 var inks = []terminu.Color{
 	{},
 	terminu.Hex("#313244"),
@@ -61,6 +63,7 @@ var inks = []terminu.Color{
 	terminu.Hex("#ffffff"),
 	terminu.Hex("#7f849c"),
 	terminu.Hex("#ccccd0"), terminu.Hex("#9899a2"), terminu.Hex("#656573"),
+	terminu.Hex("#585b70"),
 }
 
 // field is the PLAYGROUND panel's body: the field of t's game and, at its right,
@@ -78,7 +81,8 @@ func (s *scene) put(x, y int, ink uint8) {
 }
 
 // picture is the scene of g, nil before the first game: the ground and the
-// boxes, the stack, the piece falling (or waiting at the top while rows
+// boxes, the stack, the hint under the piece to level 5 (where a drop would
+// set it), the piece falling (or waiting at the top while rows
 // go), the pieces to come; the rows going are not in it, they go out
 // over it (clearRows);
 // at the end the pieces grey as far as the curtain is down. A pause and the
@@ -113,6 +117,11 @@ func picture(g *game.Game) scene {
 		}
 	}
 	if !g.Over {
+		// The hint, under the piece: where a drop would set it, to level
+		// 5 (user, 2026-11-12).
+		for _, b := range g.Landing() {
+			s.put(b[0], b[1], inkHint)
+		}
 		for _, b := range g.Blocks() {
 			if b[1] >= 0 {
 				s.put(b[0], b[1], inkPiece+uint8(g.Cur))

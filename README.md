@@ -21,6 +21,8 @@ with the player's name and the time, and ranks them, the best first.
 - **Your keys**: every key you play with can be changed on the Settings screen; `Esc` (pause) and `Space` (the menu)
   stay as they are.
 - **Ten levels of speed**: a level every ten rows, from a row a second to ten a second; past the tenth the speed stays.
+- **A hint up to level five**: a lighter grey on the ground shows where the piece lands if you drop it now; from the
+  sixth level on, there is no hint.
 - **The best twenty kept**: the place, the name, the score and the time, the best first on the Rank screen, the first
   three in yellow, green and sky blue. You play first and say who played as the game ends; with no name it is ANON. A
   game left half way is kept too: quitting, or closing the terminal, keeps the score it had then, for ANON. A game

@@ -343,6 +343,41 @@ func TestEndStopsThePiece(t *testing.T) {
 	}
 }
 
+func TestLandingIsWhereADropSetsToLevelFive(t *testing.T) {
+	g := with(I)
+	g.fill(Rows-1, 0) // the piece lands on it, no row full
+	hint := g.Landing()
+	if len(hint) != 4 {
+		t.Fatalf("no hint at level 1: %v", hint)
+	}
+	for _, b := range hint {
+		if b[1] != Rows-2 {
+			t.Fatalf("the hint is not on the stack: %v", hint)
+		}
+	}
+	g.Drop()
+	for _, b := range hint {
+		if g.Cell(b[0], b[1]) == 0 {
+			t.Fatalf("the drop did not set the piece where the hint was: %v", hint)
+		}
+	}
+
+	g = with(I)
+	g.Level = HintLevels
+	if g.Landing() == nil {
+		t.Fatal("no hint at level 5")
+	}
+	g.Level = HintLevels + 1
+	if g.Landing() != nil {
+		t.Fatal("a hint at level 6")
+	}
+	g.Level = 1
+	g.End()
+	if g.Landing() != nil {
+		t.Fatal("a hint after the end")
+	}
+}
+
 func TestFourBurstThenTheStackComesDownAtOnce(t *testing.T) {
 	g := with(I)
 	for y := Rows - 4; y < Rows; y++ {

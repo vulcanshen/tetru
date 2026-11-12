@@ -22,6 +22,9 @@ const (
 	// MaxLevel is the last level: the speed goes no higher after it (user,
 	// 2026-11-11: the ten levels are speeds).
 	MaxLevel = 10
+	// HintLevels are the levels the hint shows at, where a drop would set
+	// the piece (Landing): 1 to 5; from 6 there is none (user, 2026-11-12).
+	HintLevels = 5
 	// LinesPerLevel are the rows to clear for the next level.
 	LinesPerLevel = 10
 	// LockDelay is how long a piece lies on the stack before it is set;
@@ -265,6 +268,24 @@ func (g *Game) Blocks() [][2]int {
 	var out [][2]int
 	for _, b := range turns[g.Cur][g.At.Turn] {
 		out = append(out, [2]int{g.At.X + b[0], g.At.Y + b[1]})
+	}
+	return out
+}
+
+// Landing is the hint: the falling piece's blocks where a drop would set
+// it, at the levels to HintLevels; nil after them, and while the piece is
+// not falling (user, 2026-11-12: where Enter would set it).
+func (g *Game) Landing() [][2]int {
+	if !g.Live() || g.Level > HintLevels {
+		return nil
+	}
+	s := g.At
+	for g.fits(Spot{s.Turn, s.X, s.Y + 1}) {
+		s.Y++
+	}
+	var out [][2]int
+	for _, b := range turns[g.Cur][s.Turn] {
+		out = append(out, [2]int{s.X + b[0], s.Y + b[1]})
 	}
 	return out
 }
