@@ -1175,8 +1175,8 @@ func TestClearsByHowManyRows(t *testing.T) {
 		}
 	}
 	g.Advance(span * 7 / 20)
-	if r := bottom(); !strings.Contains(r, white) || !strings.Contains(r, broken[1]) || !goesRight(r) || pieceColoured(r) {
-		t.Fatalf("the dust of four rows does not go out, half to the right: %q", r)
+	if r := bottom(); !strings.Contains(r, white) || strings.Contains(r, broken[1]) || !strings.Contains(r, windblown) || !goesRight(r) || pieceColoured(r) {
+		t.Fatalf("the dust of four rows does not go out blown, half to the right: %q", r)
 	}
 }
 

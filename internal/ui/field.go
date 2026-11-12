@@ -231,6 +231,12 @@ var broken = [...]string{string(rune(0xF0D7C)), string(rune(0xF00B5))}
 // shattered is the shape of a block gone, past the broken ones.
 const shattered = uint8(len(broken)) + 1
 
+// blown is the shape of four rows' dust as it goes out, windblown its
+// glyph (user, 2026-11-12: one glyph more as it goes; nf-weather-dust).
+const blown = shattered + 1
+
+var windblown = string(rune(0xE35D))
+
 // breaking is the shape at t of a block that is gone at gone, breaking
 // over span before it: 0 whole, 1 on broken[0] on, shattered gone.
 func breaking(t, gone, span float64) uint8 {
@@ -254,9 +260,10 @@ func breaking(t, gone, span float64) uint8 {
 //   - three crumble, a block at a time in no order, each breaking (broken)
 //     before it is gone (user, 2026-11-12);
 //   - four, all together, break where they are, every block at once to
-//     grains, then all to dust, then the halves go out to either side, the
-//     right one as far as the blank there (user, 2026-11-12: not a row at
-//     a time; all breaking together, all to dust, then going out).
+//     grains, then all to dust, then the halves go out to either side,
+//     blown, the right one as far as the blank there (user, 2026-11-12:
+//     not a row at a time; all breaking together, all to dust, then going
+//     out, a glyph more).
 //
 // The ground shows where they were.
 func clearRows(out []string, g *game.Game, sc *scene, w, k, x1, left, top, right int) {
@@ -317,9 +324,12 @@ func clearRows(out []string, g *game.Game, sc *scene, w, k, x1, left, top, right
 			// Every block breaks to grains at once after the flash (user,
 			// 2026-11-12: all together, not half), all to dust at 40%
 			// (user, 2026-11-12: the middle no different), and the halves
-			// go out over the last 40%.
+			// go out over the last 40%, blown.
 			shape := uint8(1)
-			if p >= 0.4 {
+			switch {
+			case p >= 0.6:
+				shape = blown
+			case p >= 0.4:
 				shape = 2
 			}
 			s := max(0, (p-0.6)/0.4)
@@ -349,7 +359,10 @@ func clearRows(out []string, g *game.Game, sc *scene, w, k, x1, left, top, right
 				b.WriteString(strings.Repeat("  ", run))
 			} else {
 				glyph := pixelGlyph
-				if shape > 0 {
+				switch {
+				case shape == blown:
+					glyph = windblown
+				case shape > 0:
 					glyph = broken[shape-1]
 				}
 				b.WriteString(terminu.Fg(inks[ink]).Render(strings.Repeat(glyph+pad, run)))
