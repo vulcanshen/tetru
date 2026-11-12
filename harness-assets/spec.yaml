@@ -1,4 +1,4 @@
-id: 39
+id: 40
 from: v1.2.3
 to: v1.2.3
 tasks:
@@ -160,11 +160,11 @@ tasks:
       - '有一局值得記時（task 7），兩個都先問誰玩的（task 6），那就是確認（tdp F6：哪些要確認 app 可以自行決定）：說出分數，Esc 取消；不值得記的局沒有東西會丟，不問，直接結束（有分數的跳 task 6 的 Info toast）或重開（什麼都不說，task 6）；沒有一局在玩時 [x] End game 停用（tdp M6）'
       - '離開流程（tdp K9：離開流程與問什麼，app 可以自行決定）：有一局在玩（玩著或暫停中）時開 confirm（tdp F6、confirm），不問名字（使用者 2026-11-11：直接用 ANON）：標題照 tdp confirm.2 寫 Enter 做的動作 QUIT，內容 The score so far, 12,340, is kept for ANON.（0 分的局寫 No points so far, so nothing is kept.；擠不進前二十名的寫 The score so far, 150, is not in the best 20, so nothing is kept.），問句照 tdp K9 寫 Quit tetru?，Enter:quit 記成 ANON、離開，Esc:cancel 回到遊戲；沒有一局在玩時直接離開（有 popup 開著時 tgo 先開 Quit tetru?）'
   - id: 11
-    spec: 1
+    spec: 40
     request: '跟家族其他 app 一樣有 splash、version、help'
     tdp: [tdp S1, tdp S2, tdp S3, tdp S4, tdp S5, tdp E1, tdp E6]
     remark:
-      - 'docs/icon.svg：U 框照 tdp principle/icon.svg，金色的字在框裡拼 T、E、T、R（框本身是 U），排法照 demou 的兩排兩個'
+      - 'docs/icon.svg：U 框照 tdp principle/icon.svg，金色的字在框裡拼 T、E、T、R（框本身是 U），排法照 demou 的兩排兩個；用 kamonu 做的那一份（~/.kamonu/data/svg/tetru.svg，一個字 6×7 格、筆畫兩格粗），取代 harness 原本畫的 5×7 細字（使用者 2026-11-12：這個成員的 icon 已經用 kamonu 做好了）'
       - 'splash 的介紹：A falling-block game for the terminal'
   - id: 12
     spec: 1

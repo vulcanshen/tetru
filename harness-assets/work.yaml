@@ -130,9 +130,9 @@ tasks:
       Esc:cancel 回到遊戲；沒有一局在玩時直接離開；離開流程中再按一次 Ctrl-C 由 tgo 立刻離開，那一局一樣記成 ANON
     test: [TestEndGameAsksAndKeeps, TestNewGameAsksWhoPlayed, TestQuitWithAGameConfirmsAndKeepsAnon, TestQuitWithNoGameLeaves, TestNoPointsNotKept, TestRestartNotInTheRankSaysNothing]
   - id: 11
-    spec: 1
+    spec: 40
     implementation: |
-      docs/icon.svg：U 框照 tdp principle/icon.svg（#205090），金色（#f2b753）的字在框裡上排 T、E，下排 T、R，一個字 5×7 格；註解依序 U、T、E、T、R
+      docs/icon.svg：U 框照 tdp principle/icon.svg（#205090），金色（#f2b753）的字在框裡上排 T、E，下排 T、R，一個字 6×7 格、筆畫兩格粗（kamonu 匯出的 tetru.svg）；註解依序 U、T、E、T、R
       internal/ui/icon.svg 是它的副本，embed 給 tgo 的 splash（tgo NewSplash：tetru、internal/version 的 Display()、A falling-block game for the terminal）
       命令列：tetru version、-v、--version 印 Display()；tetru help、-h、--help 印用法（含分數與存檔的位置）；其他字印 unknown command 與用法，exit 2
     test: [TestSplashIsTheIcon, TestVersionAndHelp, TestFirstLaunch]
