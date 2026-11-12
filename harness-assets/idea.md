@@ -83,6 +83,7 @@
 - （2026-11-12）tdp #9 使用者選 A：離開 app 自己的模式時要不要跳 popup，app 可以自行決定；tetru 的 RESUME 照現在的做法。
 - （2026-11-12）我們的 save 很有毛病，save 完直接 quit，玩到一半不小心按到 s 就慘了。save 和 quit 應該要分開，save 歸 save，quit 歸 quit：要 quit 的時候正在遊戲，app 自動存檔，也不用問，下次進來使用者不想繼續直接 restart 就好；所以根本不需要作 save 給使用者操作，save 是 app 的背景行為。Gaming 中的 Space menu 應該只有 restart 和 quit。
 - （2026-11-12）footer 的 q:quit：q 雖然是 core key，讓 Gaming 模式中 footer 加入 q:quit 就好。（tdp #13 使用者選 A：app 自己的模式 footer 要不要寫 q:quit，app 可以自行決定）
+- （2026-11-12，經 terminu 轉達）game over：這跟 tdp 有啥關係，這不都還在 gaming 模式裡面，這是 app 自己要處理的問題，就算灰幕落完也都應該還在 gaming 模式。
 
 ## 關卡
 

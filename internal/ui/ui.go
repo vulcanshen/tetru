@@ -121,10 +121,13 @@ func NewTetru() *Tetru {
 	t.rankP = &terminu.Panel{Label: "Rank", Body: t.list}
 	t.gameP = &terminu.Panel{Label: "Playground", Body: &field{t}, OnEsc: func() tea.Cmd { return nil }}
 	keysP := &terminu.Panel{Label: "Keys", Body: &terminu.Values{Header: [2]string{"Action", "Key"}, Fields: t.keyFields()}}
-	// The mode's Space menu lists Restart and Save alone (user, 2026-11-11;
+	// The mode's Space menu lists Restart and Quit alone (user, 2026-11-12;
 	// tdp K11: what an app's own mode lists there is the app's): not the
-	// keys to play, nor [Esc] Pause, which the footer has.
-	t.play = &terminu.Mode{Name: "Gaming", Exit: "pause", Pause: true, NoLeaveRow: true, OnExit: t.pause}
+	// keys to play, nor [Esc] Pause, which the footer has. Tab and the
+	// digits are not held: with PLAYGROUND the screen's one panel they do
+	// nothing out of the mode, so nothing in it either, and say nothing
+	// (tdp K11-5, its next text).
+	t.play = &terminu.Mode{Name: "Gaming", Exit: "pause", NoLeaveRow: true, OnExit: t.pause}
 	t.setModeKeys()
 	t.setActions()
 	t.setRows("")
@@ -307,18 +310,29 @@ func (t *Tetru) askName(title, verb string, then func() tea.Cmd) tea.Cmd {
 // game is over and kept, nothing for Esc to cancel but the name).
 func (t *Tetru) keepThenName() tea.Cmd {
 	if cmd := t.save(anon); cmd != nil {
-		return cmd
+		return tea.Batch(t.leaveOver(), cmd)
 	}
 	i := len(t.all) - 1 // the new one, last as kept
 	return t.App.Text(terminu.TextInput{
-		Title:   "Keep score",
-		Name:    "Name",
-		Prompt:  "Game over, " + comma(t.g.Score) + " points: who played?",
-		Verb:    "keep",
-		Suggest: anon,
-		MaxLen:  nameLen,
-		Done:    func(name string) tea.Cmd { return t.rename(i, name) },
+		Title:     "Keep score",
+		Name:      "Name",
+		Prompt:    "Game over, " + comma(t.g.Score) + " points: who played?",
+		Verb:      "keep",
+		Suggest:   anon,
+		MaxLen:    nameLen,
+		Done:      func(name string) tea.Cmd { return tea.Batch(t.rename(i, name), t.leaveOver()) },
+		Unchanged: t.leaveOver,
 	})
+}
+
+// leaveOver leaves the Gaming mode of a game over once it is kept: back to
+// PLAYGROUND, Enter to play again (tdp K11: the mode's name and colour
+// back as it is left). Esc on the popup of the end only closes it, still
+// in the mode, a layer at a time (tdp K4); a second Esc leaves.
+func (t *Tetru) leaveOver() tea.Cmd {
+	t.gameP.LeaveMode()
+	t.setActions()
+	return nil
 }
 
 // rename puts name on score i, kept for ANON as its game ended; no name,
@@ -522,13 +536,13 @@ var podium = []terminu.Color{terminu.Yellow, terminu.Green, terminu.Hex("#89dceb
 func (t *Tetru) setModeKeys() {
 	k := t.keys
 	t.play.Keys = []terminu.ModeKey{
-		{Key: k[keys.Left], Keys: k.Keys(keys.Left), Desc: "move left", NoFooter: true, NoMenu: true, Do: t.do(keys.Left)},
-		{Key: k[keys.Right], Keys: k.Keys(keys.Right), Desc: "move right", NoFooter: true, NoMenu: true, Do: t.do(keys.Right)},
-		{Key: k[keys.Down], Keys: k.Keys(keys.Down), Desc: "down a row", NoFooter: true, NoMenu: true, Do: t.do(keys.Down)},
-		{Key: k[keys.RotateLeft], Keys: k.Keys(keys.RotateLeft), Desc: "rotate left", Item: true, NoMenu: true, Label: keys.RotateLeft.Label(), MenuDesc: keys.RotateLeft.Desc(), Do: t.do(keys.RotateLeft)},
-		{Key: k[keys.RotateRight], Keys: k.Keys(keys.RotateRight), Desc: "rotate right", Item: true, NoMenu: true, Label: keys.RotateRight.Label(), MenuDesc: keys.RotateRight.Desc(), Do: t.do(keys.RotateRight)},
-		{Key: k[keys.Drop], Keys: k.Keys(keys.Drop), Desc: "drop", NoMenu: true, Do: t.do(keys.Drop)},
-		{Key: "r", Desc: "restart", Label: "Restart", MenuDesc: "start over from level 1", Do: func(string) tea.Cmd { return t.newGame() }},
+		{Key: k[keys.Left], Keys: k.Keys(keys.Left), Desc: "move left", NoFooter: true, NoMenu: true, Disabled: t.still, Do: t.do(keys.Left)},
+		{Key: k[keys.Right], Keys: k.Keys(keys.Right), Desc: "move right", NoFooter: true, NoMenu: true, Disabled: t.still, Do: t.do(keys.Right)},
+		{Key: k[keys.Down], Keys: k.Keys(keys.Down), Desc: "down a row", NoFooter: true, NoMenu: true, Disabled: t.still, Do: t.do(keys.Down)},
+		{Key: k[keys.RotateLeft], Keys: k.Keys(keys.RotateLeft), Desc: "rotate left", Item: true, NoMenu: true, Label: keys.RotateLeft.Label(), MenuDesc: keys.RotateLeft.Desc(), Disabled: t.still, Do: t.do(keys.RotateLeft)},
+		{Key: k[keys.RotateRight], Keys: k.Keys(keys.RotateRight), Desc: "rotate right", Item: true, NoMenu: true, Label: keys.RotateRight.Label(), MenuDesc: keys.RotateRight.Desc(), Disabled: t.still, Do: t.do(keys.RotateRight)},
+		{Key: k[keys.Drop], Keys: k.Keys(keys.Drop), Desc: "drop", NoMenu: true, Disabled: t.still, Do: t.do(keys.Drop)},
+		{Key: "r", Desc: "restart", Label: "Restart", MenuDesc: "start over from level 1", Disabled: t.waiting, Do: func(string) tea.Cmd { return t.newGame() }},
 		// Quit, as q does in the mode (tdp K11), listed in its Space menu (user,
 		// 2026-11-12: Restart and Quit there).
 		{Key: "q", Desc: "quit", Label: "Quit", MenuDesc: quitDesc, Do: func(string) tea.Cmd { return t.quit() }},
@@ -567,12 +581,15 @@ func (t *Tetru) after() tea.Cmd {
 	return nil
 }
 
-// over is the stack reaching the top: out of the Gaming mode, the curtain
-// coming down; once it is down, who played is asked (step), Esc keeping the
-// score for ANON. Till then the game is waiting to be kept: Enter and New
-// game do nothing. A game not worth keeping has nothing to keep.
+// over is the stack reaching the top: still in the Gaming mode, the
+// curtain coming down; once it is down, who played is asked, or Play again?
+// (step); keeping the score leaves the mode (leaveOver), Esc on the popup
+// only closes it, a second Esc leaves (user, 2026-11-12: it is all still
+// the game, so the mode, the curtain down too). Till then the game is
+// waiting to be kept: its keys are disabled, nothing to move (still), and
+// Restart, nor Enter and New game should Esc leave the mode. A game not
+// worth keeping has nothing to keep.
 func (t *Tetru) over() tea.Cmd {
-	t.gameP.LeaveMode()
 	t.topped = true
 	if !t.worth() {
 		t.saved = true
@@ -580,6 +597,11 @@ func (t *Tetru) over() tea.Cmd {
 	t.setActions()
 	return t.wake()
 }
+
+// still says whether the game has nothing to move now: rows going, or the
+// game over. The keys to play are disabled then, in the disabled colour in
+// the footer and ? (tdp M6).
+func (t *Tetru) still() bool { return t.g == nil || !t.g.Live() }
 
 // waiting says whether a game is over and not kept yet: its curtain coming
 // down, or who played being asked.

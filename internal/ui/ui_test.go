@@ -428,12 +428,16 @@ func TestEscPausesEnterResumes(t *testing.T) {
 	}
 }
 
-func TestTabInPlaySaysToPauseFirst(t *testing.T) {
+func TestTabInPlayDoesNothing(t *testing.T) {
 	tt, d := open(t, 60, 32)
 	play(d)
-	d.Press("Tab")
-	if !tt.playing() || !d.Has("Press [Esc] to leave Gaming first") {
-		t.Fatal("Tab in the Gaming mode left it, or said nothing")
+	// PLAYGROUND is the screen's one panel: Tab and the digits do nothing
+	// out of the mode, so nothing in it, and say nothing (tdp K11-5).
+	for _, k := range []string{"Tab", "1", "2"} {
+		d.Press(k)
+		if !tt.playing() || d.Has("Press [Esc]") {
+			t.Fatalf("%s in the Gaming mode left it, or said something", k)
+		}
 	}
 }
 
@@ -447,13 +451,22 @@ func TestNameIsAskedAsTheGameEnds(t *testing.T) {
 	if len(kept(t)) != 0 || d.Has("KEEP SCORE") {
 		t.Fatal("kept, or asked, before the curtain came down")
 	}
+	// Still the game, in its mode, as the curtain comes down (user,
+	// 2026-11-12); Restart does nothing till it is kept.
+	if !strings.Contains(row(d, 2), "Gaming") {
+		t.Fatal("the game over left the Gaming mode at once")
+	}
 	g := tt.g
 	d.Press("Enter")
 	d.Press("n")
+	d.Press("r")
 	if tt.g != g || d.Has("Enter:play") {
 		t.Fatal("a new game while the last waits to be kept")
 	}
 	d.Advance(game.Curtain)
+	if !strings.Contains(row(d, 2), "Gaming") {
+		t.Fatal("the Gaming mode left before the end was answered")
+	}
 	if !d.Has("KEEP SCORE") || !d.Has("Game over, "+comma(g.Score)+" points: who played?") || !d.Has("ANON") || !d.Has("Enter:keep") || !d.Has("Esc:cancel") {
 		t.Fatal("no name asked once the curtain is down")
 	}
@@ -465,8 +478,8 @@ func TestNameIsAskedAsTheGameEnds(t *testing.T) {
 	if all := kept(t); len(all) != 1 || all[0].Name != "ANON" || all[0].Score != g.Score {
 		t.Fatalf("Enter on the name offered kept %+v", all)
 	}
-	if !d.Has("Enter:play") {
-		t.Fatal("Enter does not play once the game is kept")
+	if !d.Has("Enter:play") || strings.Contains(row(d, 2), "Gaming") {
+		t.Fatal("Enter does not play once the game is kept, or the Gaming mode is not left")
 	}
 	d.Press("Enter")
 	if !tt.playing() || tt.g == g {
@@ -492,6 +505,20 @@ func TestEscOnTheNameKeepsAnon(t *testing.T) {
 	d.Press("Esc")
 	if all := kept(t); len(all) != 1 || all[0].Name != "ANON" {
 		t.Fatalf("Esc on the name kept %+v", all)
+	}
+	// A layer at a time (tdp K4): the popup closed, still in the mode, its
+	// keys to play disabled; a second Esc leaves it.
+	if d.Has("KEEP SCORE") || !strings.Contains(row(d, 2), "Gaming") {
+		t.Fatal("Esc on the name did not just close it, still in the Gaming mode")
+	}
+	for _, k := range tt.play.Keys[:6] {
+		if k.Disabled == nil || !k.Disabled() {
+			t.Fatalf("%s works with the game over", k.Desc)
+		}
+	}
+	d.Press("Esc")
+	if strings.Contains(row(d, 2), "Gaming") || !d.Has("Enter:play") {
+		t.Fatal("a second Esc did not leave the Gaming mode")
 	}
 }
 
@@ -566,9 +593,16 @@ func TestTopOutWithNoPoints(t *testing.T) {
 	if !d.Has("PLAY") || !d.Has("Play again?") || !d.Has("Game over: no points, so nothing is kept.") || !d.Has("Enter:play") || d.Has("who played") {
 		t.Fatal("no popup saying the game is over with nothing kept")
 	}
+	if !strings.Contains(row(d, 2), "Gaming") {
+		t.Fatal("the Gaming mode left before Play again? was answered")
+	}
 	d.Press("Esc")
-	if d.Has("Play again?") || !d.Has("Enter:play") || len(kept(t)) != 0 {
-		t.Fatal("Esc on the popup did not leave PLAYGROUND to play from")
+	if d.Has("Play again?") || len(kept(t)) != 0 || !strings.Contains(row(d, 2), "Gaming") {
+		t.Fatal("Esc on the popup did more than close it (tdp K4: a layer at a time)")
+	}
+	d.Press("Esc")
+	if !d.Has("Enter:play") || strings.Contains(row(d, 2), "Gaming") {
+		t.Fatal("a second Esc did not leave the Gaming mode for PLAYGROUND to play from")
 	}
 	topOutAgain := func() {
 		play(d)

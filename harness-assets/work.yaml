@@ -40,17 +40,17 @@ tasks:
       tgo App.Tick 每 40 ms 一格推進遊戲（README 的計時器）；消行時每 16 ms 一格（task 9）
     test: [TestPiecesComeSevenToABag, TestSameSeedSameGame, TestPieceComesInAtTheTopInTheMiddle, TestMoveStopsAtTheWalls, TestRotateTurnsAndComesBack, TestRotateKicksOffTheWall, TestDownScoresARow, TestDropSetsThePieceAndScoresTwoARow, TestGravityAtTheLevelsSpeed, TestLockWaitsAndMovingRestartsIt, TestLockResetsRunOut, TestClearScoresAtTheLevelAndGoesUp, TestTheSpeedStopsAtTheLastLevel, TestTheStackAtTheTopEnds, TestEndStopsThePiece, TestTheGameFalls]
   - id: 4
-    spec: 44
+    spec: 49
     implementation: |
       開始或繼續一局時，PLAYGROUND 進入 tgo 的模式 Gaming（tgo Panel.EnterMode）：tgo 把外框換成模式色、上框右邊畫 ┫Gaming┣
       Gaming 的鍵（tgo ModeKey）照 Settings 的鍵（task 13），預設：h、← 左一格；l、→ 右一格；j、↓ 往下一格；d、PgDn 左旋（逆時針）；k、↑ 右旋（順時針）；
-      Enter 落到底並固定；一個動作的鍵是 h、j、k、l、u、d 時，它的方向鍵（←、↓、↑、→）或 PgUp、PgDn 做一樣的事，鍵改成別的字母時就不作用
+      Enter 落到底並固定；沒有方塊可動時（消行中、結束之後）這六個鍵停用（tgo ModeKey.Disabled，footer 與 ? 是停用色）；一個動作的鍵是 h、j、k、l、u、d 時，它的方向鍵（←、↓、↑、→）或 PgUp、PgDn 做一樣的事，鍵改成別的字母時就不作用
       footer 由 tgo 寫：Space:menu ?:help d:rotate left k:rotate right Enter:drop r:restart q:quit Esc:pause；左右、往下標成不進 footer（tgo ModeKey.NoFooter），放不下的由 tgo 省略、Esc:pause 留著；這些鍵都在 ?，不在 Space menu（task 5）
       Gaming 裡 PLAYGROUND 的下框不寫 hint（Enter 的 hint 拿掉；panel 上沒有按得動的鍵）
       Enter 在 PLAYGROUND 上（Gaming 外）：沒有一局在暫停時開新的一局（task 6），有就繼續（task 5）；hint Enter:play，暫停時 Enter:resume
     test: [TestPlay, TestTheGamingFooterHasTheTurnsAndTheDrop, TestSpaceMenuRunsRestartAndTheKeysAreInHelp, TestTheGameFalls, TestSettingsSetAKey]
   - id: 5
-    spec: 47
+    spec: 48
     implementation: |
       Gaming 裡按 Space：tgo 開 Gaming 的 Space menu，標題 [1] PLAYGROUND，只有 GAMING MODE 的 [r]estart（start over from level 1）、
       [q]uit（leave tetru; a game going goes on next time），選了 [r]estart 就等於按 r，選了 [q]uit 就是 task 10 的離開流程；玩的六個鍵標 tgo ModeKey.NoMenu、模式標 Mode.NoLeaveRow
@@ -63,9 +63,9 @@ tasks:
       Enter:resume 回到 Gaming，Esc:cancel 留在暫停；場地上不畫東西（第一版畫的兩條直槓拿掉了）
       暫停時 PLAYGROUND 的 hint 是 Enter:resume；Space menu 是一般的：
       PANEL OPERATION 的 [Enter] Resume（this game, where it was）、[n]ew game、[x] End game，與 Global operation（沒有 Save，task 16）；Enter 回到 Gaming
-      Tab、數字鍵在 Gaming 裡暫停（tgo Mode.Pause），tgo 跳 Info toast：Press [Esc] to leave Gaming first
+      Tab、數字鍵在 Gaming 裡不暫停（tgo Mode.Pause 沒設）：只有一個 panel，tgo 換 panel 時不做事、不出聲
       Settings 沒有 Pause 那一列（task 13）；INFO 寫 Space menu、Esc pause（task 14）
-    test: [TestTheGameStopsUnderAPopup, TestEscPausesEnterResumes, TestTabInPlaySaysToPauseFirst, TestSpaceMenuRunsRestartAndTheKeysAreInHelp, TestSettingsHaveNoPauseRow, TestRestartFromThePlayModesSpaceMenu, TestPlay]
+    test: [TestTheGameStopsUnderAPopup, TestEscPausesEnterResumes, TestTabInPlayDoesNothing, TestSpaceMenuRunsRestartAndTheKeysAreInHelp, TestSettingsHaveNoPauseRow, TestRestartFromThePlayModesSpaceMenu, TestPlay]
   - id: 6
     spec: 47
     implementation: |
@@ -103,7 +103,7 @@ tasks:
       沒有 Enter 與其他動作；j|k、gg|G 由 tgo 移動
     test: [TestScoresBestFirst, TestTopOutKeepsTheScore, TestScreensSwitchOnTRS, TestRankKeepsTheBestTwentyWithTheirPlaces, TestRankColoursTheFirstThree]
   - id: 9
-    spec: 44
+    spec: 49
     implementation: |
       消行：方塊落定、湊滿的那一刻，滿的那幾行離開堆疊，行數與分數馬上加（關卡跟著升），下一個方塊同時出現在最上面等著
       不管消幾行：先整塊 #ffffff 100 ms（game.Flash），再照消幾行畫哪一種走法（ui clearRows；game.Along 是全部一起走了多遠，幾行都是一起走），都是 #ffffff，走掉的地方畫底：
@@ -112,12 +112,12 @@ tasks:
       3 行：每一格照固定的亂序（crumble）在 300 ms 裡輪到時碎掉：閃白一過第一格就開始，最後一格約在 206 ms 開始；每一格 75 ms 依序換成 U+F0D7C（nf-md-grain）、U+F00B5（nf-md-blur），再畫底
       4 行：四行一起，350 ms：閃白一過每一格同時換成 U+F0D7C（nf-md-grain），40% 起每一格同時換成 U+F00B5（nf-md-blur），都留在原地；60% 起每一格同時換成 U+F01D8（nf-md-dots_horizontal），左半往左、右半往右滑（右半到右邊那一欄前面就不畫，窄寬時到場地右牆）
       全部走完 20 ms 後（game.Settle），上面的整片一次降下補滿空行（game.ClearTime）；最上面補空的格子；等著的方塊不跟著降
-      這段期間 Gaming 模式的鍵按了沒反應，方塊也不往下掉；降完方塊才開始掉，放不進去就結束（堆到頂）；有 popup 蓋著時動畫停著
+      這段期間 Gaming 玩的六個鍵停用（tgo ModeKey.Disabled：still，沒有方塊可動，footer 與 ? 是停用色），方塊也不往下掉；降完方塊才開始掉，放不進去就結束（堆到頂）；有 popup 蓋著時動畫停著
       結束：方塊由上往下一列像素一列像素變成框的灰，5 秒蓋滿整張圖（場地與兩格），灰的留著，場地上不寫字（第一版的紅色 END 拿掉了）
-      堆到頂結束的，灰幕落完才開 popup：值得記的問誰玩的（task 6）；不值得記的開 tgo App.Confirm：標題 PLAY，內容 Game over: no points, so nothing is kept.（擠不進前二十名：Game over: 150 points, not in the best 20, so nothing is kept.），
-      問句 Play again?，Enter:play 開下一局，Esc:cancel 回到 PLAYGROUND（Enter:play）；[x] End game、[n]ew game 結束的不開
+      堆到頂結束的，還在 Gaming 裡（不 LeaveMode）落灰幕：玩的六個鍵停用（still），r 停用到記下為止（waiting）；灰幕中 Esc 照樣離開 Gaming（OnExit 的 pause 看到沒有一局可接著玩，不開 RESUME），灰幕落完的 popup 就開在 PLAYGROUND 上；灰幕落完才開 popup：值得記的問誰玩的（task 6）；不值得記的開 tgo App.Confirm：標題 PLAY，內容 Game over: no points, so nothing is kept.（擠不進前二十名：Game over: 150 points, not in the best 20, so nothing is kept.），
+      問句 Play again?，Enter:play 開下一局（還在 Gaming），Esc:cancel 只關掉 popup、還在 Gaming；KEEP SCORE 上 Enter 記下之後離開 Gaming（leaveOver，回到 PLAYGROUND，Enter:play），Esc 只關掉 popup；還在 Gaming 時再按 Esc 才離開，r 開下一局；[x] End game、[n]ew game 結束的不開
       兩段動畫都由 tgo App.Tick 推：消行時每 16 ms 一格，灰幕每 40 ms 一格；消 1 行 0.32 秒、2 行 0.37、3 行 0.42、4 行 0.47 秒（game.ClearTime）；灰幕不管有沒有 popup 都照走
-    test: [TestOneRowFlashesFadesThenTheStackComesDown, TestClearsByHowManyRows, TestFourBurstThenTheStackComesDownAtOnce, TestClearSlidesThenTheStackComesDown, TestClearScoresAtTheLevelAndGoesUp, TestTopOutKeepsTheScore, TestTheStackAtTheTopEnds, TestTopOutWithNoPoints, TestNoPointsNotKept]
+    test: [TestOneRowFlashesFadesThenTheStackComesDown, TestClearsByHowManyRows, TestFourBurstThenTheStackComesDownAtOnce, TestClearSlidesThenTheStackComesDown, TestClearScoresAtTheLevelAndGoesUp, TestTopOutKeepsTheScore, TestTheStackAtTheTopEnds, TestTopOutWithNoPoints, TestNoPointsNotKept, TestNameIsAskedAsTheGameEnds, TestEscOnTheNameKeepsAnon]
   - id: 10
     spec: 47
     implementation: |
