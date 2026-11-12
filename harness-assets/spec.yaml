@@ -1,11 +1,11 @@
-id: 51
-from: v1.2.4
-to: v1.2.5
+id: 52
+from: v1.2.5
+to: v1.2.6
 tasks:
   - id: 1
     spec: 45
     request: '一個直的空間玩遊戲，右邊是接下來的方塊；排行不在遊戲旁邊，改成另一個分頁：[T]etru、[R]ank、[S]ettings；遊戲的右邊由上而下是 Next 1、Next 2，最下面一個 panel 分上下兩段，上面 Level、Lines、Score、下面操作方式（不叫 Manual）；終端機窄的時候，排行優先收掉；遊戲太小，GAME 的 panel 就是遊戲，不要遊戲自己的外框，縮小上下；空間要用滿，遊戲區域不能這麼小'
-    tdp: [tdp terms.2, tdp terms.3, tdp screen.1, tdp screen.2, tdp screen.3, tdp screen.5, tdp screen.7, tdp M4, tdp L1, tdp L2, tdp L3, tdp L4, tdp E5, tdp panel.1, tdp panel.4, tdp K1, tdp K2, tdp P5, tdp screen.4, tdp K12]
+    tdp: [tdp terms.2, tdp terms.3, tdp screen.1, tdp screen.2, tdp screen.3, tdp screen.5, tdp screen.7, tdp M4, tdp L1, tdp L2, tdp L3, tdp L4, tdp E5, tdp panel.1, tdp panel.4, tdp K1, tdp K2, tdp P5, tdp screen.4, tdp K12, tdp panel.16]
     remark:
       - |
         Tetru 畫面 60×32（使用者 2026-11-11 提的：分頁、右邊 Next 1、Next 2、INFO，Level 等放進 INFO；2026-11-12：INFO 與按鍵拆成兩個框；場地沒有自己的框；NEXT 是高 4、寬 6；右邊三個不標數字、不讓 focus，是 PLAYGROUND 裡自己畫的框，task 15）：
@@ -51,7 +51,7 @@ tasks:
   - id: 2
     spec: 17
     request: '顯示方式沿用 locku 的 tetromino：一樣的方塊 icon、一樣的顏色；接下來的方塊在 Next 1、Next 2 兩個 panel，每個只放一個，裡面是高 4、寬 6 的格子（使用者 2026-11-11 先要 5×5，再改成 4×6）；場地與 Next 都不要自己的外框'
-    tdp: [tdp P5, tdp P4, tdp F1, tdp F8, tdp screen.5]
+    tdp: [tdp P5, tdp P4, tdp F1, tdp F8, tdp screen.5, tdp panel.16]
     remark:
       - '照 locku 的 tetromino 螢幕保護（internal/saver/tetromino.go）：一個像素是 locku 的方塊 icon（nf-fa-square），2 欄 × 1 列；一格方塊一個像素；場地 12×24（task 3），空的地方畫 locku 的底；接下來的方塊一個一格，寬 6、高 4 像素的底（使用者 2026-11-11：4×6，問過是高 4 寬 6）、一個方塊一個像素、置中；放不正中時（三格寬的放在六格裡）偏左'
       - '放大：場地那一塊與右邊那一欄都放得下兩倍時（場地那一塊 48 欄、PLAYGROUND 裡 48 列，框裡 24 欄，PLAYGROUND 裡的高也放得下右邊那一欄），場地與兩格一起把一個像素畫成 2×2（4 欄 × 2 列），照 locku 的 fitScene；NEXT 的框跟著變高'
@@ -90,9 +90,9 @@ tasks:
         issue: tdp #13
 
   - id: 5
-    spec: 50
+    spec: 52
     request: 'Space 暫停，並打開 Space menu；Space 不能改；暫停用 popup 顯示，不畫在遊戲裡（那是 locku 的限制，tetru 是獨立的 app）；玩的時候的 Space menu 不用列 h、l、j、k、Enter，連 d、k 都不用，應該是給 restart、save（使用者 2026-11-11）；後來使用者一度說列的確實是這個模式的鍵，再問為什麼 h、l、j、Enter 出現在裡面，選了重新打開 tdp #7（2026-11-11）；save 不給使用者操作，Gaming 中的 Space menu 只有 restart 和 quit（使用者 2026-11-12：save 存完直接 quit，玩到一半不小心按到 s 就慘了）'
-    tdp: [tdp K5, tdp K11, tdp K4, tdp menu.4, tdp M2, tdp M7, tdp L1, tdp screen.7, tdp F1, tdp F6, tdp confirm, tdp K12, tdp K6, tdp screen.2, tdp M5, tdp toast, tdp K9, tdp K1, tdp K2]
+    tdp: [tdp K5, tdp K11, tdp K4, tdp menu.4, tdp M2, tdp M7, tdp L1, tdp screen.7, tdp F1, tdp F6, tdp confirm, tdp K12, tdp K6, tdp screen.2, tdp M5, tdp toast, tdp K9, tdp K1, tdp K2, tdp P5]
     remark:
       - 'Gaming 裡按 Space 開 Gaming 模式的 Space menu（tdp K11：app 自己的模式，Space menu 列什麼 app 可以自行決定；標題與樣子照 menu.4）：只有 GAMING MODE 的 [r]estart、[q]uit（使用者 2026-11-12：Gaming 中的 Space menu 應該只有 restart 和 quit；原本是 restart、save），選了等於按 r、q。玩的鍵不列，都在 ? 與 INFO；[Esc] Pause 那一列也不列（K11：留不留 app 決定；使用者要的只有這兩列，Esc:pause 在 footer）。menu 開著遊戲就停，Esc 或 Space 關掉就接著玩'
       - 'tdp #7：原本 tdp menu.4、K11 要模式的 Space menu 列模式本身的鍵，tetru 暫時照列（TODO(tdp #7)）。使用者 2026-11-11 把 #7 改成問 app 自己的模式，選 A：tdp v1.2.4 定案（K11 的 app 自己的模式的 Space menu、K11-15），列什麼 app 可以自行決定；要守的：Space 照樣打開、至少一列，標題與樣子照 menu.4，模式的每個鍵照樣在 ?，footer 照舊。tgo v1.2.4 的 ModeKey.NoMenu、Mode.NoLeaveRow 做到（v1.2.4-beta.1 起，2026-11-12）'
@@ -110,6 +110,7 @@ tasks:
         issue: tdp #12
       - note: 'footer 寫 q:quit（使用者 2026-11-12：Gaming 模式中 footer 加入 q:quit）。q 是 core key，在任何模式裡都是進入 K9 的離開流程，不是 Gaming 自己的鍵；這裡只是把它寫在 footer 上。v1.2.4 的 screen.2 只准寫模式自己的鍵（2026-11-12 review），回報 tdp #13，使用者選 A，tdp v1.2.5 定案：app 自己的模式，footer 在 Space:menu ?:help 與最後的 Esc:<離開的動詞> 中間寫哪些鍵由 app 自行決定，模式裡能按的鍵都可以，core key 也可以（例：q:quit），每個鍵做的事照它在模式裡的作用（K11、screen.2、screen-36）。tgo v1.2.5：沒有 Do 的 ModeKey {Key: q, Desc: quit}'
         issue: tdp #13
+      - 'Gaming 是 app 自己的模式（tdp v1.2.6：P5 的開口，K11 的「app 自己的模式」）：玩遊戲是 tdp 的元件和規則都沒有的事（K11-17）；只由使用者的動作進入，PLAYGROUND 的 Enter（Play、Resume）、[n]ew game、RESUME 與 PLAY 的 Enter、模式裡的 r，啟動時有存檔也只停在暫停（K11-18）；模式的鍵與 Space menu 只作用在遊戲上，最多離開模式，[q]uit 與 q:quit 是 core key q（K11-19）；除了 core key 與移動鍵，每個鍵都在 Space menu 或 60 欄時的 footer：d、k、Enter、r 在 footer，r 也在 Space menu（K11-20）；一次只有這一個模式（K11-22）'
 
   - id: 6
     spec: 47
@@ -147,7 +148,7 @@ tasks:
       - '沒有紀錄時空狀態：No scores yet / Press [T] to play（tdp screen.8；到 Tetru 畫面，focus 在 PLAYGROUND 上，Enter 開始）'
       - 'Enter 在一筆紀錄上沒有動作：紀錄沒有東西可以打開'
   - id: 9
-    spec: 49
+    spec: 52
     request: '湊齊一排時，滿排的列先變白色，再從下到上依序向左滑出 panel 1（GAME），然後整個場地往下降、上方補上空的格子；期間不能操作，正在玩的方塊不跟著降（使用者 2026-11-11）；這段動畫原本太慢、不流暢（使用者 2026-11-11）；消除排的特效依照 1、2、3、4 排給不同顏色及特效，不一定要左滑，時間要差不多，顏色用和方塊不衝突的（使用者 2026-11-12）。結束時照 locku 由上往下變灰。結束用 popup 說，不在遊戲裡寫 END（使用者 2026-11-11：那是 locku 的限制，tetru 是獨立的 app）'
     tdp: [tdp P5, tdp F1, tdp F6, tdp confirm, tdp K11, tdp K4, tdp M6]
     remark:
@@ -164,6 +165,8 @@ tasks:
       - '堆到頂時還在 Gaming 裡（使用者 2026-11-12：這不都還在 gaming 模式裡面，這是 app 自己要處理的問題，就算灰幕落完也都應該還在 gaming 模式）：玩的六個鍵沒有方塊可動，停用（tdp M6），r Restart 在記下之前也停用；Esc 照樣離開模式（暫停不開 RESUME，沒有一局可以接著玩），之後的 popup 開在 PLAYGROUND 上。灰幕落完才用 popup 說結束：值得記的局（task 7）是問誰玩的 text input，標題 KEEP SCORE（task 6）；不值得記的局開 confirm（tdp F1、F6）：內容 Game over: no points, so nothing is kept.（擠不進前二十名的寫 Game over: 150 points, not in the best 20, so nothing is kept.），問句 Play again?，標題照 tdp confirm.2 寫 Enter 做的動作 PLAY。KEEP SCORE 上按 Enter 記下名字，那個動作的結果是離開 Gaming（模式名、外框恢復，tdp K11），回到 PLAYGROUND（hint Enter:play）；PLAY 上按 Enter 直接開下一局，還在 Gaming；兩個 popup 上按 Esc 都只關掉 popup、還在 Gaming（tdp K4：一次一層），再按一次 Esc 才離開，這時 r 可以開下一局。原本堆到頂那一刻就離開 Gaming；也曾經在 popup 上一個 Esc 就連模式一起離開（2026-11-12 review：違反 K4）'
       - '[x] End game、[n]ew game 結束的，灰幕落完不再開 popup：結束是玩家自己選的，問名字時已經說了（task 10）'
       - '動畫用 tgo App.Tick（README 的計時器），測試推得動'
+      - 'tdp v1.2.6：怎麼結束、結束前顯示什麼是 app 的事，tdp 不要求跳 popup；tetru 照使用者的，灰幕落完在 Gaming 裡開 KEEP SCORE 或 PLAY（K11-21）。不管怎麼離開，模式名與外框顏色恢復，模式的 Space menu 與 ? 一起關掉（tgo v1.2.6 的 Panel.LeaveMode 會關）；離開時最多一個 popup（K11-16）；遊戲玩到哪裡不算要先問的東西（K11-23）'
+
   - id: 10
     spec: 47
     request: '玩家可以中途結束、重新開始或離開，結束或離開時記下當下的分數；有一局在玩時按 q 先跳 confirm，記下分數，名字直接用 ANON（使用者 2026-11-11）。後來（使用者 2026-11-12）：要 quit 的時候正在遊戲，app 自動存檔，也不用問，下次進來使用者不想繼續直接 restart 就好'
@@ -214,12 +217,14 @@ tasks:
   - id: 15
     spec: 20
     request: '[T]ETRU 分頁的 panel 2、3、4（NEXT 1、NEXT 2、INFO）不要標數字，那邊不讓使用者 focus（使用者 2026-11-11 再說一次：還是可以被 focus，要移除）'
-    tdp: [tdp F1, tdp K1, tdp K2, tdp panel.1, tdp screen.1, tdp screen.2, tdp P5, tdp color.2]
+    tdp: [tdp F1, tdp K1, tdp K2, tdp panel.1, tdp screen.1, tdp screen.2, tdp P5, tdp color.2, tdp panel.16]
     remark:
       - 'tdp 規定畫面上每個 panel 都標 [N]、Tab 與數字鍵都到得了（K1、K2、panel.1、screen.1），沒有只顯示、不取得 focus 的 panel，tgo 的 Panel 也沒有這個設定；2026-11-11 為此回報了 tdp #6，改成下面的做法之後使用者說關掉（2026-11-11，not planned）'
       - '不用等 tdp #6：NEXT 1、NEXT 2、INFO 不當 panel，改成 PLAYGROUND 內容自己畫的框（tdp F1：panel 內容自己畫的框是內容，不是 popup，怎麼畫 app 可以自行決定；按鍵照它所在的 panel）。Tetru 畫面只剩 [1] PLAYGROUND：三個框沒有 [N]，Tab 與 2–9 到不了（沒有別的 panel），footer 沒有 Tab|1–N（tdp screen.2）'
       - '框的樣子：細線 ┌─┐，Surface2，跟失焦的 panel 的框一樣（tdp color：失焦的框）：只給人看、拿不到 focus；上框左邊隔一段線寫名字，大寫、前後空一格、Overlay0（安靜的字），跟 panel 框上的字一樣不貼著角（tdp panel.1）。框的右邊離 PLAYGROUND 的框一格，跟 panel 內容左邊離框一格一樣'
       - 'PLAYGROUND 的框包在右邊那一欄外面，多了 2 列（最低尺寸現在是 42×32，task 1）'
+      - 'PLAYGROUND 是 app 自己的內容（tdp v1.2.6 的 panel.16：tdp 的元件和規則裝不下的東西，玩到一半的遊戲）：框、[1] PLAYGROUND、hint、focus 與淡化照一般的 panel；內容怎麼畫是 app 的（場地、NEXT、INFO、KEYS 的框是內容，不是 popup，tdp F1）；模式外的鍵 [Enter] Play/Resume、[n]ew game、[x] End game 是 panel 的熱鍵、列在 Space menu，Enter 開一局或接著玩（panel-159、panel-160）'
+
   - id: 16
     spec: 47
     request: '把當前分數和 panel 1 已經落地的格子位置存起來；重新啟動後接著玩，地上的格子直接是白色，不用分色（使用者 2026-11-11）；這一局先不記排行，下次開 tetru 接著玩，讀回來就刪掉存檔（使用者選的）。save 和 quit 要分開：不需要作 save 給使用者操作，save 是 app 的背景行為；要 quit 的時候正在遊戲，app 自動存檔，也不用問，下次進來使用者不想繼續直接 restart 就好（使用者 2026-11-12）'

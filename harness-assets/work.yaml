@@ -50,7 +50,7 @@ tasks:
       Enter 在 PLAYGROUND 上（Gaming 外）：沒有一局在暫停時開新的一局（task 6），有就繼續（task 5）；hint Enter:play，暫停時 Enter:resume
     test: [TestPlay, TestTheGamingFooterHasTheTurnsAndTheDrop, TestSpaceMenuRunsRestartAndTheKeysAreInHelp, TestTheGameFalls, TestSettingsSetAKey]
   - id: 5
-    spec: 50
+    spec: 52
     implementation: |
       Gaming 裡按 Space：tgo 開 Gaming 的 Space menu，標題 [1] PLAYGROUND，只有 GAMING MODE 的 [r]estart（start over from level 1）、
       [q]uit（leave tetru; a game going goes on next time），選了 [r]estart 就等於按 r，選了 [q]uit 就是 task 10 的離開流程；玩的六個鍵標 tgo ModeKey.NoMenu、模式標 Mode.NoLeaveRow
@@ -103,7 +103,7 @@ tasks:
       沒有 Enter 與其他動作；j|k、gg|G 由 tgo 移動
     test: [TestScoresBestFirst, TestTopOutKeepsTheScore, TestScreensSwitchOnTRS, TestRankKeepsTheBestTwentyWithTheirPlaces, TestRankColoursTheFirstThree]
   - id: 9
-    spec: 49
+    spec: 52
     implementation: |
       消行：方塊落定、湊滿的那一刻，滿的那幾行離開堆疊，行數與分數馬上加（關卡跟著升），下一個方塊同時出現在最上面等著
       不管消幾行：先整塊 #ffffff 100 ms（game.Flash），再照消幾行畫哪一種走法（ui clearRows；game.Along 是全部一起走了多遠，幾行都是一起走），都是 #ffffff，走掉的地方畫底：
