@@ -153,7 +153,7 @@ func TestTheBoxesAreNeverFocused(t *testing.T) {
 
 func TestNarrowDrawsTheBoxesWithNoFrames(t *testing.T) {
 	_, d := open(t, 50, 32)
-	if d.Has("NEXT") || d.Has("INFO") || !d.Has("[1] PLAYGROUND") || !d.Has("Level: 1   Lines: 0  Score: 0") {
+	if d.Has("NEXT") || d.Has("INFO") || !d.Has("[1] PLAYGROUND") || !d.Has("Level: 1   Lines: 0    Score: 0") {
 		t.Fatal("narrow, the boxes are framed, or the level, the rows and the score are not over the field")
 	}
 	if got := widest(d); got != fieldW+boxW {
@@ -347,7 +347,7 @@ func TestTheGameStopsUnderAPopup(t *testing.T) {
 		}
 	}
 	// INFO beside it has the keys, "move left" among them, in lower case.
-	for _, s := range []string{"ITEM OPERATION", "Rotate left", "Rotate right", "drop to the bottom", "[Esc] Pause"} {
+	for _, s := range []string{"ITEM OPERATION", "Rotate left", "Rotate right", "[Enter]", "[Esc] Pause"} {
 		if d.Has(s) {
 			t.Fatalf("the Gaming mode's Space menu has %q, not Restart and Save alone", s)
 		}
@@ -370,11 +370,21 @@ func TestTheGameStopsUnderAPopup(t *testing.T) {
 	}
 }
 
+func TestTheGamingFooterHasTheTurnsAndTheDrop(t *testing.T) {
+	_, d := open(t, 100, 32)
+	play(d)
+	// The moves are moving, not in it, as Drag's j|k; the drop is in it, as
+	// Drag's Enter:drop (tdp screen.2).
+	if r := row(d, 31); !strings.Contains(r, "d:rotate left k:rotate right Enter:drop") || strings.Contains(r, "move") || !strings.HasSuffix(strings.TrimSpace(r), "Esc:pause") {
+		t.Fatalf("the Gaming footer: %q", r)
+	}
+}
+
 func TestSpaceMenuRunsRestartAndTheKeysAreInHelp(t *testing.T) {
 	tt, d := open(t, 60, 32)
 	play(d)
 	d.Press("?")
-	for _, s := range []string{"move left", "move right", "down a row", "rotate left", "rotate right", "drop to the bottom", "restart", "save"} {
+	for _, s := range []string{"move left", "move right", "down a row", "rotate left", "rotate right", "drop", "restart", "save"} {
 		if !d.Has(s) {
 			t.Fatalf("the Gaming mode's ? has no %q", s)
 		}
@@ -434,7 +444,7 @@ func TestNameIsAskedAsTheGameEnds(t *testing.T) {
 		t.Fatal("Enter did not go straight into a game")
 	}
 	topOut(t, tt, d)
-	if len(kept(t)) != 0 || d.Has("GAME OVER") {
+	if len(kept(t)) != 0 || d.Has("KEEP SCORE") {
 		t.Fatal("kept, or asked, before the curtain came down")
 	}
 	g := tt.g
@@ -444,7 +454,7 @@ func TestNameIsAskedAsTheGameEnds(t *testing.T) {
 		t.Fatal("a new game while the last waits to be kept")
 	}
 	d.Advance(game.Curtain)
-	if !d.Has("GAME OVER") || !d.Has(comma(g.Score)+" points: who played?") || !d.Has("ANON") || !d.Has("Enter:keep") {
+	if !d.Has("KEEP SCORE") || !d.Has(comma(g.Score)+" points: who played?") || !d.Has("ANON") || !d.Has("Enter:keep") {
 		t.Fatal("no name asked once the curtain is down")
 	}
 	d.Press("Enter")
@@ -513,11 +523,11 @@ func TestTopOutKeepsTheScore(t *testing.T) {
 		t.Fatal("PLAYGROUND lost the last game's score")
 	}
 	d.Advance(game.Curtain / 2)
-	if tt.g.Ended() || d.Has("GAME OVER") {
+	if tt.g.Ended() || d.Has("KEEP SCORE") {
 		t.Fatal("the end was said before the curtain came down")
 	}
 	d.Advance(game.Curtain)
-	if !tt.g.Ended() || !d.Has("GAME OVER") {
+	if !tt.g.Ended() || !d.Has("KEEP SCORE") {
 		t.Fatal("no popup once the curtain is down")
 	}
 	s := picture(tt.g)
@@ -600,7 +610,7 @@ func TestNoPointsNotKept(t *testing.T) {
 		t.Fatal("a game with no points asked, was kept, or did not end")
 	}
 	d.Advance(game.Curtain)
-	if d.Has("GAME OVER") || !d.Has("Enter:play") {
+	if d.Has("KEEP SCORE") || !d.Has("Enter:play") {
 		t.Fatal("a game with no points asked who played")
 	}
 	play(d)
@@ -638,7 +648,7 @@ func TestEndGameAsksAndKeeps(t *testing.T) {
 		t.Fatalf("End game kept %+v", all)
 	}
 	d.Advance(game.Curtain)
-	if d.Has("GAME OVER") {
+	if d.Has("KEEP SCORE") {
 		t.Fatal("asked again as the curtain came down")
 	}
 }

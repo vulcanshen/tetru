@@ -272,13 +272,13 @@ func (t *Tetru) begin() tea.Cmd {
 	return t.resume()
 }
 
-// askName is what ends a game with points: a text input (tdp text) saying
-// the points and asking who played, ANON offered (tdp input.6). Enter keeps
-// the score for the name typed, for ANON when there is none (user,
-// 2026-11-11), then runs then; Esc runs cancel. A game not worth keeping
-// (worth) has nothing to keep: then runs at once, an Info toast saying so
-// when it has points.
-func (t *Tetru) askName(title, verb string, then, cancel func() tea.Cmd) tea.Cmd {
+// askName is what ends a game with points: a text input (tdp text), titled
+// by what it does (tdp popup.1), saying lead and the points and asking who
+// played, ANON offered (tdp input.6). Enter keeps the score for the name
+// typed, for ANON when there is none (user, 2026-11-11), then runs then;
+// Esc runs cancel. A game not worth keeping (worth) has nothing to keep:
+// then runs at once, an Info toast saying so when it has points.
+func (t *Tetru) askName(title, lead, verb string, then, cancel func() tea.Cmd) tea.Cmd {
 	if !t.worth() {
 		t.saved = true // nothing to keep, nobody to ask
 		if t.g.Score == 0 {
@@ -294,7 +294,8 @@ func (t *Tetru) askName(title, verb string, then, cancel func() tea.Cmd) tea.Cmd
 	}
 	return t.App.Text(terminu.TextInput{
 		Title:     title,
-		Prompt:    comma(t.g.Score) + " points: who played?",
+		Name:      "Name",
+		Prompt:    lead + comma(t.g.Score) + " points: who played?",
 		Verb:      verb,
 		Suggest:   anon,
 		MaxLen:    nameLen,
@@ -346,13 +347,13 @@ func (t *Tetru) newGame() tea.Cmd {
 		t.saved = true
 		return tea.Batch(t.finish(), t.begin())
 	}
-	return t.askName("New game", "start", func() tea.Cmd { return tea.Batch(t.finish(), t.begin()) }, nil)
+	return t.askName("New game", "", "start", func() tea.Cmd { return tea.Batch(t.finish(), t.begin()) }, nil)
 }
 
 // endGame ends the game going, its score kept for the name asked; Esc on
 // the name goes back to the game.
 func (t *Tetru) endGame() tea.Cmd {
-	return t.askName("End game", "end", t.finish, nil)
+	return t.askName("End game", "", "end", t.finish, nil)
 }
 
 // finish ends the game going, if any: out of the Gaming mode, the curtain
@@ -464,13 +465,13 @@ func (t *Tetru) setRows(sel string) {
 var podium = []terminu.Color{terminu.Yellow, terminu.Green, terminu.Hex("#89dceb")}
 
 // setModeKeys are the Gaming mode's keys, the player's (Settings): the moves
-// with their arrows too (tdp K12) and the drop, all the way down, are
-// moving: not in the footer, which keeps room for Esc:pause; the turns are
-// things done to the falling piece. None of these is in the mode's Space
-// menu (user, 2026-11-11: it has Restart and Save; tdp K11), all of them in
-// its ? and in INFO. A key that is h, j, k or l takes its arrow too (tdp
-// K12): by default ↑ turns left with k, which has no moving to do in the
-// mode, a piece never going up.
+// with their arrows too (tdp K12) are moving, not in the footer, as Drag's
+// j|k are not (tdp screen.2); the turns and the drop are things done to the
+// falling piece, in the footer as Drag's Enter:drop is. None of these is in
+// the mode's Space menu (user, 2026-11-11: it has Restart and Save; tdp K11,
+// an app's own mode), all of them in its ? and in KEYS. A key that is h, j,
+// k or l takes its arrow too (tdp K12): by default ↑ turns left with k,
+// which has no moving to do in the mode, a piece never going up.
 func (t *Tetru) setModeKeys() {
 	k := t.keys
 	t.play.Keys = []terminu.ModeKey{
@@ -479,7 +480,7 @@ func (t *Tetru) setModeKeys() {
 		{Key: k[keys.Down], Keys: k.Keys(keys.Down), Desc: "down a row", NoFooter: true, NoMenu: true, Do: t.do(keys.Down)},
 		{Key: k[keys.RotateLeft], Keys: k.Keys(keys.RotateLeft), Desc: "rotate left", Item: true, NoMenu: true, Label: keys.RotateLeft.Label(), MenuDesc: keys.RotateLeft.Desc(), Do: t.do(keys.RotateLeft)},
 		{Key: k[keys.RotateRight], Keys: k.Keys(keys.RotateRight), Desc: "rotate right", Item: true, NoMenu: true, Label: keys.RotateRight.Label(), MenuDesc: keys.RotateRight.Desc(), Do: t.do(keys.RotateRight)},
-		{Key: k[keys.Drop], Keys: k.Keys(keys.Drop), Desc: "drop to the bottom", NoFooter: true, NoMenu: true, Do: t.do(keys.Drop)},
+		{Key: k[keys.Drop], Keys: k.Keys(keys.Drop), Desc: "drop", NoMenu: true, Do: t.do(keys.Drop)},
 		{Key: "r", Desc: "restart", Label: "Restart", MenuDesc: "start over from level 1", Do: func(string) tea.Cmd { return t.newGame() }},
 		{Key: "s", Desc: "save", Label: "Save", MenuDesc: saveDesc, Do: func(string) tea.Cmd { return t.saveGame() }},
 	}
@@ -582,7 +583,7 @@ func (t *Tetru) step(dt time.Duration) tea.Cmd {
 			// confirm.2): PLAY.
 			t.topped = false
 			if !t.saved {
-				return t.askName("Game over", "keep", func() tea.Cmd { return nil }, func() tea.Cmd { return t.save(anon) })
+				return t.askName("Keep score", "Game over, ", "keep", func() tea.Cmd { return nil }, func() tea.Cmd { return t.save(anon) })
 			}
 			return t.App.Confirm(terminu.Ask{Title: "Play", Question: "Play again?", Verb: "play", Details: []string{"Game over: " + t.notKept() + ", so nothing is kept."}}, t.begin)
 		}

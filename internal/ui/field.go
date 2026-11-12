@@ -415,15 +415,17 @@ func (t *Tetru) stats() []string {
 }
 
 // statsRow is the stats on one line, two columns apart (tdp components.2),
-// the level a fixed width (tdp L2): narrow, over the field.
+// the level and the rows a fixed width, the score last (tdp L2): narrow,
+// over the field.
 func (t *Tetru) statsRow() string {
-	level := 1
+	level, lines := 1, 0
 	if t.g != nil {
-		level = t.g.Level
+		level, lines = t.g.Level, t.g.Lines
 	}
 	st := t.stats()
 	q, v := terminu.Fg(terminu.Overlay0), terminu.Fg(terminu.Lavender)
-	return q.Render("Level: ") + v.Render(fmt.Sprintf("%-2d", level)) + "  " + st[1] + "  " + st[2]
+	return q.Render("Level: ") + v.Render(fmt.Sprintf("%-2d", level)) + "  " +
+		q.Render("Lines: ") + v.Render(fmt.Sprintf("%-3d", lines)) + "  " + st[2]
 }
 
 // pixels are columns x0 to x1 of rows y0 to y1 of sc, every pixel k × k
