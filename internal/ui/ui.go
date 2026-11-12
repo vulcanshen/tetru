@@ -272,13 +272,14 @@ func (t *Tetru) begin() tea.Cmd {
 	return t.resume()
 }
 
-// askName is what ends a game with points: a text input (tdp text), titled
-// by what it does (tdp popup.1), saying lead and the points and asking who
-// played, ANON offered (tdp input.6). Enter keeps the score for the name
-// typed, for ANON when there is none (user, 2026-11-11), then runs then;
-// Esc runs cancel. A game not worth keeping (worth) has nothing to keep:
-// then runs at once, an Info toast saying so when it has points.
-func (t *Tetru) askName(title, lead, verb string, then, cancel func() tea.Cmd) tea.Cmd {
+// askName is what ends a game with points the player ends (End game, New
+// game): a text input (tdp text), titled by what it does (tdp popup.1),
+// saying the points and asking who played, ANON offered (tdp input.6).
+// Enter keeps the score for the name typed, for ANON when there is none
+// (user, 2026-11-11), then runs then; Esc cancels, back to the game. A game
+// not worth keeping (worth) has nothing to keep: then runs at once, an Info
+// toast saying so when it has points.
+func (t *Tetru) askName(title, verb string, then func() tea.Cmd) tea.Cmd {
 	if !t.worth() {
 		t.saved = true // nothing to keep, nobody to ask
 		if t.g.Score == 0 {
@@ -295,14 +296,49 @@ func (t *Tetru) askName(title, lead, verb string, then, cancel func() tea.Cmd) t
 	return t.App.Text(terminu.TextInput{
 		Title:     title,
 		Name:      "Name",
-		Prompt:    lead + comma(t.g.Score) + " points: who played?",
+		Prompt:    comma(t.g.Score) + " points: who played?",
 		Verb:      verb,
 		Suggest:   anon,
 		MaxLen:    nameLen,
 		Done:      keep,
 		Unchanged: func() tea.Cmd { return keep("") },
-		OnCancel:  cancel,
 	})
+}
+
+// keepThenName ends a game the stack ended that is worth keeping: its score
+// is kept at once, for ANON, then a text input titled by what it does, KEEP
+// SCORE, asks who played, only to put the name on it: Enter puts the name
+// typed, Esc leaves it ANON, the value unchanged (tdp input.1; tdp #10: the
+// game is over and kept, nothing for Esc to cancel but the name).
+func (t *Tetru) keepThenName() tea.Cmd {
+	if cmd := t.save(anon); cmd != nil {
+		return cmd
+	}
+	i := len(t.all) - 1 // the new one, last as kept
+	return t.App.Text(terminu.TextInput{
+		Title:   "Keep score",
+		Name:    "Name",
+		Prompt:  "Game over, " + comma(t.g.Score) + " points: who played?",
+		Verb:    "keep",
+		Suggest: anon,
+		MaxLen:  nameLen,
+		Done:    func(name string) tea.Cmd { return t.rename(i, name) },
+	})
+}
+
+// rename puts name on score i, kept for ANON as its game ended; no name,
+// it stays ANON.
+func (t *Tetru) rename(i int, name string) tea.Cmd {
+	if name = strings.TrimSpace(name); name == "" || name == anon || i < 0 || i >= len(t.all) {
+		return nil
+	}
+	t.all[i].Name = name
+	t.setRows(strconv.Itoa(i))
+	if err := scores.Save(t.path, t.all); err != nil {
+		return t.App.Error("Can't keep the score", t.path, err.Error())
+	}
+	t.App.Log(terminu.Success, "Kept "+comma(t.all[i].Score)+" points for "+name+", not "+anon)
+	return nil
 }
 
 // resume goes into the Gaming mode: the game runs.
@@ -347,13 +383,13 @@ func (t *Tetru) newGame() tea.Cmd {
 		t.saved = true
 		return tea.Batch(t.finish(), t.begin())
 	}
-	return t.askName("New game", "", "start", func() tea.Cmd { return tea.Batch(t.finish(), t.begin()) }, nil)
+	return t.askName("New game", "start", func() tea.Cmd { return tea.Batch(t.finish(), t.begin()) })
 }
 
 // endGame ends the game going, its score kept for the name asked; Esc on
 // the name goes back to the game.
 func (t *Tetru) endGame() tea.Cmd {
-	return t.askName("End game", "", "end", t.finish, nil)
+	return t.askName("End game", "end", t.finish)
 }
 
 // finish ends the game going, if any: out of the Gaming mode, the curtain
@@ -577,13 +613,13 @@ func (t *Tetru) step(dt time.Duration) tea.Cmd {
 			// The curtain is down: the end is said now, not as the stack
 			// reaches the top, when the player may still be pressing Enter to
 			// drop (user, 2026-11-11: the end is a popup, not drawn in the
-			// game). Worth keeping, who played is asked; else a confirm says
+			// game). Worth keeping, the score is kept and who played asked (keepThenName); else a confirm says
 			// why nothing is kept (no points, or not in the best twenty) and
 			// offers the next game, titled by what Enter does (tdp
 			// confirm.2): PLAY.
 			t.topped = false
 			if !t.saved {
-				return t.askName("Keep score", "Game over, ", "keep", func() tea.Cmd { return nil }, func() tea.Cmd { return t.save(anon) })
+				return t.keepThenName()
 			}
 			return t.App.Confirm(terminu.Ask{Title: "Play", Question: "Play again?", Verb: "play", Details: []string{"Game over: " + t.notKept() + ", so nothing is kept."}}, t.begin)
 		}

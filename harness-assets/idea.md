@@ -79,6 +79,7 @@
 - （2026-11-12）social preview 還沒作。
 - （2026-11-12）ok，先發 beta：v0.1.0-beta.1，repo 也開。（同一天 tdp v1.2.4、terminu-go v1.2.4 發版，#7、#8 在裡面）
 - （2026-11-12）review 還沒處理完的（tdp 不清楚的那幾點）：回報，但是也先發 beta。
+- （2026-11-12）tdp #10 的回覆（terminu）：照現在的 tdp 用 B，一局結束先照 ANON 記下，KEEP SCORE 只用來改名字，Esc 不改名。
 
 ## 關卡
 

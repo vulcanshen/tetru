@@ -1,4 +1,4 @@
-id: 45
+id: 46
 from: v1.2.3
 to: v1.2.4
 tasks:
@@ -103,20 +103,19 @@ tasks:
       - 'Space 一直是 Space（使用者 2026-11-11：除了 Space 以外都能設），也是 tdp K1、P5 的 core key：Settings 不列它（task 13）'
       - note: 'Esc 離開 Gaming 時接著開 RESUME confirm：tdp K11、K4 沒寫離開模式時能不能開 popup（2026-11-12 review）。暫時照現在的做法；使用者 2026-11-12：回報，也先發 beta'
         issue: tdp #9
-      - note: '清單 K11-8「模式裡沒有任何可以執行的按鍵清單」跟 K11 本文、K11-15、menu.4 矛盾（Space menu 的 [r]estart、[s]ave 能執行）；照本文，不改'
+      - note: '清單 K11-8「模式裡沒有任何可以執行的按鍵清單」跟 K11 本文、K11-15、menu.4 矛盾（Space menu 的 [r]estart、[s]ave 能執行）；照本文，不改。tdp 回覆：K11-8 是模式還沒有 Space menu 時留下的，tdp 本機已拿掉（7ebc24f，還沒發版），能不能執行由 menu-24、menu-25 寫'
         issue: tdp #12
   - id: 6
-    spec: 44
+    spec: 46
     request: '每一筆分數記姓名；不用先填名字，直接進遊戲，結束時再問，不填預設就是 ANON'
-    tdp: [tdp text, tdp input.6, tdp K3, tdp K4, tdp K9, tdp M6, tdp panel.1, tdp toast, tdp popup.1, tdp input.1, tdp input.2]
+    tdp: [tdp text, tdp input.6, tdp K3, tdp K4, tdp K9, tdp M6, tdp panel.1, tdp toast, tdp popup.1, tdp input.1, tdp input.2, tdp note.7]
     remark:
       - 'PLAYGROUND 上按 Enter 直接開始一局，不問名字（使用者 2026-11-11）'
       - '一局值得記（有分數、擠得進前二十名，task 7）時，結束的時候開 text input（tdp text）問誰玩的：寫出分數（12,340 points: who played?），建議值是 ANON（tdp input.6：什麼都沒碰按 Enter 就用它）；打了名字就用那個名字，清空了也是 ANON；最多 16 個字。不值得記的局不問、不記：0 分的什麼都不說；有分數但擠不進前二十名的，[x] End game 時跳 Info toast（tdp toast）說不記：150 points, not in the best 20, so nothing is kept.；重新開始（Gaming 的 r、[n]ew game）時什麼都不說，直接重開（使用者 2026-11-12：restart 沒有進排行榜不需要跳 info）'
-      - '怎麼結束就在哪裡問：堆到頂時等灰幕落完才問（玩家可能還在按 Enter 落方塊，一出來就問會被那個 Enter 直接收下 ANON）；灰幕落下時 Enter 與 [n]ew game 不作用，hint 也拿掉（tdp M6、panel.1），記下之後才回來；Esc 也是記成 ANON（不填）。[x] End game、[n]ew game 時，問名字就是那個動作的確認（標題 END GAME、NEW GAME，Enter:end、start），Esc 取消那個動作、回到遊戲（tdp K4）；離開 app 不問名字，開 confirm（task 10）'
+      - '怎麼結束就在哪裡問：堆到頂時等灰幕落完才問（玩家可能還在按 Enter 落方塊，一出來就問會被那個 Enter 直接收下 ANON）；灰幕落下時 Enter 與 [n]ew game 不作用，hint 也拿掉（tdp M6、panel.1），記下之後才回來。灰幕落完的那一刻先照建議值 ANON 記下，再問名字：問名字只是把名字放上去，Enter 把那一筆的名字換成打的字，沒打或清空就留 ANON；Esc 不改名（tdp input.1：值不變），hint 照 input.2 是 Enter:keep Esc:cancel。玩家看到的結果跟原本一樣：每一局都記，沒填或按 Esc 就是 ANON（使用者 2026-11-11）。[x] End game、[n]ew game 時，問名字就是那個動作的確認（標題 END GAME、NEW GAME，Enter:end、start），Esc 取消那個動作、回到遊戲（tdp K4）；離開 app 不問名字，開 confirm（task 10）'
       - '標題寫這個 popup 做什麼（tdp popup.1、input.1）：堆到頂時是 KEEP SCORE（Enter:keep），內容 Game over, 12,340 points: who played?；原本寫 GAME OVER，那是發生了什麼、不是 popup 做什麼（2026-11-12 review）。名字有錯時錯誤訊息叫它 Name（標題寫的是動作，不是值的名字，tdp input）'
       - '問不到時記成 ANON：連按兩次 Ctrl-C、關掉終端機（使用者 2026-11-11：不填預設就是 ANON）'
-      - note: 'KEEP SCORE 上按 Esc 也記成 ANON：一局一定要記，Esc 沒有東西可以取消，tdp input.1、input.2、note.7、P4 沒寫這種 input 的 Esc（2026-11-12 review）。暫時照現在的做法'
-        issue: tdp #10
+      - '原本 KEEP SCORE 上按 Esc 也記成 ANON，review 判 tdp 不清楚，回報 tdp #10（2026-11-12）。tdp 那邊回覆照現在的 tdp 就有答案、tdp 不改：用 issue 裡的 B，結束時先記、input 只改名字（上一條），Esc 不必帶「確認」的意思，P4、note.7 都不用開例外'
   - id: 7
     spec: 19
     request: '分數記在 data 目錄，每一筆記時間、姓名、分數；玩家中途離開也算分數，記離開當下的分數'

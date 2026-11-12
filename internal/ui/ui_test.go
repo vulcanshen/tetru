@@ -454,8 +454,12 @@ func TestNameIsAskedAsTheGameEnds(t *testing.T) {
 		t.Fatal("a new game while the last waits to be kept")
 	}
 	d.Advance(game.Curtain)
-	if !d.Has("KEEP SCORE") || !d.Has(comma(g.Score)+" points: who played?") || !d.Has("ANON") || !d.Has("Enter:keep") {
+	if !d.Has("KEEP SCORE") || !d.Has("Game over, "+comma(g.Score)+" points: who played?") || !d.Has("ANON") || !d.Has("Enter:keep") || !d.Has("Esc:cancel") {
 		t.Fatal("no name asked once the curtain is down")
+	}
+	// Kept as the game ends, for ANON; the name only goes on it (tdp #10).
+	if all := kept(t); len(all) != 1 || all[0].Name != "ANON" || all[0].Score != g.Score {
+		t.Fatalf("the score is not kept for ANON as the name is asked: %+v", all)
 	}
 	d.Press("Enter")
 	if all := kept(t); len(all) != 1 || all[0].Name != "ANON" || all[0].Score != g.Score {

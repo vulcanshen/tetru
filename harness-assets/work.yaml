@@ -67,12 +67,13 @@ tasks:
       Settings 沒有 Pause 那一列（task 13）；INFO 寫 Space menu、Esc pause（task 14）
     test: [TestTheGameStopsUnderAPopup, TestEscPausesEnterResumes, TestTabInPlaySaysToPauseFirst, TestSpaceMenuRunsRestartAndTheKeysAreInHelp, TestSettingsHaveNoPauseRow, TestRestartFromThePlayModesSpaceMenu, TestPlay]
   - id: 6
-    spec: 44
+    spec: 46
     implementation: |
       PLAYGROUND 上按 Enter（沒有暫停中的一局時）直接開一局、進 Gaming，不問名字
       一局值得記（有分數、擠得進前二十名：scores.Makes，task 7）時，結束的時候開 tgo 的 text input 問誰玩的：Prompt 是 12,340 points: who played?，建議值（tgo TextInput.Suggest）ANON，
       hint 有 Tab:edit Backspace:clear；最多 16 個字（tgo TextInput.MaxLen）；Enter 用打的名字（去掉前後空白），沒打、清空了都是 ANON
-      名字有錯時錯誤訊息叫它 Name（tgo TextInput.Name）；堆到頂：灰幕落完時才開，標題 KEEP SCORE、內容 Game over, 12,340 points: who played?、Enter:keep；Esc 也記成 ANON（tgo TextInput.OnCancel）；
+      名字有錯時錯誤訊息叫它 Name（tgo TextInput.Name）；堆到頂：灰幕落完時先照 ANON 記下（App Log 記一筆 Success），才開，標題 KEEP SCORE、內容 Game over, 12,340 points: who played?、Enter:keep Esc:cancel；
+      Enter 把剛記下的那一筆換成打的名字、寫回 scores.yaml（App Log：Kept 12,340 points for amy, not ANON），沒打、清空就留 ANON；Esc 不改名，那一筆照樣是 ANON；
       灰幕落下到記下之前，PLAYGROUND 的 Enter 與 [n]ew game 停用（tgo Action.Disabled），Enter:play 的 hint 拿掉，記下之後回來
       [x] End game、[n]ew game、離開流程：見 task 10
       不值得記的局不問、不記；[x] End game 時有分數的跳 tgo Info toast：150 points, not in the best 20, so nothing is kept.；重新開始（Gaming 的 r、[n]ew game）時什麼都不說，直接重開
