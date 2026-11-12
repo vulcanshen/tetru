@@ -187,16 +187,17 @@ func (f *field) Draw(w, h int, focused bool) []string {
 }
 
 // split parts PLAYGROUND's body, w × h, in the field's share, fw wide, and the
-// column of boxes at its right, cw wide with their frames and a cell from
-// PLAYGROUND's frame, a third of the screen or INFO's least; and gives the scale
-// both are drawn at: twice where both have the room.
+// column of boxes at its right, cw wide with their frames, a cell from
+// PLAYGROUND's frame: as wide as INFO needs, or the boxes drawn twice as
+// big, however wide the screen is (user, 2026-11-12: the boxes' width
+// fixed, not growing with the screen; a third of it first); and gives the
+// scale both are drawn at: twice where both have the room.
 func split(w, h int) (fw, cw, k int) {
-	side := max(sideW+1, (w+2)/3)
-	fw, cw, k = w-side, side-1, 1
-	if fw >= 2*2*fieldW && h >= 2*sceneH && cw-2 >= 2*2*boxW && h >= 2*(2*boxH+2)+infoH {
-		k = 2
+	cw, k = sideW, 1
+	if c := max(sideW, 2*2*boxW+2); w-c-1 >= 2*2*fieldW && h >= 2*sceneH && h >= 2*(2*boxH+2)+infoH {
+		cw, k = c, 2
 	}
-	return fw, cw, k
+	return w - cw - 1, cw, k
 }
 
 // column is the boxes at PLAYGROUND's right, cw wide and h high, every pixel k ×

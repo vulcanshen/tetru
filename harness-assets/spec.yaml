@@ -1,9 +1,9 @@
-id: 40
+id: 41
 from: v1.2.3
 to: v1.2.3
 tasks:
   - id: 1
-    spec: 20
+    spec: 41
     request: '一個直的空間玩遊戲，右邊是接下來的方塊；排行不在遊戲旁邊，改成另一個分頁：[T]etru、[R]ank、[S]ettings；遊戲的右邊由上而下是 Next 1、Next 2，最下面一個 panel 分上下兩段，上面 Level、Lines、Score、下面操作方式（不叫 Manual）；終端機窄的時候，排行優先收掉；遊戲太小，GAME 的 panel 就是遊戲，不要遊戲自己的外框，縮小上下；空間要用滿，遊戲區域不能這麼小'
     tdp: [tdp terms.2, tdp terms.3, tdp screen.1, tdp screen.2, tdp screen.3, tdp screen.5, tdp screen.7, tdp M4, tdp L1, tdp L2, tdp L3, tdp L4, tdp E5, tdp panel.1, tdp panel.4, tdp K1, tdp K2, tdp P5]
     remark:
@@ -43,7 +43,7 @@ tasks:
         Space:menu ?:help !:log q:quit
       - '三個畫面（tdp terms.2：一組同時顯示的 panel；多畫面用 global operation 切換）：[T]etru 是遊戲、[R]ank 是排行（task 8）、[S]ettings 是按鍵（task 13）。最上面一列是畫面 chip（tdp screen.3），chip 列下面一條全寬的線。T、R、S 是 global 熱鍵（tdp M4：沒有 popup 開著時在 panel 上也能直接按；模式裡不作用，玩的時候要先 Esc），大寫是 Shift，跟家族的多畫面 app（sshu、webu）一樣用大寫字母。第一版的 [G]ame 用不了：G 在 tdp K12 保留給「到最底下」'
       - 'Tetru 畫面只有一個 panel：[1] PLAYGROUND（task 2），佔滿 panel 區；右邊一欄由上而下 NEXT 1、NEXT 2（task 2）、INFO、KEYS（task 14）是 PLAYGROUND 自己畫的框（task 15）。panel 怎麼拆，app 可以自行決定（tdp L1）。啟動時 focus 在 [1] PLAYGROUND：打開 app 就是要玩；只有一個 panel，footer 沒有 Tab|1–N（tdp screen.2）'
-      - '寬度：右邊那一欄（框與它右邊離 PLAYGROUND 的框一格）是整個寬度的三分之一，至少放得下 INFO（框 23 欄加一格），場地那一塊拿 PLAYGROUND 裡剩下的：60 欄 34｜24、77 欄 50｜25、150 欄 98｜50。三分之一照 tdp L1 自己舉的 1:2；遊戲在左邊、佔大半，第一版排行在寬的終端機上佔了七成（使用者 2026-11-11：比例太糟糕）'
+      - '寬度：右邊那一欄（框與它右邊離 PLAYGROUND 的框一格）的寬是固定的，不跟著終端機變寬（使用者 2026-11-12：NEXT 那邊的區塊寬度應該固定，不應該依照螢幕寬而變寬）：放得下 INFO 的框 23 欄加一格；放大兩倍時放得下兩倍大的方塊，框 26 欄加一格。場地那一塊拿 PLAYGROUND 裡剩下的：60 欄 34｜24、77 欄 51｜24、150 欄 124｜24。原本是整個寬度的三分之一（照 tdp L1 自己舉的 1:2），寬的終端機上框跟著變寬、裡面空著；欄寬怎麼分，app 可以自行決定（tdp L1）。第一版排行在寬的終端機上佔了七成（使用者 2026-11-11：比例太糟糕）'
       - '高度：NEXT 1、NEXT 2 各是一格的高（4 列加框，6 列；放大時 10 列），從 PLAYGROUND 裡第一列開始；INFO 是三行加框，5 列；KEYS 拿剩下的到 PLAYGROUND 裡最後一列'
       - 'Level、Lines、Score 在 INFO 上面那一段，一行一個（使用者 2026-11-11：GAME 裡只放場地；GAME 就是現在的 PLAYGROUND）；不再有 statusbar（tdp screen.4：要不要有，app 可以自行決定；多畫面時它會在 chip 列的右邊，離遊戲很遠）。label Overlay0、值 Lavender（現在玩到哪，同 statusbar）。沒有在玩時寫上一局最後的值，還沒玩過寫第 1 關、0 行、0 分'
       - '遊戲太小、空間要用滿（使用者 2026-11-11，150×32 與 77×32 的終端機）：PLAYGROUND 裡只有場地（Level 等在 INFO）、場地沒有自己的框。一格方塊是 locku 的方塊 icon，一格只能一列高：場地照使用者說的固定 12 格寬、24 格高（2026-11-11：寬高都是固定的數字，加大一點），32 列時 PLAYGROUND 裡 27 列，場地 24 列；PLAYGROUND 裡有 48 列（53 列的終端機）起放大成兩倍。曾經改成實心方塊、一格 1.25 列高填滿 PLAYGROUND，使用者看了要換回原本的方塊 icon（2026-11-11）'

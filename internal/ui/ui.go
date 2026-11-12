@@ -40,8 +40,8 @@ const (
 	// narrowBelow is the width under which PLAYGROUND draws the boxes with no
 	// frames and no INFO (tdp screen.5's most).
 	narrowBelow = 60
-	// sideW is the least a box at PLAYGROUND's right is: INFO's rows and its
-	// frame.
+	// sideW is how wide the boxes at PLAYGROUND's right are, the pieces in
+	// them drawn once: INFO's rows and its frame.
 	sideW = infoW + 2
 	// frame is a step of the game, as locku's; clearFrame is one while rows
 	// clear, a frame of a screen at 60 Hz, so the rows slide out a pixel or

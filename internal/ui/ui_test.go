@@ -126,7 +126,8 @@ func TestTetruScreen(t *testing.T) {
 		if !d.Has("┌─ NEXT 2 ─") || !d.Has("┌─ INFO ─") || !d.Has("┌─ KEYS ─") || d.Has("[2]") || d.Has("[3]") || d.Has("[4]") {
 			t.Fatal("no NEXT 2 or INFO box, or a box numbered")
 		}
-		for _, c := range []struct{ w, f, c int }{{58, 34, 23}, {75, 50, 24}, {148, 98, 49}} {
+		// The column as wide however wide the screen (user, 2026-11-12).
+		for _, c := range []struct{ w, f, c int }{{58, 34, 23}, {75, 51, 23}, {148, 124, 23}} {
 			if f, cw, k := split(c.w, 27); f != c.f || cw != c.c || k != 1 {
 				t.Fatalf("PLAYGROUND's body %d wide: the field's %d, the column %d, %d times", c.w, f, cw, k)
 			}
@@ -183,8 +184,8 @@ func TestLeastSizeIsTheGameAlone(t *testing.T) {
 
 func TestPictureGrowsTwiceOnALargeTerminal(t *testing.T) {
 	_, d := open(t, 150, 54)
-	if _, _, k := split(148, 49); k != 2 || widest(d) != 2*(fieldW+boxW) {
-		t.Fatalf("150×54: %d times, %d pixels a row", k, widest(d))
+	if _, cw, k := split(148, 49); k != 2 || cw != 2*2*boxW+2 || widest(d) != 2*(fieldW+boxW) {
+		t.Fatalf("150×54: %d times, the column %d wide, %d pixels a row", k, cw, widest(d))
 	}
 	at := func(s string) int {
 		for i, r := range d.Screen() {
@@ -1093,10 +1094,18 @@ func clearOf(t *testing.T, tt *Tetru, n int) *game.Game {
 	return g
 }
 
+// fieldAt is where the field is in PLAYGROUND's body w × h, drawn once: from
+// column x0 to x1, in the field's share fw wide.
+func fieldAt(w, h int) (x0, x1, fw int) {
+	fw, _, _ = split(w, h)
+	x0 = (fw - 2*fieldW) / 2
+	return x0, x0 + 2*fieldW, fw
+}
+
 func TestClearsByHowManyRows(t *testing.T) {
 	tt, _ := open(t, 80, 32)
-	// At 80 × 32 PLAYGROUND's body is 78 × 27, the field 24 columns from
-	// column 14 of its 52 at the left.
+	// At 80 × 32 PLAYGROUND's body is 78 × 27.
+	x0, x1, fw := fieldAt(78, 27)
 	bottom := func() string { return tt.gameP.Body.Draw(78, 27, true)[1+game.Rows-1] }
 	plain := regexp.MustCompile("\x1b\\[[0-9;]*m")
 	const white, ground = "255;255;255", "49;50;68"
@@ -1114,7 +1123,7 @@ func TestClearsByHowManyRows(t *testing.T) {
 		return at
 	}
 	// goesRight says whether anything is right of the field, before KEYS.
-	goesRight := func(r string) bool { return glyphs(r, 38, 52) != "" }
+	goesRight := func(r string) bool { return glyphs(r, x1, fw) != "" }
 	// pieceColoured says whether the field (KEYS beside it has Blue keys)
 	// has a piece's colour.
 	pieceColoured := func(r string) bool {
@@ -1164,13 +1173,13 @@ func TestClearsByHowManyRows(t *testing.T) {
 	span := game.ClearTime(4) - game.Settle - game.Flash
 	g.Advance(game.Flash + span/4)
 	for _, y := range []int{game.Rows - 1, game.Rows - 4} {
-		if r := tt.gameP.Body.Draw(78, 27, true)[1+y]; glyphs(r, 14, 38) != strings.Repeat(broken[0], game.Cols) || !strings.Contains(r, white) {
+		if r := tt.gameP.Body.Draw(78, 27, true)[1+y]; glyphs(r, x0, x1) != strings.Repeat(broken[0], game.Cols) || !strings.Contains(r, white) {
 			t.Fatalf("four rows do not all break to grains at once, in white: %q", r)
 		}
 	}
 	g.Advance(span / 4)
 	for _, y := range []int{game.Rows - 1, game.Rows - 4} {
-		if r := tt.gameP.Body.Draw(78, 27, true)[1+y]; glyphs(r, 14, 38) != strings.Repeat(broken[1], game.Cols) || goesRight(r) {
+		if r := tt.gameP.Body.Draw(78, 27, true)[1+y]; glyphs(r, x0, x1) != strings.Repeat(broken[1], game.Cols) || goesRight(r) {
 			t.Fatalf("four rows do not all go to dust next, where they are: %q", r)
 		}
 	}
@@ -1184,9 +1193,10 @@ func TestTheHintIsALighterGreyToLevelFive(t *testing.T) {
 	tt, d := open(t, 80, 32)
 	play(d)
 	tok := regexp.MustCompile("\x1b\\[[0-9;]*m|.")
+	x0, x1, _ := fieldAt(78, 27)
 	// hinted says whether row y of the field has a block in the hint's
-	// grey: at 80 × 32 the field is columns 14 to 38 of PLAYGROUND's body
-	// (the boxes beside it have titles in that grey).
+	// grey, in the field of PLAYGROUND's body (the boxes beside it have
+	// titles in that grey).
 	hinted := func(y int) bool {
 		fg, col := "", 0
 		for _, m := range tok.FindAllString(tt.gameP.Body.Draw(78, 27, true)[1+y], -1) {
@@ -1196,7 +1206,7 @@ func TestTheHintIsALighterGreyToLevelFive(t *testing.T) {
 				}
 				continue
 			}
-			if col >= 14 && col < 38 && m != " " && strings.Contains(fg, "38;2;108;112;134") {
+			if col >= x0 && col < x1 && m != " " && strings.Contains(fg, "38;2;108;112;134") {
 				return true
 			}
 			col += terminu.Width(m)
