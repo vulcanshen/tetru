@@ -707,7 +707,7 @@ func TestFinishKeepsTheGameGoing(t *testing.T) {
 	}
 }
 
-func TestLineClearSlidesOutToTheLeft(t *testing.T) {
+func TestOneRowFlashesFadesThenTheStackComesDown(t *testing.T) {
 	tt, d := open(t, 60, 32)
 	play(d)
 	g := tt.g
@@ -759,28 +759,38 @@ func TestLineClearSlidesOutToTheLeft(t *testing.T) {
 	if first() != 6 {
 		t.Fatalf("the row going starts at column %d, not in place", first())
 	}
-	// shown says whether the row going is drawn: Rosewater (user, 2026-11-12).
-	shown := func() bool { return strings.Contains(tt.gameP.Body.Draw(58, 27, true)[1+y], "245;224;220") }
-	// A frame at a time, wherever the frames fall: white in place, then out
-	// left of the field, then gone with the stack not down yet, then the
-	// stack down.
+	// has says whether the row going is drawn in one of colours.
+	has := func(colours ...string) bool {
+		r := tt.gameP.Body.Draw(58, 27, true)[1+y]
+		for _, c := range colours {
+			if strings.Contains(r, c) {
+				return true
+			}
+		}
+		return false
+	}
+	white := "255;255;255"
+	fading := []string{"245;224;220", "196;181;182", "147;137;144", "98;94;106"} // Rosewater to the ground
+	// A frame at a time, wherever the frames fall: white in place, then
+	// Rosewater fading where it is, then gone with the stack not down yet,
+	// then the stack down (user, 2026-11-12: a flash, gone, down).
 	stage := 0
 	for range (game.ClearTime(1) + 100*time.Millisecond) / clearFrame {
 		d.Advance(clearFrame)
 		c, down := first(), g.Cell(0, game.Rows-2) == 0
 		switch {
-		case stage == 0 && c == 6 && shown() && !down:
+		case stage == 0 && c == 6 && has(white) && !down:
 			stage = 1
-		case stage == 1 && c >= 0 && c < 6 && shown() && !down:
+		case stage == 1 && c == 6 && !has(white) && has(fading...) && !down:
 			stage = 2
-		case stage == 2 && c == 6 && !shown() && !down:
+		case stage == 2 && c == 6 && !has(white) && !has(fading...) && !down:
 			stage = 3
 		case stage == 3 && down:
 			stage = 4
 		}
 	}
 	if stage != 4 {
-		t.Fatalf("the clear got to %d of: white in place, out left of the field, gone with the stack up, the stack down", stage)
+		t.Fatalf("the clear got to %d of: white in place, fading there, gone with the stack up, the stack down", stage)
 	}
 	if len(g.Going) != 0 || !g.Live() || g.Cell(0, game.Rows-1) == 0 {
 		t.Fatal("the stack did not come down after the row")
@@ -1124,8 +1134,8 @@ func TestClearsByHowManyRows(t *testing.T) {
 	}
 
 	g = clearOf(t, tt, 3)
-	if !strings.Contains(bottom(), rosewater) {
-		t.Fatal("three rows are not Rosewater")
+	if !strings.Contains(bottom(), white) {
+		t.Fatal("three rows do not go white first")
 	}
 	g.Advance(game.Flash + (game.ClearTime(3)-game.Flash)/2)
 	if r := bottom(); !strings.Contains(r, rosewater) || !strings.Contains(r, white) || !strings.Contains(r, ground) {
@@ -1133,8 +1143,11 @@ func TestClearsByHowManyRows(t *testing.T) {
 	}
 
 	g = clearOf(t, tt, 4)
+	if !strings.Contains(bottom(), white) {
+		t.Fatal("four rows do not go white first")
+	}
 	g.Advance(game.Flash + game.Slide/2)
-	if r := bottom(); !strings.Contains(r, rosewater) || !goesRight(r) || pieceColoured(r) {
-		t.Fatalf("four rows do not split in Rosewater, half going right: %q", r)
+	if r := bottom(); !strings.Contains(r, rosewater) || !strings.Contains(r, white) || !goesRight(r) || pieceColoured(r) {
+		t.Fatalf("four rows do not split in Rosewater, half going right, crumbling: %q", r)
 	}
 }

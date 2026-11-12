@@ -368,7 +368,7 @@ func TestFourBurstThenTheStackComesDownAtOnce(t *testing.T) {
 	if g.Cell(0, Rows-1) == 0 || g.Cell(0, Rows-5) != 0 || len(g.Going) != 0 || !g.Live() {
 		t.Fatal("the stack did not come down four rows at once")
 	}
-	if ClearTime(4) != out(4)+Settle || ClearTime(2) != out(2)+Settle || ClearTime(3) != out(3)+3*Settle {
+	if ClearTime(4) != out(4)+Settle || ClearTime(2) != out(2)+Settle || ClearTime(3) != out(3)+Settle || ClearTime(1) != out(1)+Settle {
 		t.Fatal("the clear times")
 	}
 }

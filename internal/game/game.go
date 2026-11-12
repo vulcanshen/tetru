@@ -28,15 +28,15 @@ const (
 	// moving or turning it starts the wait again, LockResets times at most.
 	LockDelay  = 500 * time.Millisecond
 	LockResets = 15
-	// Flash, Slide, Stagger and Settle are the clear (user, 2026-11-11):
-	// the full rows go white for Flash, then slide out to the left, white,
-	// the bottom one first, each taking Slide and the one over it starting
-	// Stagger after it; then the stack over them comes down a row every
-	// Settle till the rows they left are filled. About half what they were
-	// (user, 2026-11-11: too slow, not smooth): a row 0.32 s. How the rows
-	// go is by how many there are (user, 2026-11-12), in the same time:
-	// one slides out, two burst, three crumble (Along) and four split, the
-	// stack over two or four coming down at once, Settle after (Whole).
+	// Flash, Slide, Stagger and Settle are the clear: the full rows go
+	// white for Flash, then go, each taking Slide and the one over it
+	// starting Stagger after it (Slid), or all of them together (Along);
+	// Settle after they have gone, the stack over them comes down at once
+	// (user, 2026-11-12: all the same way, a flash, the rows going, the
+	// stack down whole). How they go is by how many they are: one fades,
+	// two burst, three crumble, four burst in the middle and split,
+	// crumbling (user, 2026-11-12). About half what the first clear took
+	// (user, 2026-11-11: too slow, not smooth): a row 0.32 s.
 	Flash   = 100 * time.Millisecond
 	Slide   = 200 * time.Millisecond
 	Stagger = 50 * time.Millisecond
@@ -127,18 +127,9 @@ const Kept = 8
 
 // ClearTime is how long a clear of n rows takes, from the flash to the
 // stack down.
-func ClearTime(n int) time.Duration {
-	if Whole(n) {
-		return out(n) + Settle
-	}
-	return out(n) + time.Duration(n)*Settle
-}
+func ClearTime(n int) time.Duration { return out(n) + Settle }
 
-// Whole says whether the stack over n rows going comes down at once, not a
-// row at a time: over two and four (user, 2026-11-12).
-func Whole(n int) bool { return n == 2 || n >= 4 }
-
-// out is how long n rows going take to have slid out.
+// out is how long n rows going take to have gone.
 func out(n int) time.Duration { return Flash + Slide + time.Duration(n-1)*Stagger }
 
 // Game is one game in progress, or ended.
@@ -435,18 +426,11 @@ func (g *Game) clearRows(full []int) {
 	g.bring()
 }
 
-// settle steps the clear on to fx: once the rows have slid out, the stack
-// over the lowest row left empty comes down a row every Settle (or all at
-// once, Settle after: Whole); with none left the clear ends, and the piece
+// settle steps the clear on to fx: Settle after the rows have gone, the
+// stack over them comes down at once; then the clear ends, and the piece
 // waiting falls, or, with no room, it is the end.
 func (g *Game) settle() {
-	gone := out(len(g.Going))
-	if Whole(len(g.Going)) {
-		for len(g.gaps) > 0 && g.fx >= gone+Settle {
-			g.gaps = closeGap(g.cells, g.gaps)
-		}
-	}
-	for n := len(g.Going) - len(g.gaps); len(g.gaps) > 0 && g.fx >= gone+time.Duration(n+1)*Settle; n++ {
+	for len(g.gaps) > 0 && g.fx >= ClearTime(len(g.Going)) {
 		g.gaps = closeGap(g.cells, g.gaps)
 	}
 	if len(g.gaps) == 0 {
@@ -457,10 +441,10 @@ func (g *Game) settle() {
 	}
 }
 
-// Slid is how far row i of Going has slid out to the left, 0 to 1, after
-// the flash: at an even speed, so that a frame moves it as far as the
-// next does (user, 2026-11-11: not smooth); speeding up, it went a few
-// pixels a frame at the end.
+// Slid is how far row i of Going is on its way, 0 to 1, after the flash
+// and Stagger for each row under it: at an even speed, so that a frame
+// moves it as far as the next does (user, 2026-11-11: not smooth);
+// speeding up, it went a few pixels a frame at the end.
 func (g *Game) Slid(i int) float64 {
 	k := g.fx - Flash - time.Duration(i)*Stagger
 	if k <= 0 {
