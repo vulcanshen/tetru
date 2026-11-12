@@ -64,6 +64,7 @@
 - （2026-11-12）4 排看不出碎掉的效果。原來的碎掉其實是散掉；以為是 nf-fa-square 碎掉，找找有沒有碎掉的 icon，可以換 icon（例：nf-md-dots_square，但不一定適合）。散開的效果也要有，只是多添加換 icon。選了：nf-fa-square → nf-md-view_grid → nf-md-grain → nf-md-blur → 消失。
 - （2026-11-12）restart 沒有進排行榜不需要跳 info 了。
 - （2026-11-12）碎掉都移除 nf-md-view_grid 這個階段（3 排、4 排都是：方塊 → nf-md-grain → nf-md-blur → 消失）。
+- （2026-11-12）4 排中間炸開也拉長一點點。
 
 ## 關卡
 

@@ -321,11 +321,13 @@ func clearRows(out []string, g *game.Game, sc *scene, w, k, x1, left, top, right
 			s := max(0, (f-0.6)/0.4)
 			offL, offR := int(s*float64(lead+half)+0.5), int(s*float64(right+half)+0.5)
 			for x := range game.Cols {
-				// The four in the middle burst first, half the others
-				// crumble after them; the rest go out whole.
+				// The four in the middle burst first, over a quarter of
+				// the row's time (user, 2026-11-12: a little longer, the
+				// shapes seen), half the others crumble after them; the
+				// rest go out whole.
 				shape := uint8(0)
 				if d := max(2*x-(game.Cols-1), game.Cols-1-2*x); d <= 3 {
-					shape = breaking(f, 0.12+0.04*float64(d-1)/2, 0.12)
+					shape = breaking(f, 0.25+0.04*float64(d-1)/2, 0.25)
 				} else if c := crumble[(x+5*i)%game.Cols]; c < game.Cols/2 {
 					shape = breaking(f, 0.4+0.2*float64(c)/float64(game.Cols/2), 0.35)
 				}
