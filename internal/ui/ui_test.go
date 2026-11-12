@@ -1160,7 +1160,7 @@ func TestClearsByHowManyRows(t *testing.T) {
 		t.Fatal("four rows do not go white first")
 	}
 	// All four at once break to grains where they are, every block, then
-	// burst in the middle, then the grains left go out (user, 2026-11-12).
+	// all to dust, then the halves go out (user, 2026-11-12).
 	span := game.ClearTime(4) - game.Settle - game.Flash
 	g.Advance(game.Flash + span/4)
 	for _, y := range []int{game.Rows - 1, game.Rows - 4} {
@@ -1169,12 +1169,14 @@ func TestClearsByHowManyRows(t *testing.T) {
 		}
 	}
 	g.Advance(span / 4)
-	if r := bottom(); !strings.Contains(glyphs(r, 22, 30), broken[1]) || goesRight(r) {
-		t.Fatalf("four rows do not burst in the middle next, where they are: %q", r)
+	for _, y := range []int{game.Rows - 1, game.Rows - 4} {
+		if r := tt.gameP.Body.Draw(78, 27, true)[1+y]; glyphs(r, 14, 38) != strings.Repeat(broken[1], game.Cols) || goesRight(r) {
+			t.Fatalf("four rows do not all go to dust next, where they are: %q", r)
+		}
 	}
 	g.Advance(span * 7 / 20)
-	if r := bottom(); !strings.Contains(r, white) || !goesRight(r) || pieceColoured(r) {
-		t.Fatalf("what is left of four rows does not go out, half to the right: %q", r)
+	if r := bottom(); !strings.Contains(r, white) || !strings.Contains(r, broken[1]) || !goesRight(r) || pieceColoured(r) {
+		t.Fatalf("the dust of four rows does not go out, half to the right: %q", r)
 	}
 }
 
