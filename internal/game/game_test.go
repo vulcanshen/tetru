@@ -235,16 +235,16 @@ func TestClearSlidesThenTheStackComesDown(t *testing.T) {
 	}
 	at := g.At
 	g.Advance(Flash)
-	if g.Slid(0) != 0 {
-		t.Fatal("the row slides before it is white a while")
+	if g.Along() != 0 {
+		t.Fatal("the rows go before they are white a while")
 	}
 	g.Advance(Stagger)
-	if g.Slid(0) <= 0 || g.Slid(1) != 0 {
-		t.Fatal("the bottom row does not slide first")
+	if a := g.Along(); a <= 0 || a >= 1 {
+		t.Fatalf("the rows are not on their way, along %v", a)
 	}
 	g.Advance(Slide)
-	if g.Slid(0) != 1 || g.Slid(1) != 1 || g.Cell(0, Rows-2) == 0 {
-		t.Fatal("the rows have not slid out, or the stack came down first")
+	if g.Along() != 1 || g.Cell(0, Rows-2) == 0 {
+		t.Fatal("the rows have not gone out, or the stack came down first")
 	}
 	g.Advance(Settle - time.Millisecond)
 	if g.Cell(0, Rows-2) == 0 || g.Live() {

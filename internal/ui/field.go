@@ -253,11 +253,11 @@ func breaking(t, gone, span float64) uint8 {
 //   - two burst from their middle, ring by ring outwards;
 //   - three crumble, a block at a time in no order, each breaking (broken)
 //     before it is gone (user, 2026-11-12);
-//   - four burst in the middle and crumble where they are, breaking, about
-//     half of each row gone, then what is left of the halves goes out to
-//     either side, the right one as far as the blank there (user,
-//     2026-11-12: crumbling as they flew, it could not be seen); the bottom
-//     row first.
+//   - four, all together, crumble where they are, breaking, about half of
+//     each row gone, then burst in the middle, then what is left of the
+//     halves goes out to either side, the right one as far as the blank
+//     there (user, 2026-11-12: not a row at a time; crumbling, bursting,
+//     going out, in that order).
 //
 // The ground shows where they were.
 func clearRows(out []string, g *game.Game, sc *scene, w, k, x1, left, top, right int) {
@@ -314,22 +314,21 @@ func clearRows(out []string, g *game.Game, sc *scene, w, k, x1, left, top, right
 					block(x, inkWhite, s)
 				}
 			}
-		default: // burst in the middle and crumble, then what is left splits
-			f := g.Slid(i)
-			// The halves go out over the last 40% of the row's time, once
-			// the others have broken where they were.
-			s := max(0, (f-0.6)/0.4)
+		default: // crumble, burst in the middle, then what is left splits
+			// The halves go out over the last 40%, once the others have
+			// broken where they were.
+			s := max(0, (p-0.6)/0.4)
 			offL, offR := int(s*float64(lead+half)+0.5), int(s*float64(right+half)+0.5)
 			for x := range game.Cols {
-				// The four in the middle burst first, over a quarter of
-				// the row's time (user, 2026-11-12: a little longer, the
-				// shapes seen), half the others crumble after them; the
-				// rest go out whole.
+				// Half the others crumble first, in the first 37%; then
+				// the four in the middle burst, the two inmost first, over
+				// 15% each (user, 2026-11-12: about 50 ms, the shapes
+				// seen); the rest go out whole.
 				shape := uint8(0)
 				if d := max(2*x-(game.Cols-1), game.Cols-1-2*x); d <= 3 {
-					shape = breaking(f, 0.25+0.04*float64(d-1)/2, 0.25)
+					shape = breaking(p, 0.55+0.05*float64(d-1)/2, 0.15)
 				} else if c := crumble[(x+5*i)%game.Cols]; c < game.Cols/2 {
-					shape = breaking(f, 0.4+0.2*float64(c)/float64(game.Cols/2), 0.35)
+					shape = breaking(p, 0.2+0.2*float64(c)/float64(game.Cols/2), 0.2)
 				}
 				if shape == shattered {
 					continue

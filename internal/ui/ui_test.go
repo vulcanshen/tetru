@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"slices"
 	"strconv"
 	"strings"
 	"testing"
@@ -1155,13 +1156,33 @@ func TestClearsByHowManyRows(t *testing.T) {
 	if !strings.Contains(bottom(), white) {
 		t.Fatal("four rows do not go white first")
 	}
-	// Burst and crumbled where they are first (user, 2026-11-12: crumbling
-	// as they flew, it could not be seen), then what is left goes out.
-	g.Advance(game.Flash + game.Slide*2/5)
-	if r := bottom(); !strings.Contains(r, white) || !strings.Contains(r, ground) || !breaks(r) || goesRight(r) {
-		t.Fatalf("four rows do not burst and crumble where they are first, breaking: %q", r)
+	// All four at once crumble where they are, then burst in the middle,
+	// then what is left goes out (user, 2026-11-12).
+	// middle is the glyphs of the four blocks in the middle of the field.
+	middle := func(r string) []string {
+		rs := []rune(plain.ReplaceAllString(r, ""))
+		var at []string
+		for i, c := range rs {
+			if col := terminu.Width(string(rs[:i])); col >= 22 && col < 30 && c != ' ' {
+				at = append(at, string(c))
+			}
+		}
+		return at
 	}
-	g.Advance(game.Slide * 2 / 5)
+	span := game.ClearTime(4) - game.Settle - game.Flash
+	g.Advance(game.Flash + span/4)
+	if r := bottom(); !strings.Contains(r, white) || !strings.Contains(r, ground) || !breaks(r) || goesRight(r) ||
+		strings.Join(middle(r), "") != strings.Repeat(pixelGlyph, 4) {
+		t.Fatalf("four rows do not crumble where they are first, the middle whole: %q", r)
+	}
+	if !breaks(tt.gameP.Body.Draw(78, 27, true)[1+game.Rows-4]) {
+		t.Fatal("the top row of four does not crumble with the bottom one")
+	}
+	g.Advance(span / 4)
+	if r := bottom(); !slices.ContainsFunc(middle(r), func(s string) bool { return slices.Contains(broken[:], s) }) || goesRight(r) {
+		t.Fatalf("four rows do not burst in the middle next, where they are: %q", r)
+	}
+	g.Advance(span * 7 / 20)
 	if r := bottom(); !strings.Contains(r, white) || !goesRight(r) || pieceColoured(r) {
 		t.Fatalf("what is left of four rows does not go out, half to the right: %q", r)
 	}

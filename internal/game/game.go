@@ -29,13 +29,13 @@ const (
 	LockDelay  = 500 * time.Millisecond
 	LockResets = 15
 	// Flash, Slide, Stagger and Settle are the clear: the full rows go
-	// white for Flash, then go, each taking Slide and the one over it
-	// starting Stagger after it (Slid), or all of them together (Along);
-	// Settle after they have gone, the stack over them comes down at once
-	// (user, 2026-11-12: all the same way, a flash, the rows going, the
-	// stack down whole). How they go is by how many they are: one fades,
-	// two burst, three crumble, four burst in the middle and split,
-	// crumbling (user, 2026-11-12). About half what the first clear took
+	// white for Flash, then go, all of them together (Along), over Slide
+	// and Stagger more for each row past the first; Settle after they have
+	// gone, the stack over them comes down at once (user, 2026-11-12: all
+	// the same way, a flash, the rows going, the stack down whole). How
+	// they go is by how many they are: one fades, two burst, three
+	// crumble, four crumble, burst in the middle and split (user,
+	// 2026-11-12: all four at once). About half what the first clear took
 	// (user, 2026-11-11: too slow, not smooth): a row 0.32 s.
 	Flash   = 100 * time.Millisecond
 	Slide   = 200 * time.Millisecond
@@ -441,23 +441,10 @@ func (g *Game) settle() {
 	}
 }
 
-// Slid is how far row i of Going is on its way, 0 to 1, after the flash
-// and Stagger for each row under it: at an even speed, so that a frame
-// moves it as far as the next does (user, 2026-11-11: not smooth);
-// speeding up, it went a few pixels a frame at the end.
-func (g *Game) Slid(i int) float64 {
-	k := g.fx - Flash - time.Duration(i)*Stagger
-	if k <= 0 {
-		return 0
-	}
-	if k >= Slide {
-		return 1
-	}
-	return float64(k) / float64(Slide)
-}
-
 // Along is how far the rows going are on their way out, all of them
-// together, 0 to 1, after the flash: two bursting, three crumbling.
+// together, 0 to 1, after the flash: at an even speed, so that a frame
+// moves what goes out as far as the next does (user, 2026-11-11: not
+// smooth; speeding up, it went a few pixels a frame at the end).
 func (g *Game) Along() float64 {
 	n := len(g.Going)
 	if n == 0 {
