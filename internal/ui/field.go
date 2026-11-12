@@ -40,20 +40,19 @@ var pixelGlyph = string(rune(0xf0c8))
 const (
 	inkNone uint8 = iota
 	inkGround
-	inkPiece                    // inkPiece + p is piece p's
-	inkWhite     = inkPiece + 7 // game.Kept's too: inkPiece + game.Kept - 1
-	inkFrame     = inkWhite + 1
-	inkRosewater = inkFrame + 1
-	inkFade      = inkRosewater + 1 // inkFade + f, f 0 to 2: rosewater a quarter, a half, three quarters to the ground
+	inkPiece                // inkPiece + p is piece p's
+	inkWhite = inkPiece + 7 // game.Kept's too: inkPiece + game.Kept - 1
+	inkFrame = inkWhite + 1
+	inkFade  = inkFrame + 1 // inkFade + f, f 0 to 2: white a quarter, a half, three quarters to the ground
 )
 
 // inks are the colours of the inks, locku's: the ground surface0, the
 // pieces in the colours they usually have in catppuccin-mocha's (the long
 // one sky, the square yellow, T mauve, S green, Z red, J blue, L peach), a
-// block of a game saved and taken up white (user, 2026-11-11), the curtain
-// overlay1; the rows going rosewater, a colour no piece has, however many
-// they are (user, 2026-11-12: with the ways they go, the colours are
-// nothing much; all rosewater), and three steps of it fading to the ground.
+// block of a game saved and taken up and the rows going white, a colour no
+// piece has (user, 2026-11-11; 2026-11-12: the rows going all one colour,
+// rosewater, then white), the curtain overlay1, and three steps of white
+// fading to the ground.
 var inks = []terminu.Color{
 	{},
 	terminu.Hex("#313244"),
@@ -61,8 +60,7 @@ var inks = []terminu.Color{
 	terminu.Hex("#f38ba8"), terminu.Hex("#89b4fa"), terminu.Hex("#fab387"),
 	terminu.Hex("#ffffff"),
 	terminu.Hex("#7f849c"),
-	terminu.Hex("#f5e0dc"),
-	terminu.Hex("#c4b5b6"), terminu.Hex("#938990"), terminu.Hex("#625e6a"),
+	terminu.Hex("#ccccd0"), terminu.Hex("#9899a2"), terminu.Hex("#656573"),
 }
 
 // field is the PLAYGROUND panel's body: the field of t's game and, at its right,
@@ -228,17 +226,15 @@ var crumble = [game.Cols]int{7, 2, 10, 4, 0, 9, 5, 11, 1, 6, 3, 8}
 // drawn from its column 0 to its column x1, every pixel k × k glyphs, at
 // column left and line top, with right glyphs blank right of the field to
 // go into. However many they are, they flash white, go, and the stack
-// comes down whole (user, 2026-11-12: one way for all); they go in
-// Rosewater (user, 2026-11-12), by how many they are, in about the same
-// time:
+// comes down whole (user, 2026-11-12: one way for all); they go white
+// (user, 2026-11-12), by how many they are, in about the same time:
 //   - one fades away where it is;
-//   - two burst from their middle, ring by ring outwards, white as each
-//     goes;
-//   - three crumble, a block at a time in no order, each going white
-//     before it is gone;
-//   - four burst in the middle, the halves going out to either side, the
-//     right one as far as the blank there, crumbling as they go; the
-//     bottom row first.
+//   - two burst from their middle, ring by ring outwards;
+//   - three crumble, a block at a time in no order;
+//   - four burst in the middle and crumble where they are, about half of
+//     each row gone, then what is left of the halves goes out to either
+//     side, the right one as far as the blank there (user, 2026-11-12:
+//     crumbling as they flew, it could not be seen); the bottom row first.
 //
 // The ground shows where they were.
 func clearRows(out []string, g *game.Game, sc *scene, w, k, x1, left, top, right int) {
@@ -275,47 +271,39 @@ func clearRows(out []string, g *game.Game, sc *scene, w, k, x1, left, top, right
 		case n == 1: // fade
 			if step := int(p * 4); step < 4 {
 				for x := range game.Cols {
-					block(x, []uint8{inkRosewater, inkFade, inkFade + 1, inkFade + 2}[step])
+					block(x, []uint8{inkWhite, inkFade, inkFade + 1, inkFade + 2}[step])
 				}
 			}
 		case n == 2: // burst
 			for x := range game.Cols {
 				// The ring: twice the steps from the middle of the rows.
 				d := max(2*x-(game.Cols-1), game.Cols-1-2*x) + max(2*i-(n-1), n-1-2*i)
-				at := float64(d) / float64(game.Cols-1+n-1) * 0.85
-				switch {
-				case p <= at:
-					block(x, inkRosewater)
-				case p < at+0.15:
+				if p < float64(d)/float64(game.Cols-1+n-1)*0.85+0.15 {
 					block(x, inkWhite)
 				}
 			}
 		case n == 3: // crumble
 			for x := range game.Cols {
-				at := float64(crumble[(x+5*i)%game.Cols]) / game.Cols * 0.85
-				switch {
-				case p <= at:
-					block(x, inkRosewater)
-				case p < at+0.15:
+				if p < float64(crumble[(x+5*i)%game.Cols])/game.Cols*0.85+0.15 {
 					block(x, inkWhite)
 				}
 			}
-		default: // burst in the middle, split, crumbling
+		default: // burst in the middle and crumble, then what is left splits
 			f := g.Slid(i)
-			offL, offR := int(f*float64(lead+half)+0.5), int(f*float64(right+half)+0.5)
+			// The halves go out over the second half of the row's time.
+			s := max(0, (f-0.45)/0.55)
+			offL, offR := int(s*float64(lead+half)+0.5), int(s*float64(right+half)+0.5)
 			for x := range game.Cols {
-				// The four in the middle go first, white; the others as
-				// they crumble.
-				gone := 0.4 + 0.55*float64(crumble[(x+5*i)%game.Cols])/game.Cols
+				// The four in the middle burst first, half the others
+				// crumble with them; the rest go out.
+				gone := 2.0
 				if d := max(2*x-(game.Cols-1), game.Cols-1-2*x); d <= 3 {
-					gone = 0.2 + 0.05*float64(d-1)/2
+					gone = 0.1 + 0.05*float64(d-1)/2
+				} else if c := crumble[(x+5*i)%game.Cols]; c < game.Cols/2 {
+					gone = 0.15 + 0.3*float64(c)/float64(game.Cols/2)
 				}
-				c := uint8(inkRosewater)
-				switch {
-				case f >= gone:
+				if f >= gone {
 					continue
-				case f >= gone-0.12:
-					c = inkWhite
 				}
 				u := x*k + offR
 				if x < game.Cols/2 {
@@ -325,7 +313,7 @@ func clearRows(out []string, g *game.Game, sc *scene, w, k, x1, left, top, right
 					if x >= game.Cols/2 && u+j >= strip+right {
 						break
 					}
-					put(u+j, c)
+					put(u+j, inkWhite)
 				}
 			}
 		}

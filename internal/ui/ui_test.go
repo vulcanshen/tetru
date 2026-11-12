@@ -770,9 +770,9 @@ func TestOneRowFlashesFadesThenTheStackComesDown(t *testing.T) {
 		return false
 	}
 	white := "255;255;255"
-	fading := []string{"245;224;220", "196;181;182", "147;137;144", "98;94;106"} // Rosewater to the ground
+	fading := []string{"204;204;208", "152;153;162", "101;101;115"} // white to the ground
 	// A frame at a time, wherever the frames fall: white in place, then
-	// Rosewater fading where it is, then gone with the stack not down yet,
+	// fading where it is, then gone with the stack not down yet,
 	// then the stack down (user, 2026-11-12: a flash, gone, down).
 	stage := 0
 	for range (game.ClearTime(1) + 100*time.Millisecond) / clearFrame {
@@ -1101,7 +1101,6 @@ func TestClearsByHowManyRows(t *testing.T) {
 	plain := regexp.MustCompile("\x1b\\[[0-9;]*m")
 	const white, ground = "255;255;255", "49;50;68"
 
-	const rosewater = "245;224;220"
 	// goesRight says whether a block is right of the field, before KEYS.
 	goesRight := func(r string) bool {
 		rs := []rune(plain.ReplaceAllString(r, ""))
@@ -1129,8 +1128,8 @@ func TestClearsByHowManyRows(t *testing.T) {
 		t.Fatal("two rows do not go white first")
 	}
 	g.Advance(game.Flash + (game.ClearTime(2)-game.Flash)/2)
-	if r := bottom(); !strings.Contains(r, rosewater) || !strings.Contains(r, ground) || pieceColoured(r) {
-		t.Fatalf("two rows do not burst in Rosewater alone, the middle gone: %q", r)
+	if r := bottom(); !strings.Contains(r, white) || !strings.Contains(r, ground) || pieceColoured(r) {
+		t.Fatalf("two rows do not burst in white alone, the middle gone: %q", r)
 	}
 
 	g = clearOf(t, tt, 3)
@@ -1138,16 +1137,22 @@ func TestClearsByHowManyRows(t *testing.T) {
 		t.Fatal("three rows do not go white first")
 	}
 	g.Advance(game.Flash + (game.ClearTime(3)-game.Flash)/2)
-	if r := bottom(); !strings.Contains(r, rosewater) || !strings.Contains(r, white) || !strings.Contains(r, ground) {
-		t.Fatalf("three rows half way do not crumble, some blocks Rosewater, some white, some gone: %q", r)
+	if r := bottom(); !strings.Contains(r, white) || !strings.Contains(r, ground) {
+		t.Fatalf("three rows half way do not crumble, some blocks white, some gone: %q", r)
 	}
 
 	g = clearOf(t, tt, 4)
 	if !strings.Contains(bottom(), white) {
 		t.Fatal("four rows do not go white first")
 	}
-	g.Advance(game.Flash + game.Slide/2)
-	if r := bottom(); !strings.Contains(r, rosewater) || !strings.Contains(r, white) || !goesRight(r) || pieceColoured(r) {
-		t.Fatalf("four rows do not split in Rosewater, half going right, crumbling: %q", r)
+	// Burst and crumbled where they are first (user, 2026-11-12: crumbling
+	// as they flew, it could not be seen), then what is left goes out.
+	g.Advance(game.Flash + game.Slide*2/5)
+	if r := bottom(); !strings.Contains(r, white) || !strings.Contains(r, ground) || goesRight(r) {
+		t.Fatalf("four rows do not burst and crumble where they are first: %q", r)
+	}
+	g.Advance(game.Slide * 2 / 5)
+	if r := bottom(); !strings.Contains(r, white) || !goesRight(r) || pieceColoured(r) {
+		t.Fatalf("what is left of four rows does not go out, half to the right: %q", r)
 	}
 }
