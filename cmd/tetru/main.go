@@ -28,7 +28,7 @@ func main() {
 	}
 	t := ui.NewTetru()
 	err := t.App.Run()
-	t.Finish() // a game still going keeps its score: Ctrl-C twice, the terminal closed (Run returns on SIGHUP)
+	t.Finish() // a game still going is kept for the next start: Ctrl-C twice, the terminal closed (Run returns on SIGHUP)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "tetru:", err)
 		os.Exit(1)

@@ -341,7 +341,7 @@ func TestTheGameStopsUnderAPopup(t *testing.T) {
 	tt, d := open(t, 60, 32)
 	play(d)
 	d.Press("Space")
-	for _, s := range []string{"GAMING MODE", "[r]estart", "[s]ave"} {
+	for _, s := range []string{"GAMING MODE", "[r]estart", "[q]uit"} {
 		if !d.Has(s) {
 			t.Fatalf("the Gaming mode's Space menu has no %q", s)
 		}
@@ -384,7 +384,7 @@ func TestSpaceMenuRunsRestartAndTheKeysAreInHelp(t *testing.T) {
 	tt, d := open(t, 60, 32)
 	play(d)
 	d.Press("?")
-	for _, s := range []string{"move left", "move right", "down a row", "rotate left", "rotate right", "drop", "restart", "save"} {
+	for _, s := range []string{"move left", "move right", "down a row", "rotate left", "rotate right", "drop", "restart", "quit"} {
 		if !d.Has(s) {
 			t.Fatalf("the Gaming mode's ? has no %q", s)
 		}
@@ -619,12 +619,8 @@ func TestNoPointsNotKept(t *testing.T) {
 	}
 	play(d)
 	d.Press("q")
-	if d.Quit() || !d.Has("Quit tetru?") || !d.Has("No points so far, so nothing is kept.") {
-		t.Fatal("q with a game of no points going did not confirm")
-	}
-	d.Press("Enter")
 	if !d.Quit() || len(kept(t)) != 0 {
-		t.Fatal("Enter did not leave, or kept a game of no points")
+		t.Fatal("q with a game of no points going did not leave, or kept it in the rank")
 	}
 }
 
@@ -676,30 +672,73 @@ func TestNewGameAsksWhoPlayed(t *testing.T) {
 	}
 }
 
-func TestQuitWithAGameConfirmsAndKeepsAnon(t *testing.T) {
+// stashed is whether there is a game saved in the data directory.
+func stashed() bool {
+	_, err := os.Stat(filepath.Join(os.Getenv("TETRU__DATA"), "game.yaml"))
+	return err == nil
+}
+
+func TestQuitKeepsTheGameGoing(t *testing.T) {
 	tt, d := open(t, 60, 32)
 	play(d)
 	d.Press("j")
 	d.Press("q")
-	if !d.Has("QUIT") || !d.Has("Quit tetru?") || !d.Has("The score so far, 1, is kept for ANON.") || !d.Has("Enter:quit") || d.Has("who played") {
-		t.Fatal("q with a game going did not confirm, saying the score is kept for ANON")
+	// Nobody asked, nothing in the rank: the game goes on next time (user,
+	// 2026-11-12).
+	if !d.Quit() || len(kept(t)) != 0 || !stashed() || d.Has("Quit tetru?") {
+		t.Fatal("q with a game going did not leave at once, keeping the game and no score")
 	}
-	y := tt.g.At.Y
-	d.Advance(3 * time.Second)
-	if tt.g.At.Y != y {
-		t.Fatal("the game went on under the confirm")
+	if !tt.saved {
+		t.Fatal("the game kept going would be kept in the rank too")
+	}
+}
+
+func TestQuitUnderAPopupAsksFirst(t *testing.T) {
+	_, d := open(t, 60, 32)
+	play(d)
+	d.Press("j")
+	d.Press("Esc") // paused, RESUME open
+	d.Press("q")
+	if d.Quit() || !d.Has("Quit tetru?") || stashed() {
+		t.Fatal("q under a popup did not ask first (tdp K9), or saved before the answer")
 	}
 	d.Press("Esc")
-	if d.Quit() || !tt.playing() || len(kept(t)) != 0 {
-		t.Fatal("Esc on the confirm did not go back to the game")
+	if d.Quit() || stashed() || !d.Has("RESUME") {
+		t.Fatal("Esc on Quit tetru? did not go back, or saved the game all the same")
 	}
 	d.Press("q")
 	d.Press("Enter")
-	if all := kept(t); len(all) != 1 || all[0].Name != "ANON" || all[0].Score != 1 {
-		t.Fatalf("quitting kept %+v", all)
+	if !d.Quit() || !stashed() || len(kept(t)) != 0 {
+		t.Fatal("Enter on Quit tetru? did not leave keeping the game")
 	}
-	if !d.Quit() {
-		t.Fatal("Enter did not leave")
+}
+
+func TestQuitFromTheGamingMenu(t *testing.T) {
+	_, d := open(t, 60, 32)
+	play(d)
+	d.Press("Space")
+	d.Press("j") // Restart, then Quit
+	d.Press("Enter")
+	if !d.Quit() || !stashed() {
+		t.Fatal("Quit in the Gaming mode's Space menu did not leave keeping the game")
+	}
+}
+
+func TestQuitThatCantSaveSaysSo(t *testing.T) {
+	tt, d := open(t, 60, 32)
+	// game.yaml a directory: the game can't be written there.
+	if err := os.Mkdir(filepath.Join(os.Getenv("TETRU__DATA"), "game.yaml"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	play(d)
+	d.Press("j")
+	d.Press("q")
+	if d.Quit() || !d.Has("CAN'T SAVE THE GAME") || !d.Has("[Ctrl-C] twice quits all the same") {
+		t.Fatal("a game that could not be saved quit, or nothing said so")
+	}
+	tt.Finish() // Ctrl-C twice: what can't go on next time keeps its score
+	if all := kept(t); len(all) != 1 || all[0].Name != "ANON" || all[0].Score != 1 {
+		t.Fatalf("Finish with no game saved kept %+v", all)
 	}
 }
 
@@ -717,8 +756,8 @@ func TestFinishKeepsTheGameGoing(t *testing.T) {
 	d.Press("Enter")
 	tt.Finish() // what main does after Run: Ctrl-C twice, the terminal closed
 	tt.Finish()
-	if all := kept(t); len(all) != 1 || all[0].Score != tt.g.Score || all[0].Name != "ANON" {
-		t.Fatalf("kept %+v", all)
+	if len(kept(t)) != 0 || !stashed() {
+		t.Fatalf("Finish did not keep the game going for the next start: kept %+v", kept(t))
 	}
 }
 
@@ -835,7 +874,7 @@ func TestRestartFromThePlayModesSpaceMenu(t *testing.T) {
 	}
 }
 
-func TestSaveQuitsAndTheNextStartGoesOn(t *testing.T) {
+func TestQuitKeepsTheGameAndTheNextStartGoesOn(t *testing.T) {
 	dir := t.TempDir()
 	t.Setenv("TETRU__DATA", dir)
 	t.Setenv("TETRU__CONFIG", t.TempDir())
@@ -846,14 +885,13 @@ func TestSaveQuitsAndTheNextStartGoesOn(t *testing.T) {
 	tt.g.Put(0, game.Rows-1, 3)
 	tt.g.Put(1, game.Rows-1, 4)
 	level, lines, score := tt.g.Level, tt.g.Lines, tt.g.Score
-	d.Press("Space")
-	d.Press("s")
+	d.Press("q")
 	if !d.Quit() {
-		t.Fatal("Save did not quit")
+		t.Fatal("q did not quit")
 	}
 	tt.Finish()
 	if len(kept(t)) != 0 {
-		t.Fatal("a game saved was kept in the rank")
+		t.Fatal("a game kept going was kept in the rank")
 	}
 	path := filepath.Join(dir, "game.yaml")
 	if _, err := os.Stat(path); err != nil {
@@ -889,20 +927,19 @@ func TestSaveQuitsAndTheNextStartGoesOn(t *testing.T) {
 	}
 }
 
-func TestSaveFromThePanelWhenPaused(t *testing.T) {
+func TestNoSaveToPress(t *testing.T) {
 	tt, d := open(t, 80, 32)
-	if a := tt.gameP.Actions[3]; a.Key != "s" || !a.Disabled() {
-		t.Fatal("Save is not PLAYGROUND's, disabled with no game")
+	for _, a := range tt.gameP.Actions {
+		if a.Label == "Save" || a.Key == "s" {
+			t.Fatal("PLAYGROUND has a Save")
+		}
 	}
 	play(d)
-	d.Press("Esc")
-	d.Press("Esc") // the popup: paused
+	d.Press("j")
+	// A stray s mid-game does nothing (user, 2026-11-12: it quit before).
 	d.Press("s")
-	if !d.Quit() {
-		t.Fatal("s on PLAYGROUND, paused, did not save and quit")
-	}
-	if _, err := os.Stat(filepath.Join(os.Getenv("TETRU__DATA"), "game.yaml")); err != nil {
-		t.Fatal("no game saved")
+	if d.Quit() || stashed() || !tt.playing() {
+		t.Fatal("s mid-game saved or quit")
 	}
 }
 
@@ -975,8 +1012,8 @@ func TestPopupsOverTheGameAtEveryWidth(t *testing.T) {
 			d.Press("Space")
 			d.Press("Esc")
 			d.Press("?")
+			d.Press("q") // over ?: Quit tetru? first (tdp K9)
 			d.Press("Esc")
-			d.Press("q")
 			d.Press("Esc")
 			d.Press("Esc") // pauses: the popup
 			d.Press("Esc")

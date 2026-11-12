@@ -1,4 +1,4 @@
-spec: 46
+spec: 47
 tasks:
   - id: 1
     accepted: true
@@ -7,10 +7,11 @@ tasks:
   - id: 3
     accepted: true
   - id: 4
-    accepted: true
+    accepted: false
+    reason: 違反：Gaming 的 footer 寫了 q:quit；tdp screen.2 寫模式的 footer 是「Space:menu ?:help、模式自己的鍵、最後 Esc:<離開的動詞>」（screen-8），q 是 K11 表上的 core key。使用者 2026-11-12 要把 q 當成 Gaming 自己的鍵寫進 footer（做的事照 K9 不變），回報 tdp #13
   - id: 5
     accepted: false
-    reason: tdp 不清楚：Esc 離開 Gaming 時接著開 RESUME confirm；tdp K11 的表寫 Esc「離開模式（K4），回到進入前的狀態」，K4 寫「沒有 popup 就退出當前模式」，沒寫離開模式時能不能接著開一個 popup（回報 tdp #9；使用者 2026-11-12 選 A：app 可以自行決定，tdp 本機改了、還沒發版，tetru 照現在的做法就合新條文）
+    reason: 違反：footer 的 q:quit，同 task 4（回報 tdp #13）；tdp 不清楚：Esc 離開 Gaming 時接著開 RESUME confirm，v1.2.4 的 K11、K4 沒寫離開模式時能不能開 popup（回報 tdp #9；使用者 2026-11-12 選 A：app 可以自行決定，tdp 本機改了、還沒發版，tetru 照現在的做法就合新條文）
   - id: 6
     accepted: true
   - id: 7
@@ -24,8 +25,7 @@ tasks:
   - id: 11
     accepted: true
   - id: 12
-    accepted: false
-    reason: tdp 不清楚：docs/social-preview.png（GitHub 的 social preview）在 tdp 與 harness 找不到根據；harness project.3 的 docs/ 只列 icon.svg 與 demo gif，放行的是圖上沒有的頂層目錄與檔案（回報 harness #1）
+    accepted: true
   - id: 13
     accepted: true
   - id: 14
@@ -33,7 +33,6 @@ tasks:
   - id: 15
     accepted: true
   - id: 16
-    accepted: false
-    reason: tdp 不清楚：[s]ave 存好就離開 app；tdp K9 只寫 q 與 Ctrl-C 進入離開流程，M4「離開 app 必須在這裡（K9）」，沒寫 panel 或模式的動作能不能直接離開，從 Space menu 選時要不要先問（回報 tdp #11）
+    accepted: true
   - id: 17
     accepted: true

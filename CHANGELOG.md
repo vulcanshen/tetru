@@ -15,6 +15,7 @@ The first version, a beta: a falling-block game for the terminal, for macOS, Lin
 - The best twenty scores kept in `~/.tetru/scores.yaml` and ranked on the Rank screen, the first three in yellow, green
   and sky blue. Who played is asked as a game ends, ANON when nobody says.
 - Every key you play with can be changed on the Settings screen. `Esc` pauses; `Space` shows what you can do.
-- Save keeps the game and quits; the next start goes on with it.
+- Quitting with a game going keeps it, nobody asked; the next start goes on with it, paused. Restart if you don't
+  want it.
 - As a beta it is a GitHub pre-release only: download it from the release. Homebrew, Scoop and the install scripts,
   which take the latest stable release, get the first stable one.

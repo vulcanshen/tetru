@@ -43,7 +43,7 @@ func TestUsedBySaysWhoHasAKey(t *testing.T) {
 		"Space": "it pauses and opens the Space menu",
 		"q":     "it quits",
 		"r":     "it restarts",
-		"s":     "it saves and quits",
+		"s":     "", // Save is no key: tetru saves as it quits
 		"a":     "",
 		"Enter": "", // its own key
 	} {
@@ -52,10 +52,10 @@ func TestUsedBySaysWhoHasAKey(t *testing.T) {
 		}
 	}
 	c := Choices()
-	if !slices.Contains(c, "a") || !slices.Contains(c, "k") || !slices.Contains(c, "Enter") || slices.Contains(c, "Tab") {
+	if !slices.Contains(c, "a") || !slices.Contains(c, "k") || !slices.Contains(c, "Enter") || !slices.Contains(c, "s") || slices.Contains(c, "Tab") {
 		t.Fatalf("choices %v", c)
 	}
-	for _, k := range []string{"Space", "q", "r", "s"} {
+	for _, k := range []string{"Space", "q", "r"} {
 		if slices.Contains(c, k) {
 			t.Fatalf("%s, a key the player can't have, is offered", k)
 		}

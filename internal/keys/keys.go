@@ -72,9 +72,10 @@ func (s Set) Keys(a Action) []string {
 }
 
 // core are the keys the Gaming mode keeps for itself, and what each does
-// there (tdp K11): the core keys, and Restart and Save (user, 2026-11-11).
+// there (tdp K11): the core keys, and Restart (user, 2026-11-11; Save, s,
+// gone 2026-11-12: tetru saves as it quits).
 // A key the player can't have, so not offered (Choices).
-var core = map[string]string{"Space": "it pauses and opens the Space menu", "q": "it quits", "r": "it restarts", "s": "it saves and quits"}
+var core = map[string]string{"Space": "it pauses and opens the Space menu", "q": "it quits", "r": "it restarts"}
 
 // Choices are the keys offered to the player for an action: the small
 // letters and Enter (tdp K11: which keys the player may choose is the

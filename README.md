@@ -25,12 +25,11 @@ with the player's name and the time, and ranks them, the best first.
   sixth level on, there is no hint.
 - **The best twenty kept**: the place, the name, the score and the time, the best first on the Rank screen, the first
   three in yellow, green and sky blue. You play first and say who played as the game ends; with no name it is ANON. A
-  game left half way is kept too: quitting, or closing the terminal, keeps the score it had then, for ANON. A game
-  whose score is not in the best twenty is not kept, and nobody is asked.
+  game whose score is not in the best twenty is not kept, and nobody is asked.
 - **Pause whenever**: `Esc` pauses and leaves the game where it is, a box saying the level, the rows and the score,
   `Enter` to go on. `Space` shows what you can do, the game waiting while it is open.
-- **Save and go on later**: Save keeps the game, its score and the blocks on the ground, and quits; the next start
-  goes on with it, the blocks on the ground white.
+- **Quit and go on later**: quitting with a game going keeps it, its score and the blocks on the ground, nobody
+  asked; the next start goes on with it, paused, the blocks on the ground white. Don't want it? Restart.
 
 ## Install
 
@@ -93,8 +92,8 @@ It installs to `%LOCALAPPDATA%\tetru` and adds it to your `PATH`.
 ### The first start
 
 tetru opens on the Tetru screen with the focus on the well, ready to play. It writes nothing until a game with points
-ends, then `~/.tetru/scores.yaml`, or until a key is changed, then `~/.config/tetru/config.yaml`, or until a game is
-saved, then `~/.tetru/game.yaml`. On Windows `~` is `%USERPROFILE%`.
+ends, then `~/.tetru/scores.yaml`, or until a key is changed, then `~/.config/tetru/config.yaml`, or until tetru quits
+with a game going, then `~/.tetru/game.yaml`. On Windows `~` is `%USERPROFILE%`.
 
 ### Uninstall
 
@@ -125,7 +124,7 @@ It asks before removing `~/.tetru`, your scores.
 3. `h` and `l` move the piece, `d` and `k` turn it, `j` takes it down a row and `Enter` drops it.
 4. Press `Space` to see what you can do, the game waiting; `Esc` closes the menu and the game goes on.
 5. When the game is over, type your name and press `Enter`, or just `Enter` for ANON: the score is kept.
-6. Press `q` to quit; with a game going tetru asks first, and keeps its score for ANON.
+6. Press `q` to quit; a game going is kept, and the next start goes on with it.
 
 ## Usage
 
@@ -154,12 +153,11 @@ Playing (the game in the `Gaming` mode), with the keys as they first are:
 | `k`, `↑` | Turn it right (clockwise) |
 | `Enter` | Drop it to the bottom and set it there: two points a row |
 | `r` | Restart: a new game; with points, after asking who played this one, its score kept |
-| `s` | Save this game and quit; the next start goes on with it |
-| `Space` | Show what you can do (restart, save), the game waiting; close it to go on |
+| `Space` | Show what you can do (restart, quit), the game waiting; close it to go on |
 | `Esc` | Pause, out of the game, where it stands in a box; `Enter` goes on |
 
-On the Settings screen, `Enter` on an action lists the keys: the small letters and `Enter`, but for `q`, `r` and `s`,
-which quit, restart and save. The one chosen is the key from then on, and KEYS beside the well shows it; another
+On the Settings screen, `Enter` on an action lists the keys: the small letters and `Enter`, but for `q` and `r`,
+which quit and restart. The one chosen is the key from then on, and KEYS beside the well shows it; another
 action's key is refused with a warning saying whose it is. An arrow does what its letter does (`h|j|k|l` are
 `←|↓|↑|→`, `u|d` are `PgUp|PgDn`): set left to another letter and `←` does nothing. `Esc` always pauses and `Space`
 always opens the menu.
@@ -174,7 +172,6 @@ On the PLAYGROUND panel, out of the game:
 | `Enter` | Play a new game at once, or go on with the one paused |
 | `n` | A new game; with one going, after asking who played it, its score kept |
 | `x` | End the game going, after asking who played it, its score kept |
-| `s` | Save the game paused and quit; the next start goes on with it |
 
 The keys every family app shares:
 
@@ -185,22 +182,23 @@ The keys every family app shares:
 | `!` | The App Log: what was done, newest last; here, the scores kept |
 | `j\|k`, `gg\|G` | On Rank and Settings: move, to the top, to the bottom |
 | `Esc` | Close the popup on top, one at a time; it never leaves tetru |
-| `q` | Quit; with a game going, after asking, its score kept for ANON |
+| `q` | Quit; a game going is kept, and the next start goes on with it |
 
 ## Settings and data
 
 | What | Where | To move it |
 |---|---|---|
 | The scores | `~/.tetru/scores.yaml` | `TETRU__DATA` |
-| The game saved, till the next start takes it up | `~/.tetru/game.yaml` | `TETRU__DATA` |
+| A game kept going as tetru quit, till the next start takes it up | `~/.tetru/game.yaml` | `TETRU__DATA` |
 | The keys to play with | `~/.config/tetru/config.yaml` (`$XDG_CONFIG_HOME/tetru`) | `TETRU__CONFIG` |
 
-The best twenty scores are kept; a game with no points, or too few for them, is not. A game saved is kept once it ends after it is taken up again. tetru uses none of the family's shared setting keys.
+The best twenty scores are kept; a game with no points, or too few for them, is not. A game kept going is kept in the rank once it ends, after it is taken up again. tetru uses none of the family's shared setting keys.
 
 ## Limits
 
-- A game is kept only once it ends: when it reaches the top, is ended or a new one started, when tetru quits, or when its
-  terminal is closed. A game in a program killed outright (`kill -9`, a power cut) is lost.
+- A score is kept only once its game ends: when it reaches the top, or is ended or a new one started. Quitting, or
+  closing the terminal, keeps the game going for the next start; a game in a program killed outright (`kill -9`, a
+  power cut) is lost.
 
 ## Links
 

@@ -104,7 +104,7 @@ func NewTetru() *Tetru {
 	}
 	a := t.App
 	a.MinWidth, a.MinHeight = minW, minH
-	a.QuitFlow = t.quit
+	a.QuitFlow, a.QuitDesc = t.quit, quitDesc
 	a.OnMsg = t.onMsg
 	a.Start = t.start
 
@@ -228,29 +228,24 @@ func (t *Tetru) setActions() {
 		{Key: "n", Label: "New game", Desc: "start over from level 1", Scope: terminu.PanelScope, Disabled: t.waiting, Do: t.newGame},
 		{Key: "x", Label: "End game", Desc: "keep this score and stop", Scope: terminu.PanelScope,
 			Disabled: func() bool { return !t.going() }, Do: t.endGame},
-		{Key: "s", Label: "Save", Desc: saveDesc, Scope: terminu.PanelScope,
-			Disabled: func() bool { return !t.going() }, Do: t.saveGame},
 	}
 }
 
-// saveDesc says what Save does.
-const saveDesc = "keep this game and quit; it goes on next time"
-
-// saveGame keeps the game going in the file of the game saved, its level,
-// rows, score and stack, and quits; it is not kept in the rank now, but
-// once it ends after it is taken up again (user, 2026-11-11: save and
-// quit).
-func (t *Tetru) saveGame() tea.Cmd {
-	if !t.going() {
-		return nil
-	}
+// keepGame keeps the game going in the file of the game saved, its level,
+// rows, score and stack, for the next start to go on with; it is not kept
+// in the rank now, but once it ends after it is taken up again. Nobody
+// saves by hand: tetru does it as it quits with a game going (user,
+// 2026-11-12: save and quit are two things, a stray s mid-game must not
+// quit; quitting keeps the game, and a player who does not want it next
+// time starts over).
+func (t *Tetru) keepGame() error {
 	g := t.g
 	if err := saved.Save(t.stash, saved.Game{Level: g.Level, Lines: g.Lines, Score: g.Score, Stack: g.Stack()}); err != nil {
-		return t.App.Error("Can't save the game", t.stash, err.Error())
+		return err
 	}
-	t.saved, t.done = true, true
+	t.saved = true
 	t.App.Log(terminu.Success, "Saved the game: level "+strconv.Itoa(g.Level)+", "+comma(g.Score)+" points")
-	return tea.Quit
+	return nil
 }
 
 // anon is the name a score is kept for when none is given (user,
@@ -438,37 +433,53 @@ func (t *Tetru) save(name string) tea.Cmd {
 	return nil
 }
 
-// Finish keeps the score of a game not kept yet when the program ends, for
-// ANON: nobody was asked (Ctrl-C pressed twice, the terminal closed; user,
-// 2026-11-11: leaving keeps the score as it is then, ANON for no name).
+// Finish, as the program ends (Ctrl-C pressed twice, the terminal closed),
+// keeps a game going for the next start, as quitting does (keepGame); a
+// game that can't be kept going, or one over and not kept yet, keeps its
+// score for ANON, nobody asked (user, 2026-11-11).
 func (t *Tetru) Finish() {
 	t.done = true
-	if t.g != nil && !t.saved {
-		if t.going() {
-			t.g.End()
-		}
-		t.save(anon)
+	if t.g == nil || t.saved {
+		return
 	}
+	if t.going() {
+		if t.keepGame() == nil {
+			return
+		}
+		t.g.End()
+	}
+	t.save(anon)
 }
 
-// quit is the quit flow (tdp K9: the app's): with a game going, a confirm
-// saying what is kept, its score for ANON with no name asked (user,
-// 2026-11-11), Esc going back to the game; else leave.
+// quitDesc says what Quit does, in the global operation and the Gaming
+// mode's Space menu.
+const quitDesc = "leave tetru; a game going goes on next time"
+
+// quitKeep quits keeping the game going: what the quit flow does, as a
+// message, so that with a popup open it is done only once Quit tetru? is
+// answered (tgo QuitFlow; tdp K9).
+type quitKeep struct{}
+
+// quit is the quit flow (tdp K9: the app's): leave, asking nothing; a game
+// going is kept for the next start (quitKeep, keepGame; user, 2026-11-12:
+// nobody asked, a player who does not want it then starts over).
 func (t *Tetru) quit() tea.Cmd {
 	if !t.going() {
 		return tea.Quit
 	}
-	kept := fmt.Sprintf("The score so far, %s, is kept for %s.", comma(t.g.Score), anon)
-	switch {
-	case t.g.Score == 0:
-		kept = "No points so far, so nothing is kept."
-	case !t.worth():
-		kept = fmt.Sprintf("The score so far, %s, is not in the best %d, so nothing is kept.", comma(t.g.Score), scores.Most)
+	return func() tea.Msg { return quitKeep{} }
+}
+
+// keepAndQuit keeps the game going and quits; when it can't be written, an
+// error popup says so and tetru stays, the game as it was.
+func (t *Tetru) keepAndQuit() tea.Cmd {
+	if t.going() && !t.saved {
+		if err := t.keepGame(); err != nil {
+			return t.App.Error("Can't save the game", t.stash, err.Error(), "[Ctrl-C] twice quits all the same, the score so far kept for ANON.")
+		}
 	}
-	return t.App.Confirm(terminu.Ask{Title: "Quit", Question: "Quit tetru?", Verb: "quit", Details: []string{kept}}, func() tea.Cmd {
-		t.Finish()
-		return tea.Quit
-	})
+	t.done = true
+	return tea.Quit
 }
 
 // setRows lists the records best first, each with its place (user,
@@ -518,7 +529,9 @@ func (t *Tetru) setModeKeys() {
 		{Key: k[keys.RotateRight], Keys: k.Keys(keys.RotateRight), Desc: "rotate right", Item: true, NoMenu: true, Label: keys.RotateRight.Label(), MenuDesc: keys.RotateRight.Desc(), Do: t.do(keys.RotateRight)},
 		{Key: k[keys.Drop], Keys: k.Keys(keys.Drop), Desc: "drop", NoMenu: true, Do: t.do(keys.Drop)},
 		{Key: "r", Desc: "restart", Label: "Restart", MenuDesc: "start over from level 1", Do: func(string) tea.Cmd { return t.newGame() }},
-		{Key: "s", Desc: "save", Label: "Save", MenuDesc: saveDesc, Do: func(string) tea.Cmd { return t.saveGame() }},
+		// Quit, as q does in the mode (tdp K11), listed in its Space menu (user,
+		// 2026-11-12: Restart and Quit there).
+		{Key: "q", Desc: "quit", Label: "Quit", MenuDesc: quitDesc, Do: func(string) tea.Cmd { return t.quit() }},
 	}
 }
 
@@ -590,8 +603,11 @@ func (t *Tetru) wake() tea.Cmd {
 }
 
 func (t *Tetru) onMsg(msg tea.Msg) tea.Cmd {
-	if m, ok := msg.(tick); ok {
+	switch m := msg.(type) {
+	case tick:
 		return t.step(m.dt)
+	case quitKeep:
+		return t.keepAndQuit()
 	}
 	return nil
 }
