@@ -33,7 +33,7 @@ func TestScreensSwitchOnTRS(t *testing.T) {
 
 func TestInfoShowsTheKeys(t *testing.T) {
 	_, d := open(t, 60, 32)
-	for _, s := range []string{"h      move left", "l      move right", "j      down a row", "d      rotate left", "k      rotate right", "Enter  drop", "Space  pause, menu", "Esc    pause"} {
+	for _, s := range []string{"h      move left", "l      move right", "j      down a row", "d      rotate left", "k      rotate right", "Enter  drop", "Space  menu", "Esc    pause"} {
 		if !d.Has(s) {
 			t.Fatalf("INFO has no %q", s)
 		}
@@ -43,7 +43,7 @@ func TestInfoShowsTheKeys(t *testing.T) {
 func TestSettingsSetAKey(t *testing.T) {
 	tt, d := open(t, 60, 32)
 	d.Press("S")
-	for _, s := range []string{"ACTION", "MOVE LEFT", "h", "DROP", "Enter", "PAUSE", "Space", "Enter:edit"} {
+	for _, s := range []string{"ACTION", "MOVE LEFT", "h", "DROP", "Enter", "Enter:edit"} {
 		if !d.Has(s) {
 			t.Fatalf("the settings have no %q", s)
 		}
@@ -89,16 +89,16 @@ func TestSettingsSetAKey(t *testing.T) {
 	}
 }
 
-func TestPauseIsAlwaysSpace(t *testing.T) {
+func TestSettingsHaveNoPauseRow(t *testing.T) {
 	_, d := open(t, 60, 32)
 	d.Press("S")
-	if !d.Has("PAUSE") || !d.Has("Space") {
-		t.Fatal("no Pause row")
+	if d.Has("PAUSE") {
+		t.Fatal("a Pause row: Esc pauses, Space opens the menu")
 	}
-	d.Press("G") // the last row the cursor stops on: Pause is passed over
+	d.Press("G") // the last row: Drop
 	d.Press("Enter")
 	if !d.Has("KEY: Drop") {
-		t.Fatal("the cursor stopped on Pause, or Drop opened no select")
+		t.Fatal("Drop is not the last row, or opened no select")
 	}
 }
 
@@ -148,7 +148,6 @@ func TestAKeyInUseIsRefused(t *testing.T) {
 	d.Press("j") // Rotate left
 	for _, c := range []struct{ key, why string }{
 		{"k", "Rotate right's key"},
-		{"Space", "the Space menu"},
 	} {
 		d.Press("Enter")
 		d.Press("/")

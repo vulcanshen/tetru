@@ -88,6 +88,9 @@ func New() *terminu.App { return NewTetru().App }
 func NewTetru() *Tetru {
 	t := &Tetru{App: terminu.New("tetru"), path: scores.Path(), cfg: keys.Path(), stash: saved.Path(), seed: rand.Uint64}
 	t.all, t.loadErr = scores.Load(t.path)
+	// The best twenty are kept (user, 2026-11-12); a file of more, from
+	// before, is cut to them the next time a score is kept.
+	t.all = scores.Best(t.all)
 	// A game saved is taken up again, paused, and its file removed (user,
 	// 2026-11-11: Save keeps it and quits; the next start goes on with it).
 	var sg *saved.Game
@@ -107,6 +110,7 @@ func NewTetru() *Tetru {
 
 	t.list = &terminu.List{
 		Columns: []terminu.Column{
+			{Title: "#", Number: true}, // the place (user, 2026-11-12)
 			{Title: "Name", Shrink: true, MinWidth: 6},
 			{Title: "Score", Number: true},
 			{Title: "Time", Drop: 1},
@@ -271,12 +275,16 @@ func (t *Tetru) begin() tea.Cmd {
 // askName is what ends a game with points: a text input (tdp text) saying
 // the points and asking who played, ANON offered (tdp input.6). Enter keeps
 // the score for the name typed, for ANON when there is none (user,
-// 2026-11-11), then runs then; Esc runs cancel. A game with no points has
-// nothing to keep: then runs at once.
+// 2026-11-11), then runs then; Esc runs cancel. A game not worth keeping
+// (worth) has nothing to keep: then runs at once, an Info toast saying so
+// when it has points.
 func (t *Tetru) askName(title, verb string, then, cancel func() tea.Cmd) tea.Cmd {
-	if t.g.Score == 0 {
+	if !t.worth() {
 		t.saved = true // nothing to keep, nobody to ask
-		return then()
+		if t.g.Score == 0 {
+			return then()
+		}
+		return tea.Batch(t.App.Toast(terminu.Info, t.notKept()+", so nothing is kept."), then())
 	}
 	keep := func(name string) tea.Cmd {
 		if name = strings.TrimSpace(name); name == "" {
@@ -353,19 +361,33 @@ func (t *Tetru) finish() tea.Cmd {
 	return t.wake()
 }
 
-// save keeps the game's score for name, once: a game with no points is not
-// kept. The new record is the cursor's on RANK (tdp K3: the item added).
+// worth says whether the game's score is kept as it ends: it has points and
+// gets into the best twenty (user, 2026-11-12: the best twenty are kept).
+func (t *Tetru) worth() bool { return t.g.Score > 0 && scores.Makes(t.all, t.g.Score) }
+
+// notKept says why a game not worth keeping is not: no points, or too few
+// for the best twenty.
+func (t *Tetru) notKept() string {
+	if t.g.Score == 0 {
+		return "no points"
+	}
+	return comma(t.g.Score) + " points, not in the best " + strconv.Itoa(scores.Most)
+}
+
+// save keeps the game's score for name, once, if it is worth keeping; the
+// worst of the twenty-one then goes. The new record is the cursor's on RANK
+// (tdp K3: the item added).
 func (t *Tetru) save(name string) tea.Cmd {
 	if t.g == nil || t.saved {
 		return nil
 	}
 	t.saved = true
 	t.setActions() // Enter plays again
-	if t.g.Score == 0 {
+	if !t.worth() {
 		return nil
 	}
-	t.all = append(t.all, scores.Score{Time: time.Now().Truncate(time.Second), Name: name, Score: t.g.Score})
-	t.setRows(strconv.Itoa(len(t.all) - 1))
+	t.all = scores.Best(append(t.all, scores.Score{Time: time.Now().Truncate(time.Second), Name: name, Score: t.g.Score}))
+	t.setRows(strconv.Itoa(len(t.all) - 1)) // the new one, last as kept
 	if err := scores.Save(t.path, t.all); err != nil {
 		return t.App.Error("Can't keep the score", t.path, err.Error())
 	}
@@ -393,9 +415,12 @@ func (t *Tetru) quit() tea.Cmd {
 	if !t.going() {
 		return tea.Quit
 	}
-	kept := "No points so far, so nothing is kept."
-	if t.g.Score > 0 {
-		kept = fmt.Sprintf("The score so far, %s, is kept for %s.", comma(t.g.Score), anon)
+	kept := fmt.Sprintf("The score so far, %s, is kept for %s.", comma(t.g.Score), anon)
+	switch {
+	case t.g.Score == 0:
+		kept = "No points so far, so nothing is kept."
+	case !t.worth():
+		kept = fmt.Sprintf("The score so far, %s, is not in the best %d, so nothing is kept.", comma(t.g.Score), scores.Most)
 	}
 	return t.App.Confirm(terminu.Ask{Title: "Quit", Question: "Quit tetru?", Verb: "quit", Details: []string{kept}}, func() tea.Cmd {
 		t.Finish()
@@ -403,13 +428,14 @@ func (t *Tetru) quit() tea.Cmd {
 	})
 }
 
-// setRows lists the records best first; sel is the ID of the row to put
-// the cursor on, "" to leave it.
+// setRows lists the records best first, each with its place (user,
+// 2026-11-12); sel is the ID of the row to put the cursor on, "" to leave
+// it.
 func (t *Tetru) setRows(sel string) {
 	var rows []terminu.Row
-	for _, i := range scores.Ranked(t.all) {
+	for n, i := range scores.Ranked(t.all) {
 		s := t.all[i]
-		rows = append(rows, terminu.Row{ID: strconv.Itoa(i), Cells: []string{s.Name, comma(s.Score), s.Time.Local().Format("2006-01-02 15:04")}})
+		rows = append(rows, terminu.Row{ID: strconv.Itoa(i), Cells: []string{strconv.Itoa(n + 1), s.Name, comma(s.Score), s.Time.Local().Format("2006-01-02 15:04")}})
 	}
 	t.list.SetRows(rows)
 	if sel != "" {
@@ -474,11 +500,11 @@ func (t *Tetru) after() tea.Cmd {
 // over is the stack reaching the top: out of the Gaming mode, the curtain
 // coming down; once it is down, who played is asked (step), Esc keeping the
 // score for ANON. Till then the game is waiting to be kept: Enter and New
-// game do nothing. A game with no points has nothing to keep.
+// game do nothing. A game not worth keeping has nothing to keep.
 func (t *Tetru) over() tea.Cmd {
 	t.gameP.LeaveMode()
 	t.topped = true
-	if t.g.Score == 0 {
+	if !t.worth() {
 		t.saved = true
 	}
 	t.setActions()
@@ -530,14 +556,15 @@ func (t *Tetru) step(dt time.Duration) tea.Cmd {
 			// The curtain is down: the end is said now, not as the stack
 			// reaches the top, when the player may still be pressing Enter to
 			// drop (user, 2026-11-11: the end is a popup, not drawn in the
-			// game). With points, who played is asked; with none, a confirm
-			// says nothing is kept and offers the next game, titled by what
-			// Enter does (tdp confirm.2): PLAY.
+			// game). Worth keeping, who played is asked; else a confirm says
+			// why nothing is kept (no points, or not in the best twenty) and
+			// offers the next game, titled by what Enter does (tdp
+			// confirm.2): PLAY.
 			t.topped = false
 			if !t.saved {
 				return t.askName("Game over", "keep", func() tea.Cmd { return nil }, func() tea.Cmd { return t.save(anon) })
 			}
-			return t.App.Confirm(terminu.Ask{Title: "Play", Question: "Play again?", Verb: "play", Details: []string{"Game over: no points, so nothing is kept."}}, t.begin)
+			return t.App.Confirm(terminu.Ask{Title: "Play", Question: "Play again?", Verb: "play", Details: []string{"Game over: " + t.notKept() + ", so nothing is kept."}}, t.begin)
 		}
 		return t.wake()
 	case !t.playing():

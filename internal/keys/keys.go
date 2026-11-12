@@ -71,21 +71,23 @@ func (s Set) Keys(a Action) []string {
 	return []string{s[a]}
 }
 
-// core are the keys offered that the Gaming mode keeps for itself, and what
-// each does there (tdp K11): the core keys, and Restart and Save (user,
-// 2026-11-11). A key the player can't have.
+// core are the keys the Gaming mode keeps for itself, and what each does
+// there (tdp K11): the core keys, and Restart and Save (user, 2026-11-11).
+// A key the player can't have, so not offered (Choices).
 var core = map[string]string{"Space": "it pauses and opens the Space menu", "q": "it quits", "r": "it restarts", "s": "it saves and quits"}
 
 // Choices are the keys offered to the player for an action: the small
-// letters, Enter, and Space (tdp K11: which keys the player may choose is
-// the app's). One already doing something in the Gaming mode is refused
-// (UsedBy).
+// letters and Enter (tdp K11: which keys the player may choose is the
+// app's), none of the core ones (user, 2026-11-12: a key that can't be
+// used is not in the list). One another action has is refused (UsedBy).
 func Choices() []string {
 	var out []string
 	for c := 'a'; c <= 'z'; c++ {
-		out = append(out, string(c))
+		if core[string(c)] == "" {
+			out = append(out, string(c))
+		}
 	}
-	return append(out, "Enter", "Space")
+	return append(out, "Enter")
 }
 
 // UsedBy says what already has key k in the Gaming mode, other than action a:

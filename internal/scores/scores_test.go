@@ -58,3 +58,30 @@ func TestRankedBestFirstThenEarliest(t *testing.T) {
 		t.Fatalf("ranked %v", got)
 	}
 }
+
+func TestBestKeepsTheTwenty(t *testing.T) {
+	var all []Score
+	for i := range Most + 2 {
+		all = append(all, Score{Time: time.Date(2026, 11, 12, 0, i, 0, 0, time.UTC), Name: "p", Score: 10 * (i % 4)})
+	}
+	best := Best(all)
+	if len(best) != Most {
+		t.Fatalf("%d kept", len(best))
+	}
+	// Six of 0 points, the two last of them out: of two the same, the
+	// earlier is first.
+	if !slices.Contains(best, all[0]) || slices.Contains(best, all[16]) || slices.Contains(best, all[20]) || !slices.Contains(best, all[21]) {
+		t.Fatalf("not the best twenty: %v", best)
+	}
+	for i := 1; i < len(best); i++ {
+		if best[i].Time.Before(best[i-1].Time) {
+			t.Fatal("not in the order they were kept")
+		}
+	}
+	if Makes(best, 0) || !Makes(best, 10) || !Makes(best[:Most-1], 0) {
+		t.Fatal("Makes: past the last of the twenty, or room left")
+	}
+	if few := all[:3]; len(Best(few)) != 3 {
+		t.Fatal("fewer than twenty not all kept")
+	}
+}

@@ -1,9 +1,9 @@
-id: 18
+id: 19
 from: v1.2.3
 to: v1.2.3
 tasks:
   - id: 1
-    spec: 17
+    spec: 19
     request: '一個直的空間玩遊戲，右邊是接下來的方塊；排行不在遊戲旁邊，改成另一個分頁：[T]etru、[R]ank、[S]ettings；遊戲的右邊由上而下是 Next 1、Next 2，最下面一個 panel 分上下兩段，上面 Level、Lines、Score、下面操作方式（不叫 Manual）；終端機窄的時候，排行優先收掉；遊戲太小，GAME 的 panel 就是遊戲，不要遊戲自己的外框，縮小上下；空間要用滿，遊戲區域不能這麼小'
     tdp: [tdp terms.2, tdp terms.3, tdp screen.1, tdp screen.2, tdp screen.3, tdp screen.5, tdp screen.7, tdp M4, tdp L1, tdp L2, tdp L3, tdp L4, tdp E5, tdp panel.1, tdp panel.4, tdp K1, tdp K2, tdp P5]
     remark:
@@ -35,7 +35,7 @@ tasks:
         ┃     ░░░░░░░░░░░░░░░░░░░░░░░░     │ d      rotate left  │ ┃
         ┃     ░░░░░░░░░░░░░░░░░░░░░░░░     │ k      rotate right │ ┃
         ┃     ██░░░░░░░░░░░░░░░░░░░░░░     │ Enter  drop         │ ┃
-        ┃     ████░░░░░░░░░░░░░░░░██░░     │ Space  pause, menu  │ ┃
+        ┃     ████░░░░░░░░░░░░░░░░██░░     │ Space  menu         │ ┃
         ┃     ██████░░░░░░░░██████████     │ Esc    pause        │ ┃
         ┃                                  │                     │ ┃
         ┃                                  └─────────────────────┘ ┃
@@ -86,13 +86,13 @@ tasks:
       - 'Enter 在 Gaming 裡是落到底並固定：K11 的表沒有 Enter，照 tdp K3「對 focus 的東西做最直觀的動作」，Gaming 裡 focus 的是落下中的方塊，把它放到底就是最直觀的（跟 Drag mode 的 Enter 放下一樣）。Gaming 外 Enter 在 PLAYGROUND 上是開始一局或繼續（tdp K3：panel 沒有項目時，對整個 panel 做最直觀的動作）'
       - '旋轉是對落下中的方塊做的事，在 footer；移動與落到底是移動，不佔 footer，60 欄時 Esc:pause 才不會被捨掉（footer：Space:menu ?:help d:rotate left k:rotate right Esc:pause）。這些鍵都在 ?（tdp K6），不列在 Space menu（task 5）'
   - id: 5
-    spec: 18
+    spec: 19
     request: 'Space 暫停，並打開 Space menu；Space 不能改；暫停用 popup 顯示，不畫在遊戲裡（那是 locku 的限制，tetru 是獨立的 app）；玩的時候的 Space menu 不用列 h、l、j、k、Enter，連 d、k 都不用，應該是給 restart、save（使用者 2026-11-11）；後來使用者一度說列的確實是這個模式的鍵，再問為什麼 h、l、j、Enter 出現在裡面，選了重新打開 tdp #7（2026-11-11）'
     tdp: [tdp K5, tdp K11, tdp K4, tdp menu.4, tdp M2, tdp M7, tdp L1, tdp screen.7, tdp F1, tdp F6, tdp confirm]
     remark:
       - 'Gaming 裡按 Space 開 Gaming 模式的 Space menu（tdp K11：app 自己的模式，Space menu 列什麼 app 可以自行決定；標題與樣子照 menu.4）：只有 GAMING MODE 的 [r]estart、[s]ave（使用者 2026-11-11：應該是給 restart、save），選了等於按 r、s。玩的鍵不列，都在 ? 與 INFO；[Esc] Pause 那一列也不列（K11：留不留 app 決定；使用者要的只有這兩列，Esc:pause 在 footer）。menu 開著遊戲就停，Esc 或 Space 關掉就接著玩'
       - 'tdp #7：原本 tdp menu.4、K11 要模式的 Space menu 列模式本身的鍵，tetru 暫時照列（TODO(tdp #7)）。使用者 2026-11-11 把 #7 改成問 app 自己的模式，選 A：tdp ce91c53 定案（K11 的 app 自己的模式的 Space menu、K11-15，還沒發版），列什麼 app 可以自行決定；要守的：Space 照樣打開、至少一列，標題與樣子照 menu.4，模式的每個鍵照樣在 ?，footer 照舊。tgo v1.2.4-beta.1 的 ModeKey.NoMenu、Mode.NoLeaveRow 做到（2026-11-12）。harness 讀的還是 tdp v1.2.3：K11-1、menu-23（分兩區）、menu-26（離開那一列）照舊寫一般的模式，等 tdp 發版再拿新版對'
-      - 'Gaming 模式加兩個鍵（模式的鍵 app 可以自行決定，tdp K11）：r Restart（start over from level 1，跟 PLAYGROUND 的 [n]ew game 一樣：有分數先問誰玩的，0 分直接重開）；s Save（keep this game and quit; it goes on next time，task 16）。footer 寫 r:restart s:save；放不下時 tgo 先收掉中間的鍵，Esc:pause 留著（60 欄時就是這樣）。r、s 不給玩家設成玩的鍵（task 13）'
+      - 'Gaming 模式加兩個鍵（模式的鍵 app 可以自行決定，tdp K11）：r Restart（start over from level 1，跟 PLAYGROUND 的 [n]ew game 一樣：值得記的（task 7）先問誰玩的，不然直接重開）；s Save（keep this game and quit; it goes on next time，task 16）。footer 寫 r:restart s:save；放不下時 tgo 先收掉中間的鍵，Esc:pause 留著（60 欄時就是這樣）。r、s 不給玩家設成玩的鍵（task 13）'
       - '遊戲只在 Gaming 裡、沒有任何 popup、終端機不比最低尺寸小時才走；toast 不是 popup，不擋'
       - '有沒有東西蓋在畫面上用 tgo App.Covered()（popup 開著、收起動畫播到一半、splash 開著都算，toast 不算；tgo #3 回報後 v1.2.3 加的）'
       - 'Esc 離開 Gaming＝暫停（tdp K4：Esc 是安全的出口，不會丟掉這一局），開 confirm 說遊戲停了（使用者 2026-11-11：暫停用 popup，場地上什麼都不畫）：內容 Paused: level 3, 25 lines, 12,340 points.，問句 Go on with the game?，Enter:resume 回到 Gaming，Esc:cancel 留在暫停。讀一段提醒、Enter 接受、Esc 取消就是 confirm（tdp F1），要不要問 app 可以自行決定（tdp F6）；標題照 tdp confirm.2 寫 Enter 做的動作 RESUME，不寫 PAUSED'
@@ -101,37 +101,38 @@ tasks:
       - 'Tab、數字鍵在 Gaming 裡暫停（tdp K11），按了 tgo 跳 Info toast：Press [Esc] to leave Gaming first'
       - 'Space 一直是 Space（使用者 2026-11-11：除了 Space 以外都能設），也是 tdp K1、P5 的 core key：Settings 裡列出來但停用'
   - id: 6
-    spec: 17
+    spec: 19
     request: '每一筆分數記姓名；不用先填名字，直接進遊戲，結束時再問，不填預設就是 ANON'
     tdp: [tdp text, tdp input.6, tdp K3, tdp K4, tdp K9, tdp M6, tdp panel.1]
     remark:
       - 'PLAYGROUND 上按 Enter 直接開始一局，不問名字（使用者 2026-11-11）'
-      - '一局有分數時，結束的時候開 text input（tdp text）問誰玩的：寫出分數（12,340 points: who played?），建議值是 ANON（tdp input.6：什麼都沒碰按 Enter 就用它）；打了名字就用那個名字，清空了也是 ANON；最多 16 個字。0 分的局不問、不記'
+      - '一局值得記（有分數、擠得進前二十名，task 7）時，結束的時候開 text input（tdp text）問誰玩的：寫出分數（12,340 points: who played?），建議值是 ANON（tdp input.6：什麼都沒碰按 Enter 就用它）；打了名字就用那個名字，清空了也是 ANON；最多 16 個字。不值得記的局不問、不記：0 分的什麼都不說；有分數但擠不進前二十名的跳 Info toast（tdp toast）說不記：150 points, not in the best 20, so nothing is kept.'
       - '怎麼結束就在哪裡問：堆到頂時等灰幕落完才問（玩家可能還在按 Enter 落方塊，一出來就問會被那個 Enter 直接收下 ANON）；灰幕落下時 Enter 與 [n]ew game 不作用，hint 也拿掉（tdp M6、panel.1），記下之後才回來；Esc 也是記成 ANON（不填）。[x] End game、[n]ew game、離開 app 時，問名字就是那個動作的確認（標題 END GAME、NEW GAME、QUIT，Enter:end、start、quit），Esc 取消那個動作、回到遊戲（tdp K4）'
       - '問不到時記成 ANON：連按兩次 Ctrl-C、關掉終端機（使用者 2026-11-11：不填預設就是 ANON）'
   - id: 7
-    spec: 7
+    spec: 19
     request: '分數記在 data 目錄，每一筆記時間、姓名、分數；玩家中途離開也算分數，記離開當下的分數'
     tdp: [tdp E2, tdp E3, tdp P5, tdp F5, tdp note.7]
     remark:
       - '刪了就找不回來的紀錄是資料（tdp E3）：~/.tetru/scores.yaml，TETRU__DATA 覆寫（tdp E2）；檔案格式 app 可以自行決定（tdp P5）'
       - '格式：scores 底下一筆一個 {time, name, score}；time 是 RFC 3339，照記下的順序附在最後'
+      - '只留前二十名（使用者 2026-11-12：總收錄 20 個；問過，只留前 20 名）：檔裡最多 20 筆，記下新的一筆超過 20 筆時刪掉最後一名（分數最低；同分的晚的在後）。值得記的一局是有分數、擠得進前二十名（比第二十名高，或還不到 20 筆）；不值得記的不問名字、不記。讀到超過 20 筆的舊檔，畫面只列前二十名，下次記分時檔案才剪到 20 筆'
       - '什麼時候記：一局結束、問了誰玩的之後（task 6）：堆到頂、[x] End game、[n]ew game 結束還在玩的那一局、離開 app 時有一局還沒記（q、Ctrl-C；連按兩次 Ctrl-C、關掉終端機時問不到，記成 ANON）'
       - '關掉終端機（SIGHUP）時 tgo 的 Run 正常回來（tgo #4 回報後 v1.2.3），main 在 Run 之後照樣記下還沒記的那一局'
       - '分數是 0 的那一局不記：一行都沒消、沒有往下或落到底，排行上只會多一列 0'
       - '記下時在 App Log 記一筆（tdp note.7）；寫不進去開 error popup（tdp F5）；讀不了時照 tdp E3 問要不要移開（tgo MoveAside）'
   - id: 8
-    spec: 17
+    spec: 19
     request: '排行改成另一個分頁 [R]ank'
     tdp: [tdp panel.5, tdp screen.2, tdp screen.8, tdp K3, tdp K12, tdp M5]
     remark:
-      - 'Rank 畫面只有一個 panel：[1] RANK，一般清單（tdp panel.5）：NAME（可截短）、SCORE（數字靠右）、TIME（2006-01-02 15:04），欄放不下先拿掉 TIME；只有一個 panel 的畫面，footer 沒有 Tab|1–N（tdp screen.2）'
+      - 'Rank 畫面只有一個 panel：[1] RANK，一般清單（tdp panel.5）：#（名次 1 到 20，數字靠右；使用者 2026-11-12：第一欄名次）、NAME（可截短）、SCORE（數字靠右）、TIME（2006-01-02 15:04），欄放不下先拿掉 TIME；只有一個 panel 的畫面，footer 沒有 Tab|1–N（tdp screen.2）'
       - '順序固定：分數高的在前，同分照時間早的在前（tdp panel.5 的「順序要固定」）'
       - '記下一筆之後，RANK 的 cursor 移到那一筆（tdp K3：新增一項之後 cursor 移到新的那一項）；畫面與 focus 不換（tdp K3：背景發生的事不換畫面）'
       - '沒有紀錄時空狀態：No scores yet / Press [T] to play（tdp screen.8；到 Tetru 畫面，focus 在 PLAYGROUND 上，Enter 開始）'
       - 'Enter 在一筆紀錄上沒有動作：紀錄沒有東西可以打開'
   - id: 9
-    spec: 17
+    spec: 19
     request: '湊齊一排時，滿排的列先變白色，再從下到上依序向左滑出 panel 1（GAME），然後整個場地往下降、上方補上空的格子；期間不能操作，正在玩的方塊不跟著降（使用者 2026-11-11）；這段動畫原本太慢、不流暢（使用者 2026-11-11）。結束時照 locku 由上往下變灰。結束用 popup 說，不在遊戲裡寫 END（使用者 2026-11-11：那是 locku 的限制，tetru 是獨立的 app）'
     tdp: [tdp P5, tdp F1, tdp F6, tdp confirm]
     remark:
@@ -140,17 +141,17 @@ tasks:
       - '這段期間不能操作（Gaming 模式的鍵按了沒反應，不另外說），也不往下掉：下一個方塊在滿行的那一刻就出現在最上面，停在那裡，不跟著場地往下降（使用者 2026-11-11：畫面中正在操作的方塊不跟著下降）；降完才開始掉、才能操作。下一個方塊放不進去（堆到頂）在降完時才判，消掉的行可能讓出位置'
       - '分數、行數、關卡在滿行的那一刻就加：INFO 馬上跟著變，動畫中途離開，這幾行也照樣算'
       - '結束時方塊由上往下變灰 5 秒，照 locku（場地與 NEXT 一起），灰的留在畫面上，場地上不寫字'
-      - '堆到頂時灰幕落完才用 popup 說結束：有分數的局是問誰玩的 text input，標題 GAME OVER（task 6）；0 分的局開 confirm（tdp F1、F6）：內容 Game over: no points, so nothing is kept.，問句 Play again?，標題照 tdp confirm.2 寫 Enter 做的動作 PLAY，Enter:play 開下一局，Esc:cancel 回到 PLAYGROUND（hint Enter:play）'
+      - '堆到頂時灰幕落完才用 popup 說結束：值得記的局（task 7）是問誰玩的 text input，標題 GAME OVER（task 6）；不值得記的局開 confirm（tdp F1、F6）：內容 Game over: no points, so nothing is kept.（擠不進前二十名的寫 Game over: 150 points, not in the best 20, so nothing is kept.），問句 Play again?，標題照 tdp confirm.2 寫 Enter 做的動作 PLAY，Enter:play 開下一局，Esc:cancel 回到 PLAYGROUND（hint Enter:play）'
       - '[x] End game、[n]ew game 結束的，灰幕落完不再開 popup：結束是玩家自己選的，問名字時已經說了（task 10）'
       - '動畫用 tgo App.Tick（README 的計時器），測試推得動'
   - id: 10
-    spec: 17
+    spec: 19
     request: '玩家可以中途結束、重新開始或離開，結束或離開時記下當下的分數；有一局在玩時按 q 先跳 confirm，記下分數，名字直接用 ANON（使用者 2026-11-11）'
     tdp: [tdp M2, tdp M3, tdp M5, tdp M6, tdp F6, tdp text, tdp K9, tdp confirm]
     remark:
       - '[x] End game（keep this score and stop）與 [n]ew game（start over from level 1）是 PLAYGROUND 的 panel operation（tdp M2、M3）；n、x 是領域熱鍵（tdp P5），不佔移動的字母'
-      - '有一局有分數時，兩個都先問誰玩的（task 6），那就是確認（tdp F6：哪些要確認 app 可以自行決定）：說出分數，Esc 取消；0 分的局沒有東西會丟，不問，直接結束或重開；沒有一局在玩時 [x] End game 停用（tdp M6）'
-      - '離開流程（tdp K9：離開流程與問什麼，app 可以自行決定）：有一局在玩（玩著或暫停中）時開 confirm（tdp F6、confirm），不問名字（使用者 2026-11-11：直接用 ANON）：標題照 tdp confirm.2 寫 Enter 做的動作 QUIT，內容 The score so far, 12,340, is kept for ANON.（0 分的局寫 No points so far, so nothing is kept.），問句照 tdp K9 寫 Quit tetru?，Enter:quit 記成 ANON、離開，Esc:cancel 回到遊戲；沒有一局在玩時直接離開（有 popup 開著時 tgo 先開 Quit tetru?）'
+      - '有一局值得記時（task 7），兩個都先問誰玩的（task 6），那就是確認（tdp F6：哪些要確認 app 可以自行決定）：說出分數，Esc 取消；不值得記的局沒有東西會丟，不問，直接結束或重開（有分數的跳 task 6 的 Info toast）；沒有一局在玩時 [x] End game 停用（tdp M6）'
+      - '離開流程（tdp K9：離開流程與問什麼，app 可以自行決定）：有一局在玩（玩著或暫停中）時開 confirm（tdp F6、confirm），不問名字（使用者 2026-11-11：直接用 ANON）：標題照 tdp confirm.2 寫 Enter 做的動作 QUIT，內容 The score so far, 12,340, is kept for ANON.（0 分的局寫 No points so far, so nothing is kept.；擠不進前二十名的寫 The score so far, 150, is not in the best 20, so nothing is kept.），問句照 tdp K9 寫 Quit tetru?，Enter:quit 記成 ANON、離開，Esc:cancel 回到遊戲；沒有一局在玩時直接離開（有 popup 開著時 tgo 先開 Quit tetru?）'
   - id: 11
     spec: 1
     request: '跟家族其他 app 一樣有 splash、version、help'
@@ -165,26 +166,26 @@ tasks:
     remark:
       - 'repo 照 harness project.3；README 兩份照 tdp E7 的 12 段'
   - id: 13
-    spec: 18
+    spec: 19
     request: '除了 Space 是暫停並打開 Space menu，其他的鍵都在 Settings 裡讓使用者自己設定'
     tdp: [tdp panel.12, tdp select, tdp popup.7, tdp toast, tdp E2, tdp E3, tdp F5, tdp note.7, tdp K1, tdp K11, tdp K12, tdp P5]
     remark:
       - '讓玩家改 Gaming 的鍵、能選哪些、怎麼設定，app 可以自行決定（tdp K11，K11-14；tdp #5 回報後 v1.2.3 放行）；要守的：選到 Gaming 裡已經有作用的鍵（別的動作的鍵與它的方向鍵、core key）就跳 Warning、寫出被誰用了、不設定；? 與 footer 寫的是目前的鍵；core key 與 panel 的鍵不給改'
-      - 'Settings 畫面只有一個 panel：[1] KEYS，一列一個值（tdp panel.12）：表頭 ACTION、KEY；Move left、Move right、Down a row、Rotate left、Rotate right、Drop 各一列，最後一列 Pause 是 Space、停用（tdp M6：Space 不能改）'
-      - 'Enter 在一列上打開 select（tdp select）：標題 KEY: <動作>，列出 a 到 z、Enter、Space，現在的鍵選著；選到別的動作在用的鍵、它的方向鍵、Space、q，或 Gaming 模式自己的 r（Restart）、s（Save）（task 5），跳 Warning toast（tdp toast）：Can''t use k for Rotate left: it is Rotate right''s key，鍵不變、不寫檔；其他的 Enter 確定就寫進設定檔，寫不進去 popup 不關、上面開 error popup（tdp popup.7），值不變'
+      - 'Settings 畫面只有一個 panel：[1] KEYS，一列一個值（tdp panel.12）：表頭 ACTION、KEY；Move left、Move right、Down a row、Rotate left、Rotate right、Drop 各一列。沒有 Pause 那一列（使用者 2026-11-12：PAUSE 跟 Space menu 是兩件事；不需要 pause 鍵，使用 Esc 就好）：暫停是 Esc 離開 Gaming（tdp K4），Space 打開 Space menu，menu 開著遊戲停著是因為 Gaming 時開任何 popup 遊戲都停（task 5）'
+      - 'Enter 在一列上打開 select（tdp select）：標題 KEY: <動作>，列出 a 到 z 與 Enter，不列 q、r、s 與 Space（使用者 2026-11-12：不能用的鍵不要出現在選單裡；q 離開、Space 開 Space menu，r、s 是 Gaming 模式自己的 Restart、Save，task 5），現在的鍵選著；選到別的動作在用的鍵（或方向鍵跟著別的動作的字母），跳 Warning toast（tdp toast）：Can''t use k for Rotate left: it is Rotate right''s key，鍵不變、不寫檔；其他的 Enter 確定就寫進設定檔，寫不進去 popup 不關、上面開 error popup（tdp popup.7），值不變'
       - '列出的鍵（tdp K11：能選哪些由 app 決定）：小寫字母與 Enter，加上 Space（選了照 K11 跳 Warning，看得出 Space 不能用）；方向鍵跟著字母（task 4），不另外列。設定檔裡的鍵不是小寫字母或 Enter、或是 q、Space、r、s、兩個動作同一個鍵，都算讀不了'
       - '設定是 app 自己的選項（tdp E3）：~/.config/tetru/config.yaml（$XDG_CONFIG_HOME/tetru），TETRU__CONFIG 覆寫（tdp E2）；keys 底下 move_left、move_right、down、rotate_left、rotate_right、drop。沒寫的照預設；設定檔裡其他的 key 寫回時留著（tdp E3）。改了在 App Log 記一筆（tdp note.7）'
       - '設定檔讀不了（格式錯、鍵不能用、兩個動作同一個鍵）時照 tdp E3 問要不要移開（tgo MoveAside），移開就用預設的鍵；排行的檔也讀不了時接著問它'
       - '改了馬上生效：Gaming 的鍵、footer、? 與 INFO 寫的都是現在的鍵'
   - id: 14
-    spec: 18
+    spec: 19
     request: '遊戲右下的 panel 分上下兩段：上面 Level、Lines、Score，下面操作方式；不叫 Manual'
     tdp: [tdp P5, tdp F1, tdp M5, tdp components.2, tdp screen.4, tdp menu]
     remark:
       - 'INFO 是 PLAYGROUND 右下自己畫的框（task 15），內容 app 可以自行決定（tdp P5、F1）。名字照使用者說的不用 Manual：放的是現在玩到哪與怎麼玩，叫 INFO'
       - '上面一段：Level、Lines、Score 一行一個，label Overlay0、值 Lavender（task 1）'
       - '兩段之間一條虛線，跟 menu 分區的線一樣（tdp menu：╌，Overlay0）'
-      - '下面一段：一列一個鍵與它做什麼，照使用者在 Settings 設的鍵：移動左右、往下一格、左旋、右旋、落到底，再加 Space（pause, menu）與 Esc（pause）；鍵名照 tdp M5（Enter、Space、Esc），鍵 Blue 跟 hint 一樣、說明是一般的字；鍵一欄 5 格，欄與欄之間兩格（tdp components.2）'
+      - '下面一段：一列一個鍵與它做什麼，照使用者在 Settings 設的鍵：移動左右、往下一格、左旋、右旋、落到底，再加 Space（menu）與 Esc（pause）（使用者 2026-11-12：暫停與 Space menu 是兩件事）；鍵名照 tdp M5（Enter、Space、Esc），鍵 Blue 跟 hint 一樣、說明是一般的字；鍵一欄 5 格，欄與欄之間兩格（tdp components.2）'
       - '只能讀，沒有 cursor、沒有鍵，也拿不到 focus（task 15）。它不取代 ?：每個鍵照樣在 ?'
   - id: 15
     spec: 17

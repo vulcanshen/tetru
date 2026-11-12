@@ -49,6 +49,9 @@
   又說：應該不是讓遊戲例外，而是讓 app 特殊模式中可以不再 tdp space menu 內的限制（#7 照這樣改了標題與內文）。
 - （2026-11-12）「Play」模式名稱改成「Gaming」模式；panel 1 title 名稱從 GAME 改成 PLAYGROUND。
 - （2026-11-12）tdp #7 定案（使用者選 A），terminu-go v1.2.4-beta.1 做到：玩的時候的 Space menu 只列 restart、save。
+- （2026-11-12）RANK 分頁添加第一欄名次，然後總收錄添加到 20 個。問過：只留前 20 名（第 21 名從檔案刪掉，擠不進前 20 的那一局不記）。
+- （2026-11-12）Settings 的 KEY 選單如果不能用 SPACE，那就不要在選單裡面出現。
+- （2026-11-12）Settings 裡的 PAUSE 跟 Space menu 是兩件事：Space menu 會暫停，是因為 Gaming 時開任何 popup 都會暫停。問：pause 跟 Esc 一樣，是否就不需要？答：不需要 pause 鍵，使用 ESC 就好。
 
 ## 關卡
 

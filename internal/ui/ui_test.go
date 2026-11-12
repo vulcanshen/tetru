@@ -3,6 +3,8 @@ package ui
 import (
 	"os"
 	"path/filepath"
+	"regexp"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -530,7 +532,7 @@ func TestTopOutKeepsTheScore(t *testing.T) {
 	if len(all) != 1 || all[0].Name != "vulcan" || all[0].Score != tt.g.Score || all[0].Score == 0 {
 		t.Fatalf("kept %+v", all)
 	}
-	if r, ok := tt.list.Current(); !ok || r.Cells[0] != "vulcan" {
+	if r, ok := tt.list.Current(); !ok || r.Cells[0] != "1" || r.Cells[1] != "vulcan" {
 		t.Fatal("the cursor is not on the new score")
 	}
 }
@@ -964,4 +966,54 @@ func TestPopupsOverTheGameAtEveryWidth(t *testing.T) {
 			d.Press("Enter")
 		}
 	})
+}
+
+func TestRankKeepsTheBestTwentyWithTheirPlaces(t *testing.T) {
+	dir := t.TempDir()
+	t.Setenv("TETRU__DATA", dir)
+	t.Setenv("TETRU__CONFIG", t.TempDir())
+	var all []scores.Score
+	for i := range scores.Most + 1 { // one past the twenty, from before
+		all = append(all, scores.Score{Time: time.Date(2026, 11, 1, 0, i, 0, 0, time.UTC), Name: "p" + strconv.Itoa(i), Score: 100 * (i + 1)})
+	}
+	if err := scores.Save(scores.Path(), all); err != nil {
+		t.Fatal(err)
+	}
+	tt := NewTetru()
+	d := tdptest.Start(t, tt.App, 80, 32)
+	d.Press("R")
+	place := func(n int, name, score string) bool {
+		return regexp.MustCompile(`\s` + strconv.Itoa(n) + `\s+` + name + `\s+` + score + `\s`).MatchString(row(d, 3+n))
+	}
+	if !d.Has("#") || !place(1, "p20", "2,100") || !place(20, "p1", "200") || d.Has("p0 ") || len(tt.all) != scores.Most {
+		t.Fatalf("not the best twenty, each with its place: %q, %q", row(d, 4), row(d, 23))
+	}
+
+	d.Press("T")
+	play(d)
+	tt.g.Score = 150 // under the twentieth
+	d.Press("Esc")
+	d.Press("Esc") // the popup: paused
+	d.Press("x")
+	if d.Has("END GAME") || !tt.g.Over || !d.Has("150 points, not in the best 20, so nothing is kept.") {
+		t.Fatal("a game not in the best twenty asked who played, or did not say it is not kept")
+	}
+	if all := kept(t); len(all) != scores.Most+1 {
+		t.Fatalf("the file was written: %d", len(all))
+	}
+
+	d.Advance(5 * time.Second) // the toast goes
+	d.Press("Enter")           // a new game
+	tt.g.Score = 5000
+	d.Press("Esc")
+	d.Press("Esc")
+	d.Press("x")
+	d.Press("Enter") // ANON
+	all = kept(t)
+	if len(all) != scores.Most || all[len(all)-1].Score != 5000 || all[0].Name != "p2" {
+		t.Fatalf("kept %d, the new one %+v, the first %+v", len(all), all[len(all)-1], all[0])
+	}
+	if r, ok := tt.list.Current(); !ok || r.Cells[0] != "1" || r.Cells[1] != anon {
+		t.Fatal("the new best is not first, the cursor on it")
+	}
 }

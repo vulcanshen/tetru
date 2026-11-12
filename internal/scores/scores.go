@@ -99,3 +99,35 @@ func Ranked(all []Score) []int {
 	})
 	return order
 }
+
+// Most is how many records are kept: the best twenty (user, 2026-11-12).
+const Most = 20
+
+// Best is the records in the best Most, in the order they were kept; the
+// others are no longer kept.
+func Best(all []Score) []Score {
+	order := Ranked(all)
+	if len(order) <= Most {
+		return all
+	}
+	in := make([]bool, len(all))
+	for _, i := range order[:Most] {
+		in[i] = true
+	}
+	var out []Score
+	for i, s := range all {
+		if in[i] {
+			out = append(out, s)
+		}
+	}
+	return out
+}
+
+// Makes says whether a game of score points, kept now, gets into the best
+// Most: past the last of them, as of two the same the earlier is first.
+func Makes(all []Score, score int) bool {
+	if len(all) < Most {
+		return true
+	}
+	return score > all[Ranked(all)[Most-1]].Score
+}

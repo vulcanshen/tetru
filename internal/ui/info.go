@@ -36,7 +36,7 @@ func (m *info) keyRows() [][2]string {
 		{k[keys.RotateLeft], "rotate left"},
 		{k[keys.RotateRight], "rotate right"},
 		{k[keys.Drop], "drop"},
-		{"Space", "pause, menu"},
+		{"Space", "menu"}, // it holds the game as any popup (user, 2026-11-12)
 		{"Esc", "pause"},
 	}
 }

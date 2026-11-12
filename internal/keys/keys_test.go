@@ -51,8 +51,13 @@ func TestUsedBySaysWhoHasAKey(t *testing.T) {
 		}
 	}
 	c := Choices()
-	if !slices.Contains(c, "a") || !slices.Contains(c, "k") || !slices.Contains(c, "Enter") || !slices.Contains(c, "Space") || slices.Contains(c, "Tab") {
+	if !slices.Contains(c, "a") || !slices.Contains(c, "k") || !slices.Contains(c, "Enter") || slices.Contains(c, "Tab") {
 		t.Fatalf("choices %v", c)
+	}
+	for _, k := range []string{"Space", "q", "r", "s"} {
+		if slices.Contains(c, k) {
+			t.Fatalf("%s, a key the player can't have, is offered", k)
+		}
 	}
 }
 

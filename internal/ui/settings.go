@@ -10,8 +10,10 @@ import (
 )
 
 // keyFields are the Settings screen's rows, a value a row (tdp panel.12):
-// an action and its key, Enter to choose another; Pause last, Space, not to
-// be changed (user, 2026-11-11: all but Space are the player's).
+// an action and its key, Enter to choose another. No row for pausing: Esc
+// pauses, leaving the Gaming mode (tdp K4), and Space opens the Space menu,
+// which holds the game as any popup does (user, 2026-11-12: two things; no
+// pause key of its own, Esc is it).
 func (t *Tetru) keyFields() []*terminu.Field {
 	var fs []*terminu.Field
 	for _, a := range keys.Actions {
@@ -22,19 +24,14 @@ func (t *Tetru) keyFields() []*terminu.Field {
 			Edit:  func() tea.Cmd { return t.chooseKey(a) },
 		})
 	}
-	return append(fs, &terminu.Field{
-		Label:    "Pause",
-		Desc:     "pause, and open the Space menu; always Space",
-		Value:    func() string { return "Space" },
-		Disabled: func() bool { return true },
-	})
+	return fs
 }
 
 // chooseKey opens a select of the keys offered (tdp select; tdp K11: which
-// keys and how are the app's): the small letters, Enter and Space, the key
-// now chosen. A key already doing something in the Gaming mode (another
-// action's, its arrow, a core key) is refused with a Warning saying what
-// has it, and not set (tdp K11). Another is written to the settings file
+// keys and how are the app's): the small letters and Enter, not the keys
+// the Gaming mode keeps (Space, q, r, s), the key now chosen. A key another
+// action has (or its arrow) is refused with a Warning saying whose it is,
+// and not set (tdp K11). Another is written to the settings file
 // before the popup closes: a failure keeps it open under an error popup
 // (tdp popup.7).
 func (t *Tetru) chooseKey(a keys.Action) tea.Cmd {

@@ -8,7 +8,7 @@
 **A falling-block game for the terminal.**
 
 Pieces of four blocks fall into a well twelve blocks wide and twenty-four deep; move and turn them as they fall, and
-fill rows from wall to wall to clear them. Every ten rows is a level, and every level falls faster, up to the tenth. tetru keeps every game's score
+fill rows from wall to wall to clear them. Every ten rows is a level, and every level falls faster, up to the tenth. tetru keeps the best twenty scores
 with the player's name and the time, and ranks them, the best first.
 
 ![tetru: a game played, the Space menu pausing it, and the score kept](docs/demo.gif)
@@ -17,13 +17,15 @@ with the player's name and the time, and ranks them, the best first.
 
 - **Drawn as locku's falling blocks**: the same square pixels and colours. The well at the left; at its right, in the same
   panel, the next two pieces, a box each, and INFO: the level, the rows and the score, and the keys to play with.
-- **Your keys**: every key you play with but `Space` can be changed on the Settings screen.
+- **Your keys**: every key you play with can be changed on the Settings screen; `Esc` (pause) and `Space` (the menu)
+  stay as they are.
 - **Ten levels of speed**: a level every ten rows, from a row a second to ten a second; past the tenth the speed stays.
-- **Every game kept**: the time, the name and the score, the best first on the Rank screen. You play first and say who
-  played as the game ends; with no name it is ANON. A game left half way is kept too: quitting, or closing the terminal,
-  keeps the score it had then, for ANON.
-- **Pause whenever**: `Space` pauses and shows what you can do; `Esc` pauses and leaves the game where it is, a box
-  saying the level, the rows and the score, `Enter` to go on.
+- **The best twenty kept**: the place, the name, the score and the time, the best first on the Rank screen. You play
+  first and say who played as the game ends; with no name it is ANON. A game left half way is kept too: quitting, or
+  closing the terminal, keeps the score it had then, for ANON. A game whose score is not in the best twenty is not kept,
+  and nobody is asked.
+- **Pause whenever**: `Esc` pauses and leaves the game where it is, a box saying the level, the rows and the score,
+  `Enter` to go on. `Space` shows what you can do, the game waiting while it is open.
 - **Save and go on later**: Save keeps the game, its score and the blocks on the ground, and quits; the next start
   goes on with it, the blocks on the ground white.
 
@@ -93,7 +95,7 @@ It asks before removing `~/.tetru`, your scores.
 1. Run `tetru`.
 2. Press `Enter`: the game starts.
 3. `h` and `l` move the piece, `d` and `k` turn it, `j` takes it down a row and `Enter` drops it.
-4. Press `Space` to pause and see what you can do; `Esc` closes the menu and the game goes on.
+4. Press `Space` to see what you can do, the game waiting; `Esc` closes the menu and the game goes on.
 5. When the game is over, type your name and press `Enter`, or just `Enter` for ANON: the score is kept.
 6. Press `q` to quit; with a game going tetru asks first, and keeps its score for ANON.
 
@@ -110,7 +112,7 @@ tetru has three screens; switch with their keys, or from Global operation in the
 | Key | Screen |
 |---|---|
 | `T` | Tetru: the game |
-| `R` | Rank: the scores, the best first |
+| `R` | Rank: the best twenty scores, each with its place |
 | `S` | Settings: the keys to play with |
 
 Playing (the game in the `Gaming` mode), with the keys as they first are:
@@ -125,13 +127,14 @@ Playing (the game in the `Gaming` mode), with the keys as they first are:
 | `Enter` | Drop it to the bottom and set it there: two points a row |
 | `r` | Restart: a new game; with points, after asking who played this one, its score kept |
 | `s` | Save this game and quit; the next start goes on with it |
-| `Space` | Pause, and show what you can do; close it to go on |
+| `Space` | Show what you can do (restart, save), the game waiting; close it to go on |
 | `Esc` | Pause, out of the game, where it stands in a box; `Enter` goes on |
 
-On the Settings screen, `Enter` on an action lists the keys: the small letters, `Enter` and `Space`. The one chosen is
-the key from then on, and INFO beside the well shows it; one that already does something while playing
-(another action's, `Space`, `q`, `r`, `s`) is refused with a warning saying what has it. An arrow does what its letter does
-(`h|j|k|l` are `←|↓|↑|→`, `u|d` are `PgUp|PgDn`): set left to another letter and `←` does nothing. `Space` always pauses.
+On the Settings screen, `Enter` on an action lists the keys: the small letters and `Enter`, but for `q`, `r` and `s`,
+which quit, restart and save. The one chosen is the key from then on, and INFO beside the well shows it; another
+action's key is refused with a warning saying whose it is. An arrow does what its letter does (`h|j|k|l` are
+`←|↓|↑|→`, `u|d` are `PgUp|PgDn`): set left to another letter and `←` does nothing. `Esc` always pauses and `Space`
+always opens the menu.
 
 Clearing 1, 2, 3 or 4 rows at once scores 100, 300, 500 or 800 times the level. A piece that lies on the stack is set half
 a second later; moving or turning it gives it the half second again, a few times.
@@ -164,7 +167,7 @@ The keys every family app shares:
 | The game saved, till the next start takes it up | `~/.tetru/game.yaml` | `TETRU__DATA` |
 | The keys to play with | `~/.config/tetru/config.yaml` (`$XDG_CONFIG_HOME/tetru`) | `TETRU__CONFIG` |
 
-A game with no points is not kept. A game saved is kept once it ends after it is taken up again. tetru uses none of the family's shared setting keys.
+The best twenty scores are kept; a game with no points, or too few for them, is not. A game saved is kept once it ends after it is taken up again. tetru uses none of the family's shared setting keys.
 
 ## Limits
 
