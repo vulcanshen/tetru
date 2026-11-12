@@ -45,6 +45,7 @@ const (
 	inkFrame    = inkWhite + 1
 	inkFlamingo = inkFrame + 1
 	inkPink     = inkFlamingo + 1
+	inkLavender = inkPink + 1
 )
 
 // inks are the colours of the inks, locku's: the ground surface0, the
@@ -52,7 +53,8 @@ const (
 // one sky, the square yellow, T mauve, S green, Z red, J blue, L peach), a
 // row going and a block of a game saved and taken up white (user,
 // 2026-11-11), the curtain overlay1; two rows going flamingo, three pink,
-// colours no piece has (user, 2026-11-12).
+// four lavender, colours no piece has (user, 2026-11-12; four in one
+// colour, not the pieces' in turn).
 var inks = []terminu.Color{
 	{},
 	terminu.Hex("#313244"),
@@ -60,7 +62,7 @@ var inks = []terminu.Color{
 	terminu.Hex("#f38ba8"), terminu.Hex("#89b4fa"), terminu.Hex("#fab387"),
 	terminu.Hex("#ffffff"),
 	terminu.Hex("#7f849c"),
-	terminu.Hex("#f2cdcd"), terminu.Hex("#f5c2e7"),
+	terminu.Hex("#f2cdcd"), terminu.Hex("#f5c2e7"), terminu.Hex("#b4befe"),
 }
 
 // field is the PLAYGROUND panel's body: the field of t's game and, at its right,
@@ -233,8 +235,8 @@ var crumble = [game.Cols]int{7, 2, 10, 4, 0, 9, 5, 11, 1, 6, 3, 8}
 //     side, the right one as far as the blank there;
 //   - three, Pink, crumble, a block at a time in no order, each going
 //     white before it is gone;
-//   - four burst from their middle: white, then ring by ring outwards,
-//     each ring a piece's colour, white as it goes.
+//   - four, Lavender, burst from their middle: white, then ring by ring
+//     outwards, white as each goes.
 //
 // Each bottom row first where they go one by one; the ground shows where
 // they were.
@@ -303,7 +305,7 @@ func clearRows(out []string, g *game.Game, sc *scene, w, k, x1, left, top, right
 				case p == 0:
 					block(x, inkWhite)
 				case p <= at:
-					block(x, inkPiece+uint8(d/2%7))
+					block(x, inkLavender)
 				case p < at+0.15:
 					block(x, inkWhite)
 				}

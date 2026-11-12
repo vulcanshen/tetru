@@ -102,14 +102,14 @@ tasks:
       沒有 Enter 與其他動作；j|k、gg|G 由 tgo 移動
     test: [TestScoresBestFirst, TestTopOutKeepsTheScore, TestScreensSwitchOnTRS, TestRankKeepsTheBestTwentyWithTheirPlaces, TestRankColoursTheFirstThree]
   - id: 9
-    spec: 21
+    spec: 23
     implementation: |
       消行：方塊落定、湊滿的那一刻，滿的那幾行離開堆疊，行數與分數馬上加（關卡跟著升），下一個方塊同時出現在最上面等著
       消幾行就畫哪一種（ui clearRows；game.Slid 是一行滑了多遠，game.Along 是全部一起走了多遠），先亮 100 ms（game.Flash），滑走、碎掉的地方畫底：
       1 行：整行 #ffffff，往左滑出，200 ms，等速；畫過場地左邊的空白、超過 PLAYGROUND 的框就不畫了；一次移一個 icon（2 欄）
       2 行：整行 #f2cdcd（Flamingo），從正中間分成兩半，左半往左滑出、右半往右滑進場地右邊的空白、到右邊那一欄前面就不畫（窄寬時到場地右牆）；一行 200 ms，上面那一行晚 50 ms
       3 行：整行 #f5c2e7（Pink），每一格照固定的亂序（crumble）在 300 ms 裡的某一刻先畫白、再畫底
-      4 行：亮的 100 ms 整塊 #ffffff；之後每一格照離四行正中心的步數分圈，畫那一圈的方塊色（I、O、T、S、Z、J、L 輪流），中心那圈先變白再畫底，一圈一圈往外，350 ms
+      4 行：亮的 100 ms 整塊 #ffffff；之後整塊 #b4befe（Lavender），每一格照離四行正中心的步數分圈，中心那圈先變白再畫底，一圈一圈往外，350 ms
       1 到 3 行：全部走完之後，最下面那個空行上面的整片每 20 ms 往下降一列像素，一列一列補到沒有空行；4 行：走完 20 ms 後整片一次降四列；最上面補空的格子；等著的方塊不跟著降
       這段期間 Gaming 模式的鍵按了沒反應，方塊也不往下掉；降完方塊才開始掉，放不進去就結束（堆到頂）；有 popup 蓋著時動畫停著
       結束：方塊由上往下一列像素一列像素變成框的灰，5 秒蓋滿整張圖（場地與兩格），灰的留著，場地上不寫字（第一版的紅色 END 拿掉了）

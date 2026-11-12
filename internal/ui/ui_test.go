@@ -1117,14 +1117,14 @@ func TestClearsByHowManyRows(t *testing.T) {
 	if r := bottom(); !strings.Contains(r, white) {
 		t.Fatal("four rows do not go white first")
 	}
-	g.Advance(game.Flash + game.Slide/3)
-	colours := 0
-	for _, c := range inks[inkPiece : inkPiece+7] {
-		if strings.Contains(bottom(), fmt.Sprintf("%d;%d;%d", c.R(), c.G(), c.B())) {
-			colours++
-		}
+	g.Advance(game.Flash + (game.ClearTime(4)-game.Flash)/2)
+	if r := bottom(); !strings.Contains(r, "180;190;254") || !strings.Contains(r, ground) {
+		t.Fatalf("four rows do not burst in Lavender, the middle gone: %q", r)
 	}
-	if colours < 3 {
-		t.Fatalf("four rows burst in %d of the pieces' colours", colours)
+	field, _, _ := strings.Cut(bottom(), "│") // KEYS beside it has Blue keys
+	for _, c := range inks[inkPiece : inkPiece+7] {
+		if strings.Contains(field, fmt.Sprintf("%d;%d;%d", c.R(), c.G(), c.B())) {
+			t.Fatal("four rows burst in a piece's colour (user, 2026-11-12: one colour)")
+		}
 	}
 }
