@@ -167,12 +167,15 @@ func (f *field) Draw(w, h int, focused bool) []string {
 	t := f.t
 	sc := picture(t.g)
 	if t.narrow() {
-		row := t.statsRow()
-		cols := max(2*sceneW, terminu.Width(row))
-		lines := append([]string{row, ""}, pixels(&sc, 0, sceneW, 0, sceneH, 1)...)
+		head := append(t.statsRows(), "")
+		cols := 2 * sceneW
+		for _, r := range head {
+			cols = max(cols, terminu.Width(r))
+		}
+		lines := append(head, pixels(&sc, 0, sceneW, 0, sceneH, 1)...)
 		out := middle(lines, cols, w, h)
 		// The boxes are right of the field: nothing goes out that way.
-		clearRows(out, t.g, &sc, w, 1, sceneW, max(0, (w-cols)/2), max(0, (h-len(lines))/2)+2, 0)
+		clearRows(out, t.g, &sc, w, 1, sceneW, max(0, (w-cols)/2), max(0, (h-len(lines))/2)+len(head), 0)
 		return out
 	}
 	fw, cw, k := split(w, h)
@@ -414,18 +417,18 @@ func (t *Tetru) stats() []string {
 	}
 }
 
-// statsRow is the stats on one line, two columns apart (tdp components.2),
-// the level and the rows a fixed width, the score last (tdp L2): narrow,
-// over the field.
-func (t *Tetru) statsRow() string {
-	level, lines := 1, 0
+// statsRows are the stats on two lines, narrow, over the field: the level,
+// a fixed width (it is at most 10), and the rows two columns apart (tdp
+// components.2); the score under them. The rows and the score have no most,
+// so each is last on its line (tdp L2: only the last may change width).
+func (t *Tetru) statsRows() []string {
+	level := 1
 	if t.g != nil {
-		level, lines = t.g.Level, t.g.Lines
+		level = t.g.Level
 	}
 	st := t.stats()
 	q, v := terminu.Fg(terminu.Overlay0), terminu.Fg(terminu.Lavender)
-	return q.Render("Level: ") + v.Render(fmt.Sprintf("%-2d", level)) + "  " +
-		q.Render("Lines: ") + v.Render(fmt.Sprintf("%-3d", lines)) + "  " + st[2]
+	return []string{q.Render("Level: ") + v.Render(fmt.Sprintf("%-2d", level)) + "  " + st[1], st[2]}
 }
 
 // pixels are columns x0 to x1 of rows y0 to y1 of sc, every pixel k × k

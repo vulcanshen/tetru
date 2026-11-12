@@ -1,0 +1,40 @@
+spec: 45
+tasks:
+  - id: 1
+    accepted: true
+  - id: 2
+    accepted: true
+  - id: 3
+    accepted: true
+  - id: 4
+    accepted: true
+  - id: 5
+    accepted: false
+    reason: tdp 不清楚：Esc 離開 Gaming 時接著開 RESUME confirm；tdp K11 的表寫 Esc「離開模式（K4），回到進入前的狀態」，K4 寫「沒有 popup 就退出當前模式」，沒寫離開模式時能不能接著開一個 popup（回報 tdp #9）
+  - id: 6
+    accepted: false
+    reason: tdp 不清楚：KEEP SCORE 上按 Esc 也記成 ANON；一局一定要記、Esc 沒有東西可以取消，tdp input.1「Esc：關掉，值不變」、input.2「Esc:cancel」、note.7、P4 沒寫這種 input 上 Esc 做什麼（回報 tdp #10）
+  - id: 7
+    accepted: true
+  - id: 8
+    accepted: true
+  - id: 9
+    accepted: true
+  - id: 10
+    accepted: true
+  - id: 11
+    accepted: true
+  - id: 12
+    accepted: false
+    reason: tdp 不清楚：docs/social-preview.png（GitHub 的 social preview）在 tdp 與 harness 找不到根據；harness project.3 的 docs/ 只列 icon.svg 與 demo gif，放行的是圖上沒有的頂層目錄與檔案（回報 harness #1）
+  - id: 13
+    accepted: true
+  - id: 14
+    accepted: true
+  - id: 15
+    accepted: true
+  - id: 16
+    accepted: false
+    reason: tdp 不清楚：[s]ave 存好就離開 app；tdp K9 只寫 q 與 Ctrl-C 進入離開流程，M4「離開 app 必須在這裡（K9）」，沒寫 panel 或模式的動作能不能直接離開，從 Space menu 選時要不要先問（回報 tdp #11）
+  - id: 17
+    accepted: true

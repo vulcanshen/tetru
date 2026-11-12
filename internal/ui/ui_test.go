@@ -153,7 +153,7 @@ func TestTheBoxesAreNeverFocused(t *testing.T) {
 
 func TestNarrowDrawsTheBoxesWithNoFrames(t *testing.T) {
 	_, d := open(t, 50, 32)
-	if d.Has("NEXT") || d.Has("INFO") || !d.Has("[1] PLAYGROUND") || !d.Has("Level: 1   Lines: 0    Score: 0") {
+	if d.Has("NEXT") || d.Has("INFO") || !d.Has("[1] PLAYGROUND") || !d.Has("Level: 1   Lines: 0") || !d.Has("Score: 0") {
 		t.Fatal("narrow, the boxes are framed, or the level, the rows and the score are not over the field")
 	}
 	if got := widest(d); got != fieldW+boxW {

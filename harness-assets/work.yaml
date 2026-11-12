@@ -1,6 +1,6 @@
 tasks:
   - id: 1
-    spec: 44
+    spec: 45
     implementation: |
       三個畫面（tgo Screen，Name、Key、Desc）：Tetru（T，the game）、Rank（R，the scores, best first）、Settings（S，the keys to play with）；
       tgo 畫最上面的畫面 chip 列與下面的線，T、R、S 是 global 熱鍵，global operation popup 裡也列出來
@@ -10,8 +10,8 @@ tasks:
       Level、Lines、Score 在 INFO（task 14）；場地那一塊裡只有場地；沒有 statusbar
       啟動時（tgo App.Start）用 tgo App.Focus 把 focus 放到 [1] PLAYGROUND
       最低尺寸 42×32（tgo App.MinWidth、MinHeight）；比它小時 tgo 只畫名稱、needs a terminal of at least 42×32、Press [Ctrl-C] twice to quit
-      窄寬的門檻 60（tgo Screen.NarrowBelow）：42–59 欄 PLAYGROUND 不畫右邊那一欄，自己在場地上面寫一行
-      Level: 1   Lines: 0    Score: 0（Level 補到 2 格、Lines 補到 3 格），場地右邊畫接下來的方塊、沒有框（task 2）
+      窄寬的門檻 60（tgo Screen.NarrowBelow）：42–59 欄 PLAYGROUND 不畫右邊那一欄，自己在場地上面寫兩行
+      Level: 1   Lines: 0（Level 補到 2 格）與 Score: 0，空一行再畫場地，場地右邊畫接下來的方塊、沒有框（task 2）
       tdptest 在每一格畫面量每一列等於終端機寬度（tdp L4）；版面的測試在 icon 與 powerline 符號 1/1、2/1、2/2 格下各跑一次（tdp E5）
     test: [TestTetruScreen, TestScreensSwitchOnTRS, TestNarrowDrawsTheBoxesWithNoFrames, TestLeastSizeIsTheGameAlone, TestPictureGrowsTwiceOnALargeTerminal, TestStatsInInfo, TestFirstLaunch]
   - id: 2
@@ -56,7 +56,7 @@ tasks:
       [s]ave（keep this game and quit; it goes on next time），選了就等於按那個鍵；玩的六個鍵標 tgo ModeKey.NoMenu、模式標 Mode.NoLeaveRow
       （tgo v1.2.4），都不列，[Esc] Pause 也不列；? 列 Gaming 的每個鍵（照 Settings 裡現在的鍵）、r、s 與 Esc
       Gaming 模式的 r：跟 PLAYGROUND 的 n 一樣（值得記的先開 NEW GAME 問誰玩的，不然直接開新的一局）；s：存檔並離開（task 16）；footer 是
-      Space:menu ?:help d:rotate left k:rotate right r:restart s:save Esc:pause，60 欄時 tgo 收掉 r:restart s:save
+      Space:menu ?:help d:rotate left k:rotate right Enter:drop r:restart s:save Esc:pause（task 4），窄的終端機放不下的由 tgo 收掉，Esc:pause 留著
       遊戲每 40 ms 一格，有任何 popup 開著（Space menu、?、confirm）或終端機比 42×32 小時不往前走，popup 關掉就接著走；有沒有 popup 是問
       tgo App.Covered()（收起動畫播到一半、splash 開著也算）
       Esc 離開 Gaming（tgo Mode.OnExit）：遊戲停著，開 tgo App.Confirm：標題 RESUME，內容 Paused: level 1, 0 lines, 0 points.，問句 Go on with the game?，
