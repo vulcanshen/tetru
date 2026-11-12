@@ -305,7 +305,8 @@ func clearRows(out []string, g *game.Game, sc *scene, w, k, x1, left, top, right
 			}
 		case n == 3: // crumble
 			for x := range game.Cols {
-				gone := float64(crumble[(x+5*i)%game.Cols])/game.Cols*0.85 + 0.15
+				// Each starts breaking after the flash, the first at once.
+				gone := 0.25 + float64(crumble[(x+5*i)%game.Cols])/game.Cols*0.75
 				if s := breaking(p, gone, 0.25); s < 4 {
 					block(x, inkWhite, s)
 				}

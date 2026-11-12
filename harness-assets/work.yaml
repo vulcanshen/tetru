@@ -108,7 +108,7 @@ tasks:
       不管消幾行：先整塊 #ffffff 100 ms（game.Flash），再照消幾行畫哪一種走法（ui clearRows；game.Slid 是一行走了多遠，game.Along 是全部一起走了多遠），都是 #ffffff，走掉的地方畫底：
       1 行：原地從 #ffffff 分四段（#ccccd0、#9899a2、#656573）淡成底色，200 ms
       2 行：每一格照離兩行正中心的步數分圈，中心那圈先畫底，一圈一圈往外，250 ms
-      3 行：每一格照固定的亂序（crumble）在 300 ms 裡輪到時碎掉：前 25% 的時間依序換成 U+F0570（nf-md-view_grid）、U+F0D7C（nf-md-grain）、U+F00B5（nf-md-blur），再畫底
+      3 行：每一格照固定的亂序（crumble）在 300 ms 裡輪到時碎掉：閃白一過第一格就開始，最後一格約在 206 ms 開始；每一格 75 ms 依序換成 U+F0570（nf-md-view_grid）、U+F0D7C（nf-md-grain）、U+F00B5（nf-md-blur），再畫底
       4 行：一行的前 60%：中間四格先碎掉，其他格子亂序（crumble）排前一半的跟著碎掉（同樣三個 icon，再畫底）；之後剩下的左半往左、右半往右滑（右半到右邊那一欄前面就不畫，窄寬時到場地右牆）；一行 200 ms，上面每一行晚 50 ms
       全部走完 20 ms 後（game.Settle），上面的整片一次降下補滿空行（game.ClearTime）；最上面補空的格子；等著的方塊不跟著降
       這段期間 Gaming 模式的鍵按了沒反應，方塊也不往下掉；降完方塊才開始掉，放不進去就結束（堆到頂）；有 popup 蓋著時動畫停著
