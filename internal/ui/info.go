@@ -8,22 +8,26 @@ import (
 	"github.com/vulcanshen/tetru/internal/keys"
 )
 
-// info is what the INFO box in PLAYGROUND shows, two parts (user, 2026-11-11:
-// under Next 1 and Next 2; the level, the rows and the score at the top,
-// beside the field, not over it; the controls under them): the level, the rows and
-// the score, then, under a dashed line as a menu's sections are parted
-// (tdp menu), the keys the player has set and what they do, a key a row,
+// info is what the two boxes under Next 1 and Next 2 in PLAYGROUND show
+// (user, 2026-11-11: the level, the rows and the score at the top, beside
+// the field, not over it; the controls under them; 2026-11-12: a box each,
+// now that they are boxes, not panels): INFO the level, the rows and the
+// score; KEYS the keys the player has set and what they do, a key a row,
 // the keys in Blue as a hint's (tdp M5).
 type info struct{ t *Tetru }
 
 const (
 	// infoKeyW is the key column: Enter, Space.
 	infoKeyW = 5
-	// infoW is INFO's widest row and a cell's margin each side: the key, two
-	// columns (tdp components.2), "rotate right".
+	// infoW is the widest row of the boxes and a cell's margin each side:
+	// the key, two columns (tdp components.2), "rotate right".
 	infoW = 1 + infoKeyW + 2 + len("rotate right") + 1
-	// infoRows are INFO's rows: three of the game, the line, eight keys.
-	infoRows = 3 + 1 + 8
+	// statRows are INFO's rows: the level, the rows, the score.
+	statRows = 3
+	// keyLines are KEYS' rows: eight keys.
+	keyLines = 8
+	// infoH is INFO's and KEYS' least height, with their frames.
+	infoH = statRows + 2 + keyLines + 2
 )
 
 // keyRows are the keys and what they do.
@@ -41,17 +45,27 @@ func (m *info) keyRows() [][2]string {
 	}
 }
 
-// Draw is the rows from the top, a cell from the box's frame.
-func (m *info) Draw(w, h int) []string {
+// Stats is INFO's rows, w × h, a cell from the box's frame.
+func (m *info) Stats(w, h int) []string {
 	var rows []string
 	for _, s := range m.t.stats() {
 		rows = append(rows, " "+s)
 	}
-	rows = append(rows, " "+terminu.Fg(terminu.Overlay0).Render(strings.Repeat("╌", max(0, w-2))))
+	return fill(rows, w, h)
+}
+
+// Keys is KEYS' rows, w × h, a cell from the box's frame.
+func (m *info) Keys(w, h int) []string {
+	var rows []string
 	key := terminu.Fg(terminu.Blue)
 	for _, r := range m.keyRows() {
 		rows = append(rows, " "+key.Render(terminu.Pad(r[0], infoKeyW))+"  "+r[1])
 	}
+	return fill(rows, w, h)
+}
+
+// fill is rows from the top of w × h cells, blank under them.
+func fill(rows []string, w, h int) []string {
 	out := make([]string, h)
 	for i := range out {
 		out[i] = strings.Repeat(" ", w)

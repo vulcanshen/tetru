@@ -177,15 +177,15 @@ func (f *field) Draw(w, h int, focused bool) []string {
 func split(w, h int) (fw, cw, k int) {
 	side := max(sideW+1, (w+2)/3)
 	fw, cw, k = w-side, side-1, 1
-	if fw >= 2*2*fieldW && h >= 2*sceneH && cw-2 >= 2*2*boxW && h >= 2*(2*boxH+2)+infoRows+2 {
+	if fw >= 2*2*fieldW && h >= 2*sceneH && cw-2 >= 2*2*boxW && h >= 2*(2*boxH+2)+infoH {
 		k = 2
 	}
 	return fw, cw, k
 }
 
 // column is the boxes at PLAYGROUND's right, cw wide and h high, every pixel k ×
-// k glyphs: Next 1 and Next 2, a box each in the middle of its frame, and
-// INFO under them down to the bottom.
+// k glyphs: Next 1 and Next 2, a box each in the middle of its frame; INFO
+// under them, as high as its rows; KEYS under it down to the bottom.
 func (t *Tetru) column(sc *scene, cw, h, k int) []string {
 	nh := boxH*k + 2
 	var out []string
@@ -193,7 +193,9 @@ func (t *Tetru) column(sc *scene, cw, h, k int) []string {
 		y0 := i * (boxH + 1)
 		out = append(out, framed(title, middle(pixels(sc, queueX, sceneW, y0, y0+boxH, k), 2*boxW*k, cw-2, nh-2), cw)...)
 	}
-	return append(out, framed("Info", (&info{t}).Draw(cw-2, h-2*nh-2), cw)...)
+	m := &info{t}
+	out = append(out, framed("Info", m.Stats(cw-2, statRows), cw)...)
+	return append(out, framed("Keys", m.Keys(cw-2, h-2*nh-(statRows+2)-2), cw)...)
 }
 
 // framed is body in a frame w wide, the title upper case after the frame's

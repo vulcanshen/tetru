@@ -16,14 +16,15 @@ with the player's name and the time, and ranks them, the best first.
 ## Features
 
 - **Drawn as locku's falling blocks**: the same square pixels and colours. The well at the left; at its right, in the same
-  panel, the next two pieces, a box each, and INFO: the level, the rows and the score, and the keys to play with.
+  panel, the next two pieces, a box each, then INFO with the level, the rows and the score, and KEYS with the keys to
+  play with.
 - **Your keys**: every key you play with can be changed on the Settings screen; `Esc` (pause) and `Space` (the menu)
   stay as they are.
 - **Ten levels of speed**: a level every ten rows, from a row a second to ten a second; past the tenth the speed stays.
-- **The best twenty kept**: the place, the name, the score and the time, the best first on the Rank screen. You play
-  first and say who played as the game ends; with no name it is ANON. A game left half way is kept too: quitting, or
-  closing the terminal, keeps the score it had then, for ANON. A game whose score is not in the best twenty is not kept,
-  and nobody is asked.
+- **The best twenty kept**: the place, the name, the score and the time, the best first on the Rank screen, the first
+  three in yellow, green and sky blue. You play first and say who played as the game ends; with no name it is ANON. A
+  game left half way is kept too: quitting, or closing the terminal, keeps the score it had then, for ANON. A game
+  whose score is not in the best twenty is not kept, and nobody is asked.
 - **Pause whenever**: `Esc` pauses and leaves the game where it is, a box saying the level, the rows and the score,
   `Enter` to go on. `Space` shows what you can do, the game waiting while it is open.
 - **Save and go on later**: Save keeps the game, its score and the blocks on the ground, and quits; the next start
@@ -36,8 +37,8 @@ with the player's name and the time, and ranks them, the best first.
 - macOS or Linux (WSL too).
 - A [Nerd Font](https://www.nerdfonts.com) terminal profile: the blocks and the frames are Nerd Font glyphs.
 - A truecolor (24-bit) terminal: the faded colours and the layer colours cannot be told apart in 256 colours.
-- A terminal at least 42 columns wide and 31 rows high. Under 60 columns the well shows alone; from 60 on, the pieces
-  to come and INFO show beside it. In a
+- A terminal at least 42 columns wide and 32 rows high. Under 60 columns the well shows alone; from 60 on, the pieces
+  to come, INFO and KEYS show beside it. In a
   smaller one tetru shows only its name, the size it needs and how to quit, and comes back as it was once the terminal
   grows: the game waits meanwhile.
 
@@ -131,7 +132,7 @@ Playing (the game in the `Gaming` mode), with the keys as they first are:
 | `Esc` | Pause, out of the game, where it stands in a box; `Enter` goes on |
 
 On the Settings screen, `Enter` on an action lists the keys: the small letters and `Enter`, but for `q`, `r` and `s`,
-which quit, restart and save. The one chosen is the key from then on, and INFO beside the well shows it; another
+which quit, restart and save. The one chosen is the key from then on, and KEYS beside the well shows it; another
 action's key is refused with a warning saying whose it is. An arrow does what its letter does (`h|j|k|l` are
 `←|↓|↑|→`, `u|d` are `PgUp|PgDn`): set left to another letter and `←` does nothing. `Esc` always pauses and `Space`
 always opens the menu.

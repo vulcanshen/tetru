@@ -1,15 +1,15 @@
 tasks:
   - id: 1
-    spec: 19
+    spec: 20
     implementation: |
       三個畫面（tgo Screen，Name、Key、Desc）：Tetru（T，the game）、Rank（R，the scores, best first）、Settings（S，the keys to play with）；
       tgo 畫最上面的畫面 chip 列與下面的線，T、R、S 是 global 熱鍵，global operation popup 裡也列出來
-      Tetru 畫面只有一個 panel [1] PLAYGROUND，佔滿 panel 區（沒有 Screen.Layout）；右邊一欄由上而下 NEXT 1、NEXT 2（task 2）、INFO（task 14）是 PLAYGROUND 的 body 畫的框（task 15）
+      Tetru 畫面只有一個 panel [1] PLAYGROUND，佔滿 panel 區（沒有 Screen.Layout）；右邊一欄由上而下 NEXT 1、NEXT 2（task 2）、INFO、KEYS（task 14）是 PLAYGROUND 的 body 畫的框（task 15）
       PLAYGROUND 裡分成左邊場地那一塊與右邊那一欄：右邊那一欄是 (PLAYGROUND 裡的寬 + 2) / 3、至少 24 欄（INFO 的框 23 欄與離 PLAYGROUND 的框一格），場地那一塊拿剩下的
-      （PLAYGROUND 裡 58 欄 34｜24、75 欄 50｜25、148 欄 98｜50）；NEXT 1、NEXT 2 的框各 6 列（放大時 10 列），從 PLAYGROUND 裡第一列起，INFO 的框拿剩下的到最後一列
-      Level、Lines、Score 在 INFO 上面那一段（task 14）；場地那一塊裡只有場地；沒有 statusbar
+      （PLAYGROUND 裡 58 欄 34｜24、75 欄 50｜25、148 欄 98｜50）；NEXT 1、NEXT 2 的框各 6 列（放大時 10 列），從 PLAYGROUND 裡第一列起，INFO 的框 5 列，KEYS 的框拿剩下的到最後一列
+      Level、Lines、Score 在 INFO（task 14）；場地那一塊裡只有場地；沒有 statusbar
       啟動時（tgo App.Start）用 tgo App.Focus 把 focus 放到 [1] PLAYGROUND
-      最低尺寸 42×31（tgo App.MinWidth、MinHeight）；比它小時 tgo 只畫名稱、needs a terminal of at least 42×31、Press [Ctrl-C] twice to quit
+      最低尺寸 42×32（tgo App.MinWidth、MinHeight）；比它小時 tgo 只畫名稱、needs a terminal of at least 42×32、Press [Ctrl-C] twice to quit
       窄寬的門檻 60（tgo Screen.NarrowBelow）：42–59 欄 PLAYGROUND 不畫右邊那一欄，自己在場地上面寫一行
       Level: 1   Lines: 0  Score: 0（Level 補到 2 格），場地右邊畫接下來的方塊、沒有框（task 2）
       tdptest 在每一格畫面量每一列等於終端機寬度（tdp L4）；版面的測試在 icon 與 powerline 符號 1/1、2/1、2/2 格下各跑一次（tdp E5）
@@ -57,7 +57,7 @@ tasks:
       （tgo v1.2.4-beta.1），都不列，[Esc] Pause 也不列；? 列 Gaming 的每個鍵（照 Settings 裡現在的鍵）、r、s 與 Esc
       Gaming 模式的 r：跟 PLAYGROUND 的 n 一樣（值得記的先開 NEW GAME 問誰玩的，不然直接開新的一局）；s：存檔並離開（task 16）；footer 是
       Space:menu ?:help d:rotate left k:rotate right r:restart s:save Esc:pause，60 欄時 tgo 收掉 r:restart s:save
-      遊戲每 40 ms 一格，有任何 popup 開著（Space menu、?、confirm）或終端機比 42×31 小時不往前走，popup 關掉就接著走；有沒有 popup 是問
+      遊戲每 40 ms 一格，有任何 popup 開著（Space menu、?、confirm）或終端機比 42×32 小時不往前走，popup 關掉就接著走；有沒有 popup 是問
       tgo App.Covered()（收起動畫播到一半、splash 開著也算）
       Esc 離開 Gaming（tgo Mode.OnExit）：遊戲停著，開 tgo App.Confirm：標題 RESUME，內容 Paused: level 1, 0 lines, 0 points.，問句 Go on with the game?，
       Enter:resume 回到 Gaming，Esc:cancel 留在暫停；場地上不畫東西（第一版畫的兩條直槓拿掉了）
@@ -91,15 +91,16 @@ tasks:
       啟動時 scores.yaml 讀不了：tgo App.MoveAside 問要不要移成 scores.yaml.bak 重新開始；Enter 移開、從空的排行開始，Esc 離開
     test: [TestPathIsInTheDataDirectory, TestSaveThenLoad, TestLoadBroken, TestBestKeepsTheTwenty, TestRankKeepsTheBestTwentyWithTheirPlaces, TestTopOutKeepsTheScore, TestNoPointsNotKept, TestFinishKeepsTheGameGoing, TestQuitWithAGameConfirmsAndKeepsAnon, TestBrokenScoresAskToMoveAside]
   - id: 8
-    spec: 19
+    spec: 20
     implementation: |
       Rank 畫面只有 [1] RANK，tgo List：#（名次，1 起，數字靠右）、NAME（可截短，最少 6 格）、SCORE（數字靠右，每三位一個逗號）、TIME（2006-01-02 15:04，本地時間，放不下第一個拿掉）
       footer 由 tgo 寫只有一個 panel 的那一種：Space:menu ?:help !:log q:quit
       順序：分數高的在前，同分時間早的在前；不能排序、不能篩選
       記下一筆後 cursor 移到那一筆（tgo List.Select），畫面與 focus 不換
+      前三名整列的字上色（tgo Row.Styled）：Yellow #f9e2af、Green #a6e3a1、Sky #89dceb；cursor 照 tgo，Subtext1 底、Base 字（TODO(tdp #8)）
       空的時候：No scores yet / Press [T] to play
       沒有 Enter 與其他動作；j|k、gg|G 由 tgo 移動
-    test: [TestScoresBestFirst, TestTopOutKeepsTheScore, TestScreensSwitchOnTRS, TestRankKeepsTheBestTwentyWithTheirPlaces]
+    test: [TestScoresBestFirst, TestTopOutKeepsTheScore, TestScreensSwitchOnTRS, TestRankKeepsTheBestTwentyWithTheirPlaces, TestRankColoursTheFirstThree]
   - id: 9
     spec: 19
     implementation: |
@@ -156,17 +157,16 @@ tasks:
       Esc 離開；排行的檔也讀不了時接著問它
     test: [TestDefaultIsTheUsersKeys, TestArrowsGoWithTheirLetters, TestUsedBySaysWhoHasAKey, TestPathIsInTheConfigDirectory, TestSaveThenLoadKeepsOtherKeys, TestLoadBadKeys, TestSettingsSetAKey, TestSettingsThatCantBeKept, TestBrokenSettingsAskToMoveAside, TestSettingsHaveNoPauseRow, TestAKeyInUseIsRefused]
   - id: 14
-    spec: 19
+    spec: 20
     implementation: |
-      INFO 是 PLAYGROUND 的 body 在右下畫的框（task 15）：框裡從上面一列一列寫，離框一格
-      上面一段：Level: 1 / Lines: 0 / Score: 12,340 一行一個，label Overlay0、值 Lavender；沒在玩時是上一局的值，還沒玩過是 1、0、0
-      一條 ╌ 的虛線（Overlay0），寬到離框一格
-      下面一段：鍵一欄 5 格（Blue），空兩格，說明：h move left、l move right、j down a row、d rotate left、k rotate right、Enter drop（都照 Settings 現在的鍵）、
+      INFO 與 KEYS 是 PLAYGROUND 的 body 在 NEXT 2 下面畫的兩個框（task 15），框裡從上面一列一列寫，離框一格
+      INFO（5 列）：Level: 1 / Lines: 0 / Score: 12,340 一行一個，label Overlay0、值 Lavender；沒在玩時是上一局的值，還沒玩過是 1、0、0
+      KEYS（到最後一列）：鍵一欄 5 格（Blue），空兩格，說明：h move left、l move right、j down a row、d rotate left、k rotate right、Enter drop（都照 Settings 現在的鍵）、
       Space menu、Esc pause
       沒有 cursor、沒有鍵、拿不到 focus（task 15）
     test: [TestStatsInInfo, TestInfoShowsTheKeys, TestSettingsSetAKey, TestLeastSizeIsTheGameAlone]
   - id: 15
-    spec: 17
+    spec: 20
     implementation: |
       Tetru 畫面的 Panels 只有 [1] PLAYGROUND；NEXT 1、NEXT 2、INFO 是 PLAYGROUND 的 body（tgo Body）在右邊那一欄畫的框，不是 tgo Panel：沒有 [N]，Tab、2–9 到不了，focus 一直在 PLAYGROUND
       footer 由 tgo 寫只有一個 panel 的那一種：Space:menu ?:help !:log q:quit（沒有 Tab|1–N）

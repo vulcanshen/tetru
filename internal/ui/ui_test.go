@@ -122,7 +122,7 @@ func TestTetruScreen(t *testing.T) {
 		if r := row(d, 3); !strings.Contains(r, "┌─ NEXT 1 ─") || !strings.HasSuffix(r, "┐ ┃") {
 			t.Fatalf("NEXT 1 is not a box in PLAYGROUND at its right: %q", r)
 		}
-		if !d.Has("┌─ NEXT 2 ─") || !d.Has("┌─ INFO ─") || d.Has("[2]") || d.Has("[3]") || d.Has("[4]") {
+		if !d.Has("┌─ NEXT 2 ─") || !d.Has("┌─ INFO ─") || !d.Has("┌─ KEYS ─") || d.Has("[2]") || d.Has("[3]") || d.Has("[4]") {
 			t.Fatal("no NEXT 2 or INFO box, or a box numbered")
 		}
 		for _, c := range []struct{ w, f, c int }{{58, 34, 23}, {75, 50, 24}, {148, 98, 49}} {
@@ -150,7 +150,7 @@ func TestTheBoxesAreNeverFocused(t *testing.T) {
 }
 
 func TestNarrowDrawsTheBoxesWithNoFrames(t *testing.T) {
-	_, d := open(t, 50, 31)
+	_, d := open(t, 50, 32)
 	if d.Has("NEXT") || d.Has("INFO") || !d.Has("[1] PLAYGROUND") || !d.Has("Level: 1   Lines: 0  Score: 0") {
 		t.Fatal("narrow, the boxes are framed, or the level, the rows and the score are not over the field")
 	}
@@ -171,7 +171,7 @@ func TestLeastSizeIsTheGameAlone(t *testing.T) {
 		t.Fatalf("narrow, at the least size, %d pixels, not all of the field and the boxes", got)
 	}
 	d.Resize(minW-1, minH)
-	if !d.Has("needs a terminal of at least 42×31") {
+	if !d.Has("needs a terminal of at least 42×32") {
 		t.Fatal("no size message under the least size")
 	}
 	d.Resize(narrowBelow, minH)
@@ -204,7 +204,7 @@ func TestPictureGrowsTwiceOnALargeTerminal(t *testing.T) {
 
 func TestStatsInInfo(t *testing.T) {
 	tt, d := open(t, 60, 32)
-	for _, s := range []string{"Level: 1", "Lines: 0", "Score: 0", "╌╌╌"} {
+	for _, s := range []string{"Level: 1", "Lines: 0", "Score: 0"} {
 		if !d.Has(s) {
 			t.Fatalf("INFO has no %q", s)
 		}
@@ -1015,5 +1015,33 @@ func TestRankKeepsTheBestTwentyWithTheirPlaces(t *testing.T) {
 	}
 	if r, ok := tt.list.Current(); !ok || r.Cells[0] != "1" || r.Cells[1] != anon {
 		t.Fatal("the new best is not first, the cursor on it")
+	}
+}
+
+func TestRankColoursTheFirstThree(t *testing.T) {
+	dir := t.TempDir()
+	t.Setenv("TETRU__DATA", dir)
+	t.Setenv("TETRU__CONFIG", t.TempDir())
+	var all []scores.Score
+	for i, n := range []int{5200, 3100, 8800, 1200} {
+		all = append(all, scores.Score{Time: time.Date(2026, 11, 12, 10, i, 0, 0, time.UTC), Name: "p" + strconv.Itoa(i), Score: n})
+	}
+	if err := scores.Save(scores.Path(), all); err != nil {
+		t.Fatal(err)
+	}
+	tt := NewTetru()
+	d := tdptest.Start(t, tt.App, 60, 32)
+	d.Press("R")
+	d.Press("G") // the cursor off the first three
+	rows := tt.rankP.Body.Draw(58, 27, true)
+	for n, rgb := range []string{"249;226;175", "166;227;161", "137;220;235"} {
+		if !strings.Contains(rows[1+n], rgb) {
+			t.Fatalf("place %d is not in its colour: %q", n+1, rows[1+n])
+		}
+	}
+	for _, rgb := range []string{"249;226;175", "166;227;161", "137;220;235"} {
+		if strings.Contains(rows[4], rgb) {
+			t.Fatalf("the fourth, the cursor on it, is in a place's colour: %q", rows[4])
+		}
 	}
 }

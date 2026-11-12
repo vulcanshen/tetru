@@ -1,14 +1,14 @@
-id: 19
+id: 20
 from: v1.2.3
 to: v1.2.3
 tasks:
   - id: 1
-    spec: 19
+    spec: 20
     request: '一個直的空間玩遊戲，右邊是接下來的方塊；排行不在遊戲旁邊，改成另一個分頁：[T]etru、[R]ank、[S]ettings；遊戲的右邊由上而下是 Next 1、Next 2，最下面一個 panel 分上下兩段，上面 Level、Lines、Score、下面操作方式（不叫 Manual）；終端機窄的時候，排行優先收掉；遊戲太小，GAME 的 panel 就是遊戲，不要遊戲自己的外框，縮小上下；空間要用滿，遊戲區域不能這麼小'
     tdp: [tdp terms.2, tdp terms.3, tdp screen.1, tdp screen.2, tdp screen.3, tdp screen.5, tdp screen.7, tdp M4, tdp L1, tdp L2, tdp L3, tdp L4, tdp E5, tdp panel.1, tdp panel.4, tdp K1, tdp K2, tdp P5]
     remark:
       - |
-        Tetru 畫面 60×32（使用者 2026-11-11 提的：分頁、右邊 Next 1、Next 2、INFO，Level 等放進 INFO；場地沒有自己的框；NEXT 是高 4、寬 6；右邊三個不標數字、不讓 focus，是 PLAYGROUND 裡自己畫的框，task 15）：
+        Tetru 畫面 60×32（使用者 2026-11-11 提的：分頁、右邊 Next 1、Next 2、INFO，Level 等放進 INFO；2026-11-12：INFO 與按鍵拆成兩個框；場地沒有自己的框；NEXT 是高 4、寬 6；右邊三個不標數字、不讓 focus，是 PLAYGROUND 裡自己畫的框，task 15）：
          [T]ETRU [R]ANK [S]ETTINGS
         ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         ┏[1] PLAYGROUND━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
@@ -28,26 +28,26 @@ tasks:
         ┃     ░░░░░░░░░░░░░░░░░░░░░░░░     │ Level: 3            │ ┃
         ┃     ░░░░░░░░░░░░░░░░░░░░░░░░     │ Lines: 25           │ ┃
         ┃     ░░░░░░░░░░░░░░░░░░░░░░░░     │ Score: 12,340       │ ┃
-        ┃     ░░░░░░░░░░░░░░░░░░░░░░░░     │ ╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌ │ ┃
+        ┃     ░░░░░░░░░░░░░░░░░░░░░░░░     └─────────────────────┘ ┃
+        ┃     ░░░░░░░░░░░░░░░░░░░░░░░░     ┌─ KEYS ──────────────┐ ┃
         ┃     ░░░░░░░░░░░░░░░░░░░░░░░░     │ h      move left    │ ┃
         ┃     ░░░░░░░░░░░░░░░░░░░░░░░░     │ l      move right   │ ┃
         ┃     ░░░░░░░░░░░░░░░░░░░░░░░░     │ j      down a row   │ ┃
         ┃     ░░░░░░░░░░░░░░░░░░░░░░░░     │ d      rotate left  │ ┃
-        ┃     ░░░░░░░░░░░░░░░░░░░░░░░░     │ k      rotate right │ ┃
-        ┃     ██░░░░░░░░░░░░░░░░░░░░░░     │ Enter  drop         │ ┃
-        ┃     ████░░░░░░░░░░░░░░░░██░░     │ Space  menu         │ ┃
-        ┃     ██████░░░░░░░░██████████     │ Esc    pause        │ ┃
-        ┃                                  │                     │ ┃
+        ┃     ██░░░░░░░░░░░░░░░░░░░░░░     │ k      rotate right │ ┃
+        ┃     ████░░░░░░░░░░░░░░░░██░░     │ Enter  drop         │ ┃
+        ┃     ██████░░░░░░░░██████████     │ Space  menu         │ ┃
+        ┃                                  │ Esc    pause        │ ┃
         ┃                                  └─────────────────────┘ ┃
         ┗━ Enter:play ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
         Space:menu ?:help !:log q:quit
       - '三個畫面（tdp terms.2：一組同時顯示的 panel；多畫面用 global operation 切換）：[T]etru 是遊戲、[R]ank 是排行（task 8）、[S]ettings 是按鍵（task 13）。最上面一列是畫面 chip（tdp screen.3），chip 列下面一條全寬的線。T、R、S 是 global 熱鍵（tdp M4：沒有 popup 開著時在 panel 上也能直接按；模式裡不作用，玩的時候要先 Esc），大寫是 Shift，跟家族的多畫面 app（sshu、webu）一樣用大寫字母。第一版的 [G]ame 用不了：G 在 tdp K12 保留給「到最底下」'
-      - 'Tetru 畫面只有一個 panel：[1] PLAYGROUND（task 2），佔滿 panel 區；右邊一欄由上而下 NEXT 1、NEXT 2（task 2）、INFO（task 14）是 PLAYGROUND 自己畫的框（task 15）。panel 怎麼拆，app 可以自行決定（tdp L1）。啟動時 focus 在 [1] PLAYGROUND：打開 app 就是要玩；只有一個 panel，footer 沒有 Tab|1–N（tdp screen.2）'
+      - 'Tetru 畫面只有一個 panel：[1] PLAYGROUND（task 2），佔滿 panel 區；右邊一欄由上而下 NEXT 1、NEXT 2（task 2）、INFO、KEYS（task 14）是 PLAYGROUND 自己畫的框（task 15）。panel 怎麼拆，app 可以自行決定（tdp L1）。啟動時 focus 在 [1] PLAYGROUND：打開 app 就是要玩；只有一個 panel，footer 沒有 Tab|1–N（tdp screen.2）'
       - '寬度：右邊那一欄（框與它右邊離 PLAYGROUND 的框一格）是整個寬度的三分之一，至少放得下 INFO（框 23 欄加一格），場地那一塊拿 PLAYGROUND 裡剩下的：60 欄 34｜24、77 欄 50｜25、150 欄 98｜50。三分之一照 tdp L1 自己舉的 1:2；遊戲在左邊、佔大半，第一版排行在寬的終端機上佔了七成（使用者 2026-11-11：比例太糟糕）'
-      - '高度：NEXT 1、NEXT 2 各是一格的高（4 列加框，6 列；放大時 10 列），從 PLAYGROUND 裡第一列開始，INFO 拿剩下的到 PLAYGROUND 裡最後一列'
+      - '高度：NEXT 1、NEXT 2 各是一格的高（4 列加框，6 列；放大時 10 列），從 PLAYGROUND 裡第一列開始；INFO 是三行加框，5 列；KEYS 拿剩下的到 PLAYGROUND 裡最後一列'
       - 'Level、Lines、Score 在 INFO 上面那一段，一行一個（使用者 2026-11-11：GAME 裡只放場地；GAME 就是現在的 PLAYGROUND）；不再有 statusbar（tdp screen.4：要不要有，app 可以自行決定；多畫面時它會在 chip 列的右邊，離遊戲很遠）。label Overlay0、值 Lavender（現在玩到哪，同 statusbar）。沒有在玩時寫上一局最後的值，還沒玩過寫第 1 關、0 行、0 分'
       - '遊戲太小、空間要用滿（使用者 2026-11-11，150×32 與 77×32 的終端機）：PLAYGROUND 裡只有場地（Level 等在 INFO）、場地沒有自己的框。一格方塊是 locku 的方塊 icon，一格只能一列高：場地照使用者說的固定 12 格寬、24 格高（2026-11-11：寬高都是固定的數字，加大一點），32 列時 PLAYGROUND 裡 27 列，場地 24 列；PLAYGROUND 裡有 48 列（53 列的終端機）起放大成兩倍。曾經改成實心方塊、一格 1.25 列高填滿 PLAYGROUND，使用者看了要換回原本的方塊 icon（2026-11-11）'
-      - '最低尺寸 42×31（tdp L1：可以調低）：寬是 PLAYGROUND 自己（場地與兩格 38 欄、上面一行 Level 等 38 欄、panel 的框與左右各一格）；高是 chip 列與線 2 列、footer 1 列、PLAYGROUND 的框 2 列，加上 PLAYGROUND 裡右邊那一欄：NEXT 1、NEXT 2 各 6 列、INFO 12 列與框，共 26 列；窄寬時也剛好放得下 Level 那一行、空一行與場地 24 列。三個框還是 panel 時是 42×29，改成 PLAYGROUND 裡的框（task 15）之後多了 PLAYGROUND 的框 2 列。窄寬的門檻 60（tdp screen.5 的上限）：42–59 欄 PLAYGROUND 不畫右邊那一欄，在場地上面寫一行 Level、Lines、Score，場地右邊畫兩個接下來的方塊、沒有框（task 2）'
+      - '最低尺寸 42×32（tdp L1：可以調低）：寬是 PLAYGROUND 自己（場地與兩格 38 欄、上面一行 Level 等 38 欄、panel 的框與左右各一格）；高是 chip 列與線 2 列、footer 1 列、PLAYGROUND 的框 2 列，加上 PLAYGROUND 裡右邊那一欄：NEXT 1、NEXT 2 各 6 列、INFO 3 列與框、KEYS 8 列與框，共 27 列；窄寬時放得下 Level 那一行、空一行與場地 24 列。三個框還是 panel 時是 42×29，改成 PLAYGROUND 裡的框（task 15）之後多了 PLAYGROUND 的框 2 列，INFO 拆成 INFO 與 KEYS（task 14）又多 1 列。窄寬的門檻 60（tdp screen.5 的上限）：42–59 欄 PLAYGROUND 不畫右邊那一欄，在場地上面寫一行 Level、Lines、Score，場地右邊畫兩個接下來的方塊、沒有框（task 2）'
   - id: 2
     spec: 17
     request: '顯示方式沿用 locku 的 tetromino：一樣的方塊 icon、一樣的顏色；接下來的方塊在 Next 1、Next 2 兩個 panel，每個只放一個，裡面是高 4、寬 6 的格子（使用者 2026-11-11 先要 5×5，再改成 4×6）；場地與 Next 都不要自己的外框'
@@ -122,12 +122,13 @@ tasks:
       - '分數是 0 的那一局不記：一行都沒消、沒有往下或落到底，排行上只會多一列 0'
       - '記下時在 App Log 記一筆（tdp note.7）；寫不進去開 error popup（tdp F5）；讀不了時照 tdp E3 問要不要移開（tgo MoveAside）'
   - id: 8
-    spec: 19
+    spec: 20
     request: '排行改成另一個分頁 [R]ank'
     tdp: [tdp panel.5, tdp screen.2, tdp screen.8, tdp K3, tdp K12, tdp M5]
     remark:
       - 'Rank 畫面只有一個 panel：[1] RANK，一般清單（tdp panel.5）：#（名次 1 到 20，數字靠右；使用者 2026-11-12：第一欄名次）、NAME（可截短）、SCORE（數字靠右）、TIME（2006-01-02 15:04），欄放不下先拿掉 TIME；只有一個 panel 的畫面，footer 沒有 Tab|1–N（tdp screen.2）'
       - '順序固定：分數高的在前，同分照時間早的在前（tdp panel.5 的「順序要固定」）'
+      - {note: '前三名整列的字上色（使用者 2026-11-12）：第一名 Yellow #f9e2af、第二名 Green #a6e3a1、第三名 Sky #89dceb；內容本身的顏色，app 可以自行決定（tdp P4、P5）。使用者也要 cursor 停在前三名時照那個顏色反色（色塊的底是那一列的顏色）：tdp color 規定 panel 的 cursor 色塊是 Subtext1 底、字 Base，原本的顏色不保留，沒有放行；暫時照 tdp，cursor 照樣 Subtext1（TODO(tdp #8)），tdp 放行、tgo 有設定之後改', issue: 'tdp #8'}
       - '記下一筆之後，RANK 的 cursor 移到那一筆（tdp K3：新增一項之後 cursor 移到新的那一項）；畫面與 focus 不換（tdp K3：背景發生的事不換畫面）'
       - '沒有紀錄時空狀態：No scores yet / Press [T] to play（tdp screen.8；到 Tetru 畫面，focus 在 PLAYGROUND 上，Enter 開始）'
       - 'Enter 在一筆紀錄上沒有動作：紀錄沒有東西可以打開'
@@ -178,17 +179,16 @@ tasks:
       - '設定檔讀不了（格式錯、鍵不能用、兩個動作同一個鍵）時照 tdp E3 問要不要移開（tgo MoveAside），移開就用預設的鍵；排行的檔也讀不了時接著問它'
       - '改了馬上生效：Gaming 的鍵、footer、? 與 INFO 寫的都是現在的鍵'
   - id: 14
-    spec: 19
-    request: '遊戲右下的 panel 分上下兩段：上面 Level、Lines、Score，下面操作方式；不叫 Manual'
+    spec: 20
+    request: '遊戲右下的 panel 分上下兩段：上面 Level、Lines、Score，下面操作方式；不叫 Manual。後來（使用者 2026-11-12）：INFO 裡的 level、lines、score 和下方的 manual 拆成兩個不同 block（之前用 panel 做，為了節省空間才那樣安排）'
     tdp: [tdp P5, tdp F1, tdp M5, tdp components.2, tdp screen.4, tdp menu]
     remark:
-      - 'INFO 是 PLAYGROUND 右下自己畫的框（task 15），內容 app 可以自行決定（tdp P5、F1）。名字照使用者說的不用 Manual：放的是現在玩到哪與怎麼玩，叫 INFO'
-      - '上面一段：Level、Lines、Score 一行一個，label Overlay0、值 Lavender（task 1）'
-      - '兩段之間一條虛線，跟 menu 分區的線一樣（tdp menu：╌，Overlay0）'
-      - '下面一段：一列一個鍵與它做什麼，照使用者在 Settings 設的鍵：移動左右、往下一格、左旋、右旋、落到底，再加 Space（menu）與 Esc（pause）（使用者 2026-11-12：暫停與 Space menu 是兩件事）；鍵名照 tdp M5（Enter、Space、Esc），鍵 Blue 跟 hint 一樣、說明是一般的字；鍵一欄 5 格，欄與欄之間兩格（tdp components.2）'
+      - 'NEXT 2 下面是兩個 PLAYGROUND 自己畫的框（task 15），內容 app 可以自行決定（tdp P5、F1）：INFO 與 KEYS。三個 NEXT 與 INFO 還是 panel 時擠在一個 panel 裡分兩段、中間一條虛線，現在是框，各自一個（使用者 2026-11-12）。名字照使用者說的不用 Manual：玩到哪叫 INFO，怎麼玩叫 KEYS'
+      - 'INFO：Level、Lines、Score 一行一個，label Overlay0、值 Lavender（task 1），框的高就是三行'
+      - 'KEYS：一列一個鍵與它做什麼，照使用者在 Settings 設的鍵：移動左右、往下一格、左旋、右旋、落到底，再加 Space（menu）與 Esc（pause）（使用者 2026-11-12：暫停與 Space menu 是兩件事）；鍵名照 tdp M5（Enter、Space、Esc），鍵 Blue 跟 hint 一樣、說明是一般的字；鍵一欄 5 格，欄與欄之間兩格（tdp components.2）'
       - '只能讀，沒有 cursor、沒有鍵，也拿不到 focus（task 15）。它不取代 ?：每個鍵照樣在 ?'
   - id: 15
-    spec: 17
+    spec: 20
     request: '[T]ETRU 分頁的 panel 2、3、4（NEXT 1、NEXT 2、INFO）不要標數字，那邊不讓使用者 focus（使用者 2026-11-11 再說一次：還是可以被 focus，要移除）'
     tdp: [tdp F1, tdp K1, tdp K2, tdp panel.1, tdp screen.1, tdp screen.2, tdp P5]
     remark:

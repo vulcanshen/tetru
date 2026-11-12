@@ -35,8 +35,8 @@ const (
 	// the level, the rows and the score over them, 38, its frame and a
 	// cell's margin each side; high enough for the chip row, its rule and
 	// the footer, PLAYGROUND's frame and the column in it at the right: Next 1
-	// and Next 2 and INFO, each with its frame.
-	minW, minH = 42, 3 + 2 + 2*(boxH+2) + infoRows + 2
+	// and Next 2, INFO and KEYS, each with its frame.
+	minW, minH = 42, 3 + 2 + 2*(boxH+2) + infoH
 	// narrowBelow is the width under which PLAYGROUND draws the boxes with no
 	// frames and no INFO (tdp screen.5's most).
 	narrowBelow = 60
@@ -435,13 +435,26 @@ func (t *Tetru) setRows(sel string) {
 	var rows []terminu.Row
 	for n, i := range scores.Ranked(t.all) {
 		s := t.all[i]
-		rows = append(rows, terminu.Row{ID: strconv.Itoa(i), Cells: []string{strconv.Itoa(n + 1), s.Name, comma(s.Score), s.Time.Local().Format("2006-01-02 15:04")}})
+		r := terminu.Row{ID: strconv.Itoa(i), Cells: []string{strconv.Itoa(n + 1), s.Name, comma(s.Score), s.Time.Local().Format("2006-01-02 15:04")}}
+		if n < len(podium) {
+			for _, c := range r.Cells {
+				r.Styled = append(r.Styled, []terminu.Span{{Text: c, Style: terminu.Fg(podium[n])}})
+			}
+		}
+		rows = append(rows, r)
 	}
 	t.list.SetRows(rows)
 	if sel != "" {
 		t.list.Select(sel)
 	}
 }
+
+// podium are the colours of the first three places' rows on RANK (user,
+// 2026-11-12): Yellow, Green, Sky; a content's colours, the app's (tdp P4,
+// P5). TODO(tdp #8): the user wants the cursor on them in their colour too;
+// tdp color has a panel's cursor block Subtext1 with Base on it, so for
+// now it is.
+var podium = []terminu.Color{terminu.Yellow, terminu.Green, terminu.Hex("#89dceb")}
 
 // setModeKeys are the Gaming mode's keys, the player's (Settings): the moves
 // with their arrows too (tdp K12) and the drop, all the way down, are
