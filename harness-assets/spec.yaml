@@ -1,4 +1,4 @@
-id: 42
+id: 43
 from: v1.2.3
 to: v1.2.3
 tasks:
@@ -167,13 +167,14 @@ tasks:
       - 'docs/icon.svg：U 框照 tdp principle/icon.svg，金色的字在框裡拼 T、E、T、R（框本身是 U），排法照 demou 的兩排兩個；用 kamonu 做的那一份（~/.kamonu/data/svg/tetru.svg，一個字 6×7 格、筆畫兩格粗），取代 harness 原本畫的 5×7 細字（使用者 2026-11-12：這個成員的 icon 已經用 kamonu 做好了）'
       - 'splash 的介紹：A falling-block game for the terminal'
   - id: 12
-    spec: 42
+    spec: 43
     request: '照家族的 repo 與發布方式'
     tdp: [tdp E3, tdp E4, tdp E6, tdp E7, harness project.2, harness project.3, harness project.4, harness project.5, harness project.6, harness project.7]
     remark:
       - 'repo 照 harness project.3；README 兩份照 tdp E7 的 12 段'
       - '平台：macOS、Linux（WSL 也可以）與 Windows（使用者 2026-11-12：第一版就一起出 Windows 版）。要不要出 Windows 版，app 可以自行決定（harness project.3）；出的話照 harness project.2 打開範本的開關：.goreleaser.yaml 標著 Windows 的註解（windows 的執行檔、zip、scoop bucket）、release.yml 測試的 matrix 加 windows-latest、install.sh 的 WINDOWS=yes；另有 install.ps1、uninstall.ps1（harness project.3：怎麼寫 app 可以自行決定），照家族裡 ccdrawu 的寫法：執行檔裝在 %LOCALAPPDATA%\tetru 並加進使用者的 PATH，移除時逐一問要不要刪設定與資料'
       - 'Windows 上設定與資料的位置照 tdp E3：~ 是 %USERPROFILE%，設定 %USERPROFILE%\.config\tetru、資料 %USERPROFILE%\.tetru，不用 %APPDATA%；程式用 os.UserHomeDir，三個平台同一套算法。終端機要用 Windows Terminal（舊的主控台沒有 truecolor，tdp E4）'
+      - 'GitHub 的 social preview：docs/social-preview.png（使用者 2026-11-12：social preview 還沒作），照家族其他成員的樣子（locku 的 social-preview）：640×320 黑底，上面是 docs/icon.svg 直接畫成 260×260，下面是 Tiny5 字型的 tetru（#cdd6f4）。tdp 沒管這張圖，家族成員都有；開 GitHub repo 後在 Settings 的 Social preview 上傳'
   - id: 13
     spec: 19
     request: '除了 Space 是暫停並打開 Space menu，其他的鍵都在 Settings 裡讓使用者自己設定'

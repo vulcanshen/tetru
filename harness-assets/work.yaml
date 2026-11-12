@@ -137,7 +137,7 @@ tasks:
       命令列：tetru version、-v、--version 印 Display()；tetru help、-h、--help 印用法（含分數與存檔的位置）；其他字印 unknown command 與用法，exit 2
     test: [TestSplashIsTheIcon, TestVersionAndHelp, TestFirstLaunch]
   - id: 12
-    spec: 42
+    spec: 43
     implementation: |
       repo 照 harness project.3；family.mk、release.yml、.goreleaser.yaml、install.sh、uninstall.sh、internal/version/version.go、.gitignore 照 harness 範本，
       只改表上允許的地方（goreleaser 的 description、caveats 寫分數的位置）；出 Windows 版：.goreleaser.yaml 打開標著 Windows 的註解（scoop 的 description 同 brews 的），
@@ -147,6 +147,7 @@ tasks:
       Windows 上的測試：預設路徑的測試同時設 HOME 與 USERPROFILE、用 filepath.Join 比；把目錄設成唯讀來讓設定寫不進去的測試在 Windows 上跳過（Windows 的目錄不能設成唯讀）
       README.md、README-zh_TW.md 照 tdp E7 的 12 段（需求寫 macOS、Linux 或 Windows，安裝與移除有 Homebrew、Scoop、install.sh、install.ps1）；demo gif 在 docs/demo.gif，VHS tape 在 .local/demos/demo.tape
       CHANGELOG.md 開頭照 harness project.6，改動寫在 Unreleased
+      docs/social-preview.png：640×320 黑底，docs/icon.svg 用 rsvg-convert 直接畫成 260×260 放在上面置中，下面 52 列的帶狀裡置中寫 Tiny5 34pt 的 tetru（#cdd6f4，不反鋸齒）
     test:
       - check: repo
   - id: 13
