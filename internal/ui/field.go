@@ -232,10 +232,11 @@ var broken = [...]string{string(rune(0xF0D7C)), string(rune(0xF00B5))}
 const shattered = uint8(len(broken)) + 1
 
 // blown is the shape of four rows' dust as it goes out, windblown its
-// glyph (user, 2026-11-12: one glyph more as it goes; nf-weather-dust).
+// glyph (user, 2026-11-12: one glyph more as it goes; nf-weather-dust,
+// then nf-md-dots_horizontal tried).
 const blown = shattered + 1
 
-var windblown = string(rune(0xE35D))
+var windblown = string(rune(0xF01D8))
 
 // breaking is the shape at t of a block that is gone at gone, breaking
 // over span before it: 0 whole, 1 on broken[0] on, shattered gone.
