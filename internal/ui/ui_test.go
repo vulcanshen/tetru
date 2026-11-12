@@ -1136,9 +1136,19 @@ func TestClearsByHowManyRows(t *testing.T) {
 	if !strings.Contains(bottom(), white) {
 		t.Fatal("three rows do not go white first")
 	}
+	// breaks says whether a block in r is breaking: split, grains or dust
+	// (user, 2026-11-12).
+	breaks := func(r string) bool {
+		for _, b := range broken {
+			if strings.Contains(r, b) {
+				return true
+			}
+		}
+		return false
+	}
 	g.Advance(game.Flash + (game.ClearTime(3)-game.Flash)/2)
-	if r := bottom(); !strings.Contains(r, white) || !strings.Contains(r, ground) {
-		t.Fatalf("three rows half way do not crumble, some blocks white, some gone: %q", r)
+	if r := bottom(); !strings.Contains(r, white) || !strings.Contains(r, ground) || !breaks(r) {
+		t.Fatalf("three rows half way do not crumble, some blocks white, some breaking, some gone: %q", r)
 	}
 
 	g = clearOf(t, tt, 4)
@@ -1148,8 +1158,8 @@ func TestClearsByHowManyRows(t *testing.T) {
 	// Burst and crumbled where they are first (user, 2026-11-12: crumbling
 	// as they flew, it could not be seen), then what is left goes out.
 	g.Advance(game.Flash + game.Slide*2/5)
-	if r := bottom(); !strings.Contains(r, white) || !strings.Contains(r, ground) || goesRight(r) {
-		t.Fatalf("four rows do not burst and crumble where they are first: %q", r)
+	if r := bottom(); !strings.Contains(r, white) || !strings.Contains(r, ground) || !breaks(r) || goesRight(r) {
+		t.Fatalf("four rows do not burst and crumble where they are first, breaking: %q", r)
 	}
 	g.Advance(game.Slide * 2 / 5)
 	if r := bottom(); !strings.Contains(r, white) || !goesRight(r) || pieceColoured(r) {

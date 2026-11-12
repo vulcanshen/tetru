@@ -222,6 +222,24 @@ func framed(title string, body []string, w int) []string {
 // of row i goes at crumble[(x+5i) mod 12], of 12.
 var crumble = [game.Cols]int{7, 2, 10, 4, 0, 9, 5, 11, 1, 6, 3, 8}
 
+// broken are the glyphs a block goes through as it crumbles, after the
+// square and before it is gone: split in four, grains, dust (user,
+// 2026-11-12: the square itself breaking; nf-md-view_grid, nf-md-grain,
+// nf-md-blur).
+var broken = []string{string(rune(0xF0570)), string(rune(0xF0D7C)), string(rune(0xF00B5))}
+
+// breaking is the shape at t of a block that is gone at gone, breaking
+// over span before it: 0 whole, 1 to 3 broken[0] to broken[2], 4 gone.
+func breaking(t, gone, span float64) uint8 {
+	switch {
+	case t >= gone:
+		return 4
+	case t < gone-span:
+		return 0
+	}
+	return 1 + uint8((t-(gone-span))/span*3)
+}
+
 // clearRows draws the rows going over out, w wide, where the scene sc is
 // drawn from its column 0 to its column x1, every pixel k × k glyphs, at
 // column left and line top, with right glyphs blank right of the field to
@@ -230,18 +248,20 @@ var crumble = [game.Cols]int{7, 2, 10, 4, 0, 9, 5, 11, 1, 6, 3, 8}
 // (user, 2026-11-12), by how many they are, in about the same time:
 //   - one fades away where it is;
 //   - two burst from their middle, ring by ring outwards;
-//   - three crumble, a block at a time in no order;
-//   - four burst in the middle and crumble where they are, about half of
-//     each row gone, then what is left of the halves goes out to either
-//     side, the right one as far as the blank there (user, 2026-11-12:
-//     crumbling as they flew, it could not be seen); the bottom row first.
+//   - three crumble, a block at a time in no order, each breaking (broken)
+//     before it is gone (user, 2026-11-12);
+//   - four burst in the middle and crumble where they are, breaking, about
+//     half of each row gone, then what is left of the halves goes out to
+//     either side, the right one as far as the blank there (user,
+//     2026-11-12: crumbling as they flew, it could not be seen); the bottom
+//     row first.
 //
 // The ground shows where they were.
 func clearRows(out []string, g *game.Game, sc *scene, w, k, x1, left, top, right int) {
 	if g == nil || len(g.Going) == 0 {
 		return
 	}
-	cell := pixelGlyph + strings.Repeat(" ", max(0, 2-terminu.IconWidth()))
+	pad := strings.Repeat(" ", max(0, 2-terminu.IconWidth()))
 	// lead is the glyphs left of the field, the first of them half cut
 	// off when left is odd.
 	lead := (left + 1) / 2
@@ -249,29 +269,30 @@ func clearRows(out []string, g *game.Game, sc *scene, w, k, x1, left, top, right
 	end := max(x1*k, strip+right) // past the last glyph drawn
 	for i, y := range g.Going {
 		at := make([]uint8, lead+end) // glyph u's ink at u+lead, the field's first glyph being 0
+		sh := make([]uint8, lead+end) // and its shape (breaking)
 		for u := 0; u < x1*k; u++ {
 			at[u+lead] = sc.px[y][u/k]
 		}
-		put := func(u int, ink uint8) {
+		put := func(u int, ink, shape uint8) {
 			if u >= -lead && u < end {
-				at[u+lead] = ink
+				at[u+lead], sh[u+lead] = ink, shape
 			}
 		}
-		block := func(x int, ink uint8) {
+		block := func(x int, ink, shape uint8) {
 			for j := range k {
-				put(x*k+j, ink)
+				put(x*k+j, ink, shape)
 			}
 		}
 		n, p := len(g.Going), g.Along()
 		switch {
 		case p == 0: // the flash
 			for x := range game.Cols {
-				block(x, inkWhite)
+				block(x, inkWhite, 0)
 			}
 		case n == 1: // fade
 			if step := int(p * 4); step < 4 {
 				for x := range game.Cols {
-					block(x, []uint8{inkWhite, inkFade, inkFade + 1, inkFade + 2}[step])
+					block(x, []uint8{inkWhite, inkFade, inkFade + 1, inkFade + 2}[step], 0)
 				}
 			}
 		case n == 2: // burst
@@ -279,30 +300,32 @@ func clearRows(out []string, g *game.Game, sc *scene, w, k, x1, left, top, right
 				// The ring: twice the steps from the middle of the rows.
 				d := max(2*x-(game.Cols-1), game.Cols-1-2*x) + max(2*i-(n-1), n-1-2*i)
 				if p < float64(d)/float64(game.Cols-1+n-1)*0.85+0.15 {
-					block(x, inkWhite)
+					block(x, inkWhite, 0)
 				}
 			}
 		case n == 3: // crumble
 			for x := range game.Cols {
-				if p < float64(crumble[(x+5*i)%game.Cols])/game.Cols*0.85+0.15 {
-					block(x, inkWhite)
+				gone := float64(crumble[(x+5*i)%game.Cols])/game.Cols*0.85 + 0.15
+				if s := breaking(p, gone, 0.25); s < 4 {
+					block(x, inkWhite, s)
 				}
 			}
 		default: // burst in the middle and crumble, then what is left splits
 			f := g.Slid(i)
-			// The halves go out over the second half of the row's time.
-			s := max(0, (f-0.45)/0.55)
+			// The halves go out over the last 40% of the row's time, once
+			// the others have broken where they were.
+			s := max(0, (f-0.6)/0.4)
 			offL, offR := int(s*float64(lead+half)+0.5), int(s*float64(right+half)+0.5)
 			for x := range game.Cols {
 				// The four in the middle burst first, half the others
-				// crumble with them; the rest go out.
-				gone := 2.0
+				// crumble after them; the rest go out whole.
+				shape := uint8(0)
 				if d := max(2*x-(game.Cols-1), game.Cols-1-2*x); d <= 3 {
-					gone = 0.1 + 0.05*float64(d-1)/2
+					shape = breaking(f, 0.12+0.04*float64(d-1)/2, 0.12)
 				} else if c := crumble[(x+5*i)%game.Cols]; c < game.Cols/2 {
-					gone = 0.15 + 0.3*float64(c)/float64(game.Cols/2)
+					shape = breaking(f, 0.4+0.2*float64(c)/float64(game.Cols/2), 0.35)
 				}
-				if f >= gone {
+				if shape == 4 {
 					continue
 				}
 				u := x*k + offR
@@ -313,7 +336,7 @@ func clearRows(out []string, g *game.Game, sc *scene, w, k, x1, left, top, right
 					if x >= game.Cols/2 && u+j >= strip+right {
 						break
 					}
-					put(u+j, inkWhite)
+					put(u+j, inkWhite, shape)
 				}
 			}
 		}
@@ -323,19 +346,23 @@ func clearRows(out []string, g *game.Game, sc *scene, w, k, x1, left, top, right
 			b.WriteString(" ")
 			u++
 		}
-		ink, run := inkNone, 0
+		ink, shape, run := inkNone, uint8(0), 0
 		flush := func() {
 			if ink == inkNone {
 				b.WriteString(strings.Repeat("  ", run))
 			} else {
-				b.WriteString(terminu.Fg(inks[ink]).Render(strings.Repeat(cell, run)))
+				glyph := pixelGlyph
+				if shape > 0 {
+					glyph = broken[shape-1]
+				}
+				b.WriteString(terminu.Fg(inks[ink]).Render(strings.Repeat(glyph+pad, run)))
 			}
 			run = 0
 		}
 		for ; u < end; u++ {
-			if c := at[u+lead]; c != ink {
+			if c, s := at[u+lead], sh[u+lead]; c != ink || s != shape {
 				flush()
-				ink = c
+				ink, shape = c, s
 			}
 			run++
 		}
