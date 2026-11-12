@@ -53,8 +53,9 @@ const (
 // block of a game saved and taken up and the rows going white, a colour no
 // piece has (user, 2026-11-11; 2026-11-12: the rows going all one colour,
 // rosewater, then white), the curtain overlay1, three steps of white
-// fading to the ground, and the hint surface2, a grey lighter than the
-// ground and darker than the curtain (user, 2026-11-12: a lighter grey).
+// fading to the ground, and the hint overlay0, a grey lighter than the
+// ground and a little darker than the curtain (user, 2026-11-12: a lighter
+// grey; surface2 first, then overlay0, lighter still).
 var inks = []terminu.Color{
 	{},
 	terminu.Hex("#313244"),
@@ -63,7 +64,7 @@ var inks = []terminu.Color{
 	terminu.Hex("#ffffff"),
 	terminu.Hex("#7f849c"),
 	terminu.Hex("#ccccd0"), terminu.Hex("#9899a2"), terminu.Hex("#656573"),
-	terminu.Hex("#585b70"),
+	terminu.Hex("#6c7086"),
 }
 
 // field is the PLAYGROUND panel's body: the field of t's game and, at its right,

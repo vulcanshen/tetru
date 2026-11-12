@@ -1186,7 +1186,7 @@ func TestTheHintIsALighterGreyToLevelFive(t *testing.T) {
 	tok := regexp.MustCompile("\x1b\\[[0-9;]*m|.")
 	// hinted says whether row y of the field has a block in the hint's
 	// grey: at 80 × 32 the field is columns 14 to 38 of PLAYGROUND's body
-	// (the boxes beside it have frames in that grey).
+	// (the boxes beside it have titles in that grey).
 	hinted := func(y int) bool {
 		fg, col := "", 0
 		for _, m := range tok.FindAllString(tt.gameP.Body.Draw(78, 27, true)[1+y], -1) {
@@ -1196,7 +1196,7 @@ func TestTheHintIsALighterGreyToLevelFive(t *testing.T) {
 				}
 				continue
 			}
-			if col >= 14 && col < 38 && m != " " && strings.Contains(fg, "38;2;88;91;112") {
+			if col >= 14 && col < 38 && m != " " && strings.Contains(fg, "38;2;108;112;134") {
 				return true
 			}
 			col += terminu.Width(m)
