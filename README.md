@@ -113,7 +113,7 @@ tetru has three screens; switch with their keys, or from Global operation in the
 | `R` | Rank: the scores, the best first |
 | `S` | Settings: the keys to play with |
 
-Playing (the game in the `Play` mode), with the keys as they first are:
+Playing (the game in the `Gaming` mode), with the keys as they first are:
 
 | Key | What it does |
 |---|---|
@@ -136,7 +136,7 @@ the key from then on, and INFO beside the well shows it; one that already does s
 Clearing 1, 2, 3 or 4 rows at once scores 100, 300, 500 or 800 times the level. A piece that lies on the stack is set half
 a second later; moving or turning it gives it the half second again, a few times.
 
-On the GAME panel, out of the game:
+On the PLAYGROUND panel, out of the game:
 
 | Key | What it does |
 |---|---|

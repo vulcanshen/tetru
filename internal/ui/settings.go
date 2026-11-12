@@ -32,7 +32,7 @@ func (t *Tetru) keyFields() []*terminu.Field {
 
 // chooseKey opens a select of the keys offered (tdp select; tdp K11: which
 // keys and how are the app's): the small letters, Enter and Space, the key
-// now chosen. A key already doing something in the Play mode (another
+// now chosen. A key already doing something in the Gaming mode (another
 // action's, its arrow, a core key) is refused with a Warning saying what
 // has it, and not set (tdp K11). Another is written to the settings file
 // before the popup closes: a failure keeps it open under an error popup

@@ -8,7 +8,7 @@ import (
 	"github.com/vulcanshen/tetru/internal/keys"
 )
 
-// info is what the INFO box in GAME shows, two parts (user, 2026-11-11:
+// info is what the INFO box in PLAYGROUND shows, two parts (user, 2026-11-11:
 // under Next 1 and Next 2; the level, the rows and the score at the top,
 // beside the field, not over it; the controls under them): the level, the rows and
 // the score, then, under a dashed line as a menu's sections are parted

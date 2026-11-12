@@ -1,7 +1,7 @@
 // Package ui is tetru's terminal UI on terminu-go: three screens (user,
-// 2026-11-11), Tetru with the GAME panel, the pieces to come and INFO,
+// 2026-11-11), Tetru with the PLAYGROUND panel, the pieces to come and INFO,
 // Rank with the scores kept, Settings with the keys to play with;
-// the Play mode the game runs in.
+// the Gaming mode the game runs in.
 package ui
 
 import (
@@ -31,16 +31,16 @@ var icon []byte
 
 const (
 	// minW, minH are tetru's least size (tdp L1, lower than 60 × 32): wide
-	// enough for GAME alone (narrow), the field and the boxes, 38 columns,
+	// enough for PLAYGROUND alone (narrow), the field and the boxes, 38 columns,
 	// the level, the rows and the score over them, 38, its frame and a
 	// cell's margin each side; high enough for the chip row, its rule and
-	// the footer, GAME's frame and the column in it at the right: Next 1
+	// the footer, PLAYGROUND's frame and the column in it at the right: Next 1
 	// and Next 2 and INFO, each with its frame.
 	minW, minH = 42, 3 + 2 + 2*(boxH+2) + infoRows + 2
-	// narrowBelow is the width under which GAME draws the boxes with no
+	// narrowBelow is the width under which PLAYGROUND draws the boxes with no
 	// frames and no INFO (tdp screen.5's most).
 	narrowBelow = 60
-	// sideW is the least a box at GAME's right is: INFO's rows and its
+	// sideW is the least a box at PLAYGROUND's right is: INFO's rows and its
 	// frame.
 	sideW = infoW + 2
 	// frame is a step of the game, as locku's; clearFrame is one while rows
@@ -115,13 +115,13 @@ func NewTetru() *Tetru {
 		EmptyHint: "Press [T] to play",
 	}
 	t.rankP = &terminu.Panel{Label: "Rank", Body: t.list}
-	t.gameP = &terminu.Panel{Label: "Game", Body: &field{t}, OnEsc: func() tea.Cmd { return nil }}
+	t.gameP = &terminu.Panel{Label: "Playground", Body: &field{t}, OnEsc: func() tea.Cmd { return nil }}
 	keysP := &terminu.Panel{Label: "Keys", Body: &terminu.Values{Header: [2]string{"Action", "Key"}, Fields: t.keyFields()}}
-	t.play = &terminu.Mode{Name: "Play", Exit: "pause", Pause: true, OnExit: t.pause}
+	t.play = &terminu.Mode{Name: "Gaming", Exit: "pause", Pause: true, OnExit: t.pause}
 	t.setModeKeys()
 	t.setActions()
 	t.setRows("")
-	// GAME is the screen's only panel: Next 1, Next 2 and INFO are boxes
+	// PLAYGROUND is the screen's only panel: Next 1, Next 2 and INFO are boxes
 	// it draws, with no [N], the focus never on them (user, 2026-11-11).
 	a.AddScreen(&terminu.Screen{
 		Name:        "Tetru",
@@ -139,7 +139,7 @@ func NewTetru() *Tetru {
 	return t
 }
 
-// start puts the focus on GAME (opening tetru is to play), and asks to move
+// start puts the focus on PLAYGROUND (opening tetru is to play), and asks to move
 // aside the files that could not be read.
 func (t *Tetru) start() tea.Cmd {
 	return tea.Batch(t.App.Focus(t.gameP), t.moveAside())
@@ -178,7 +178,7 @@ func (t *Tetru) moveAside() tea.Cmd {
 	return nil
 }
 
-// narrow says whether GAME draws the boxes with no frames and no INFO
+// narrow says whether PLAYGROUND draws the boxes with no frames and no INFO
 // (tdp screen.5's width).
 func (t *Tetru) narrow() bool {
 	w, _ := t.App.Size()
@@ -197,19 +197,19 @@ func comma(n int) string {
 // going says whether there is a game not ended: playing or paused.
 func (t *Tetru) going() bool { return t.g != nil && !t.g.Over }
 
-// playing says whether the game is in the Play mode.
+// playing says whether the game is in the Gaming mode.
 func (t *Tetru) playing() bool { return t.going() && t.gameP.InMode() == t.play }
 
-// paused says whether there is a game not ended out of the Play mode.
+// paused says whether there is a game not ended out of the Gaming mode.
 func (t *Tetru) paused() bool { return t.going() && t.gameP.InMode() != t.play }
 
-// setActions are GAME's actions as the game stands: Enter plays a new
+// setActions are PLAYGROUND's actions as the game stands: Enter plays a new
 // game, or goes on with the one paused (tdp K3); New game and End game.
 func (t *Tetru) setActions() {
 	enter := terminu.Action{Key: "Enter", Label: "Play", Desc: "a new game", Scope: terminu.PanelScope, Hint: "play", Disabled: t.waiting, Do: t.enter}
 	switch {
 	case t.playing(), t.waiting():
-		// In the Play mode no key of the panel's works, nor Enter while the
+		// In the Gaming mode no key of the panel's works, nor Enter while the
 		// game over waits to be kept: no hint (tdp panel.1); the mode's keys
 		// are in the footer.
 		enter.Hint = ""
@@ -250,7 +250,7 @@ func (t *Tetru) saveGame() tea.Cmd {
 // 2026-11-11).
 const anon = "ANON"
 
-// enter is Enter on GAME: go on with the game paused, or straight into a
+// enter is Enter on PLAYGROUND: go on with the game paused, or straight into a
 // new one (user, 2026-11-11: no name first; it is asked as the game ends).
 func (t *Tetru) enter() tea.Cmd {
 	if t.paused() {
@@ -259,7 +259,7 @@ func (t *Tetru) enter() tea.Cmd {
 	return t.begin()
 }
 
-// begin starts a new game, in the Play mode.
+// begin starts a new game, in the Gaming mode.
 func (t *Tetru) begin() tea.Cmd {
 	t.g, t.saved, t.topped = game.New(t.seed()), false, false
 	return t.resume()
@@ -293,18 +293,18 @@ func (t *Tetru) askName(title, verb string, then, cancel func() tea.Cmd) tea.Cmd
 	})
 }
 
-// resume goes into the Play mode: the game runs.
+// resume goes into the Gaming mode: the game runs.
 func (t *Tetru) resume() tea.Cmd {
 	t.gameP.EnterMode(t.play)
 	t.setActions()
 	return t.wake()
 }
 
-// pause is Esc leaving the Play mode (tdp K4): the game waits, and a
+// pause is Esc leaving the Gaming mode (tdp K4): the game waits, and a
 // confirm says so (user, 2026-11-11: a pause is a popup, not drawn in the
 // game), the level, the rows and the score in it. A confirm is titled by
 // what Enter does (tdp confirm.2): RESUME; Esc leaves the game paused,
-// Enter on GAME going on then.
+// Enter on PLAYGROUND going on then.
 func (t *Tetru) pause() tea.Cmd {
 	t.setActions()
 	if !t.paused() {
@@ -338,7 +338,7 @@ func (t *Tetru) endGame() tea.Cmd {
 	return t.askName("End game", "end", t.finish, nil)
 }
 
-// finish ends the game going, if any: out of the Play mode, the curtain
+// finish ends the game going, if any: out of the Gaming mode, the curtain
 // coming down.
 func (t *Tetru) finish() tea.Cmd {
 	if !t.going() {
@@ -414,7 +414,7 @@ func (t *Tetru) setRows(sel string) {
 	}
 }
 
-// setModeKeys are the Play mode's keys, the player's (Settings): the moves
+// setModeKeys are the Gaming mode's keys, the player's (Settings): the moves
 // with their arrows too (tdp K12) and the drop, all the way down, are
 // moving: shown in the mode's Space menu, not in the footer, which keeps
 // room for Esc:pause; the turns are things done to the falling piece, run
@@ -438,7 +438,7 @@ func (t *Tetru) setModeKeys() {
 	}
 }
 
-// do is a Play mode key: action a on the falling piece.
+// do is a Gaming mode key: action a on the falling piece.
 func (t *Tetru) do(a keys.Action) func(string) tea.Cmd {
 	return func(string) tea.Cmd {
 		switch a {
@@ -470,7 +470,7 @@ func (t *Tetru) after() tea.Cmd {
 	return nil
 }
 
-// over is the stack reaching the top: out of the Play mode, the curtain
+// over is the stack reaching the top: out of the Gaming mode, the curtain
 // coming down; once it is down, who played is asked (step), Esc keeping the
 // score for ANON. Till then the game is waiting to be kept: Enter and New
 // game do nothing. A game with no points has nothing to keep.
@@ -512,7 +512,7 @@ func (t *Tetru) onMsg(msg tea.Msg) tea.Cmd {
 	return nil
 }
 
-// step is a frame, dt long: the game in the Play mode goes on dt, unless a
+// step is a frame, dt long: the game in the Gaming mode goes on dt, unless a
 // popup is over it or the terminal is too small to see it; the curtain
 // comes down whatever. The frames stop with nothing left to move.
 func (t *Tetru) step(dt time.Duration) tea.Cmd {

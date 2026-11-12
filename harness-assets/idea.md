@@ -47,6 +47,7 @@
   後來說：列出來的確實是屬於這個模式的 key，tdp #7 也關掉（照 tdp menu.4 列，再加 restart、save）。
   再後來問：為什麼 h/l/j/Enter 又出現在 Play mode 的 menu 裡面？聽了 tdp 的規定之後選：重新打開 tdp #7。
   又說：應該不是讓遊戲例外，而是讓 app 特殊模式中可以不再 tdp space menu 內的限制（#7 照這樣改了標題與內文）。
+- （2026-11-12）「Play」模式名稱改成「Gaming」模式；panel 1 title 名稱從 GAME 改成 PLAYGROUND。
 
 ## 關卡
 

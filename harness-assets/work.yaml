@@ -1,31 +1,31 @@
 tasks:
   - id: 1
-    spec: 13
+    spec: 17
     implementation: |
       三個畫面（tgo Screen，Name、Key、Desc）：Tetru（T，the game）、Rank（R，the scores, best first）、Settings（S，the keys to play with）；
       tgo 畫最上面的畫面 chip 列與下面的線，T、R、S 是 global 熱鍵，global operation popup 裡也列出來
-      Tetru 畫面只有一個 panel [1] GAME，佔滿 panel 區（沒有 Screen.Layout）；右邊一欄由上而下 NEXT 1、NEXT 2（task 2）、INFO（task 14）是 GAME 的 body 畫的框（task 15）
-      GAME 裡分成左邊場地那一塊與右邊那一欄：右邊那一欄是 (GAME 裡的寬 + 2) / 3、至少 24 欄（INFO 的框 23 欄與離 GAME 的框一格），場地那一塊拿剩下的
-      （GAME 裡 58 欄 34｜24、75 欄 50｜25、148 欄 98｜50）；NEXT 1、NEXT 2 的框各 6 列（放大時 10 列），從 GAME 裡第一列起，INFO 的框拿剩下的到最後一列
+      Tetru 畫面只有一個 panel [1] PLAYGROUND，佔滿 panel 區（沒有 Screen.Layout）；右邊一欄由上而下 NEXT 1、NEXT 2（task 2）、INFO（task 14）是 PLAYGROUND 的 body 畫的框（task 15）
+      PLAYGROUND 裡分成左邊場地那一塊與右邊那一欄：右邊那一欄是 (PLAYGROUND 裡的寬 + 2) / 3、至少 24 欄（INFO 的框 23 欄與離 PLAYGROUND 的框一格），場地那一塊拿剩下的
+      （PLAYGROUND 裡 58 欄 34｜24、75 欄 50｜25、148 欄 98｜50）；NEXT 1、NEXT 2 的框各 6 列（放大時 10 列），從 PLAYGROUND 裡第一列起，INFO 的框拿剩下的到最後一列
       Level、Lines、Score 在 INFO 上面那一段（task 14）；場地那一塊裡只有場地；沒有 statusbar
-      啟動時（tgo App.Start）用 tgo App.Focus 把 focus 放到 [1] GAME
+      啟動時（tgo App.Start）用 tgo App.Focus 把 focus 放到 [1] PLAYGROUND
       最低尺寸 42×31（tgo App.MinWidth、MinHeight）；比它小時 tgo 只畫名稱、needs a terminal of at least 42×31、Press [Ctrl-C] twice to quit
-      窄寬的門檻 60（tgo Screen.NarrowBelow）：42–59 欄 GAME 不畫右邊那一欄，自己在場地上面寫一行
+      窄寬的門檻 60（tgo Screen.NarrowBelow）：42–59 欄 PLAYGROUND 不畫右邊那一欄，自己在場地上面寫一行
       Level: 1   Lines: 0  Score: 0（Level 補到 2 格），場地右邊畫接下來的方塊、沒有框（task 2）
       tdptest 在每一格畫面量每一列等於終端機寬度（tdp L4）；版面的測試在 icon 與 powerline 符號 1/1、2/1、2/2 格下各跑一次（tdp E5）
     test: [TestTetruScreen, TestScreensSwitchOnTRS, TestNarrowDrawsTheBoxesWithNoFrames, TestLeastSizeIsTheGameAlone, TestPictureGrowsTwiceOnALargeTerminal, TestStatsInInfo, TestFirstLaunch]
   - id: 2
-    spec: 13
+    spec: 17
     implementation: |
-      GAME 的 body 自己畫（tgo Body），場地與兩格從同一張 19×24 像素的圖切出來；一個像素是 nf-fa-square（U+F0C8），icon 佔一格時後面補一個空白，所以一個像素 2 欄 × 1 列
+      PLAYGROUND 的 body 自己畫（tgo Body），場地與兩格從同一張 19×24 像素的圖切出來；一個像素是 nf-fa-square（U+F0C8），icon 佔一格時後面補一個空白，所以一個像素 2 欄 × 1 列
       圖：場地 12×24（task 3），沒有框，空的地方畫像素，#313244（locku 的底）；隔一個像素是一欄兩格，各寬 6、高 4 像素的底、沒有框，兩格之間隔一個像素；
       每格置中畫一個接下來的方塊（三格寬的放不正中，偏左），一個方塊一個像素，第一格是下一個（game.Queue 是 2）
       方塊的顏色：I #89dceb、O #f9e2af、T #cba6f7、S #a6e3a1、Z #f38ba8、J #89b4fa、L #fab387
-      GAME 畫場地（左邊 12 像素），置中在場地那一塊；右邊那一欄的 NEXT 1、NEXT 2 框裡各畫自己那一格（右邊 6 像素、4 像素高），置中（task 15）
-      窄寬（42–59 欄）時 GAME 畫整張圖，場地右邊隔一個像素是兩格，沒有框
-      場地那一塊放得下 48 欄、GAME 裡放得下 48 列、框裡放得下 24 欄、GAME 裡的高放得下右邊那一欄時，場地與兩格一起把一個像素畫成 2×2，NEXT 的框跟著變高；不然都不放大
+      PLAYGROUND 畫場地（左邊 12 像素），置中在場地那一塊；右邊那一欄的 NEXT 1、NEXT 2 框裡各畫自己那一格（右邊 6 像素、4 像素高），置中（task 15）
+      窄寬（42–59 欄）時 PLAYGROUND 畫整張圖，場地右邊隔一個像素是兩格，沒有框
+      場地那一塊放得下 48 欄、PLAYGROUND 裡放得下 48 列、框裡放得下 24 欄、PLAYGROUND 裡的高放得下右邊那一欄時，場地與兩格一起把一個像素畫成 2×2，NEXT 的框跟著變高；不然都不放大
       還沒玩過時畫空的場地與空的兩格
-      顏色用 tgo 的 Fg 上色；被 popup 蓋住時由 tgo 淡化（GAME 是唯一的 panel，一直有 focus）
+      顏色用 tgo 的 Fg 上色；被 popup 蓋住時由 tgo 淡化（PLAYGROUND 是唯一的 panel，一直有 focus）
     test: [TestPictureIsLockus, TestTetruScreen, TestNarrowDrawsTheBoxesWithNoFrames, TestPictureGrowsTwiceOnALargeTerminal, TestPopupsOverTheGameAtEveryWidth]
   - id: 3
     spec: 9
@@ -40,41 +40,41 @@ tasks:
       tgo App.Tick 每 40 ms 一格推進遊戲（README 的計時器）；消行時每 16 ms 一格（task 9）
     test: [TestPiecesComeSevenToABag, TestSameSeedSameGame, TestPieceComesInAtTheTopInTheMiddle, TestMoveStopsAtTheWalls, TestRotateTurnsAndComesBack, TestRotateKicksOffTheWall, TestDownScoresARow, TestDropSetsThePieceAndScoresTwoARow, TestGravityAtTheLevelsSpeed, TestLockWaitsAndMovingRestartsIt, TestLockResetsRunOut, TestClearScoresAtTheLevelAndGoesUp, TestTheSpeedStopsAtTheLastLevel, TestTheStackAtTheTopEnds, TestEndStopsThePiece, TestTheGameFalls]
   - id: 4
-    spec: 10
+    spec: 17
     implementation: |
-      開始或繼續一局時，GAME 進入 tgo 的模式 Play（tgo Panel.EnterMode）：tgo 把外框換成模式色、上框右邊畫 ┫Play┣
-      Play 的鍵（tgo ModeKey）照 Settings 的鍵（task 13），預設：h、← 左一格；l、→ 右一格；j、↓ 往下一格；d、PgDn 左旋（逆時針）；k、↑ 右旋（順時針）；
+      開始或繼續一局時，PLAYGROUND 進入 tgo 的模式 Gaming（tgo Panel.EnterMode）：tgo 把外框換成模式色、上框右邊畫 ┫Gaming┣
+      Gaming 的鍵（tgo ModeKey）照 Settings 的鍵（task 13），預設：h、← 左一格；l、→ 右一格；j、↓ 往下一格；d、PgDn 左旋（逆時針）；k、↑ 右旋（順時針）；
       Enter 落到底並固定；一個動作的鍵是 h、j、k、l、u、d 時，它的方向鍵（←、↓、↑、→）或 PgUp、PgDn 做一樣的事，鍵改成別的字母時就不作用
       footer 由 tgo 寫：Space:menu ?:help d:rotate left k:rotate right Esc:pause；左右、往下、落到底標成移動鍵，不進 footer，在 ? 與 Space menu
-      Play 裡 GAME 的下框不寫 hint（Enter 的 hint 拿掉；panel 上沒有按得動的鍵）
-      Enter 在 GAME 上（Play 外）：沒有一局在暫停時開新的一局（task 6），有就繼續（task 5）；hint Enter:play，暫停時 Enter:resume
+      Gaming 裡 PLAYGROUND 的下框不寫 hint（Enter 的 hint 拿掉；panel 上沒有按得動的鍵）
+      Enter 在 PLAYGROUND 上（Gaming 外）：沒有一局在暫停時開新的一局（task 6），有就繼續（task 5）；hint Enter:play，暫停時 Enter:resume
     test: [TestPlay, TestSpaceMenuRotates, TestTheGameFalls, TestSettingsSetAKey]
   - id: 5
-    spec: 16
+    spec: 17
     implementation: |
-      Play 裡按 Space：tgo 開 Play 的 Space menu，標題 [1] GAME：ITEM OPERATION 的 [d] Rotate left（the falling piece, counterclockwise）、
-      [k] Rotate right（the falling piece, clockwise），選了就等於按那個鍵、回到 Play；PLAY MODE 的 h（move left）、l（move right）、j（down a row）、
+      Gaming 裡按 Space：tgo 開 Gaming 的 Space menu，標題 [1] PLAYGROUND：ITEM OPERATION 的 [d] Rotate left（the falling piece, counterclockwise）、
+      [k] Rotate right（the falling piece, clockwise），選了就等於按那個鍵、回到 Gaming；GAMING MODE 的 h（move left）、l（move right）、j（down a row）、
       Enter（drop to the bottom）只顯示；[r]estart（start over from level 1）、[s]ave（keep this game and quit; it goes on next time）；[Esc] Pause；
       寫的都是 Settings 裡現在的鍵（TODO(tdp #7)：使用者要的是只列 restart、save）
-      Play 模式的 r：跟 GAME 的 n 一樣（有分數先開 NEW GAME 問誰玩的，0 分直接開新的一局）；s：存檔並離開（task 16）；footer 是
+      Gaming 模式的 r：跟 PLAYGROUND 的 n 一樣（有分數先開 NEW GAME 問誰玩的，0 分直接開新的一局）；s：存檔並離開（task 16）；footer 是
       Space:menu ?:help d:rotate left k:rotate right r:restart s:save Esc:pause，60 欄時 tgo 收掉 r:restart s:save
       遊戲每 40 ms 一格，有任何 popup 開著（Space menu、?、confirm）或終端機比 42×31 小時不往前走，popup 關掉就接著走；有沒有 popup 是問
       tgo App.Covered()（收起動畫播到一半、splash 開著也算）
-      Esc 離開 Play（tgo Mode.OnExit）：遊戲停著，開 tgo App.Confirm：標題 RESUME，內容 Paused: level 1, 0 lines, 0 points.，問句 Go on with the game?，
-      Enter:resume 回到 Play，Esc:cancel 留在暫停；場地上不畫東西（第一版畫的兩條直槓拿掉了）
-      暫停時 GAME 的 hint 是 Enter:resume；Space menu 是一般的：
-      PANEL OPERATION 的 [Enter] Resume（this game, where it was）、[n]ew game、[x] End game、[s]ave（task 16），與 Global operation；Enter 回到 Play
-      Tab、數字鍵在 Play 裡暫停（tgo Mode.Pause），tgo 跳 Info toast：Press [Esc] to leave Play first
+      Esc 離開 Gaming（tgo Mode.OnExit）：遊戲停著，開 tgo App.Confirm：標題 RESUME，內容 Paused: level 1, 0 lines, 0 points.，問句 Go on with the game?，
+      Enter:resume 回到 Gaming，Esc:cancel 留在暫停；場地上不畫東西（第一版畫的兩條直槓拿掉了）
+      暫停時 PLAYGROUND 的 hint 是 Enter:resume；Space menu 是一般的：
+      PANEL OPERATION 的 [Enter] Resume（this game, where it was）、[n]ew game、[x] End game、[s]ave（task 16），與 Global operation；Enter 回到 Gaming
+      Tab、數字鍵在 Gaming 裡暫停（tgo Mode.Pause），tgo 跳 Info toast：Press [Esc] to leave Gaming first
       Settings 的 Pause 一列寫 Space、停用：Enter 不開 select
     test: [TestTheGameStopsUnderAPopup, TestEscPausesEnterResumes, TestTabInPlaySaysToPauseFirst, TestSpaceMenuRotates, TestPauseIsAlwaysSpace, TestRestartFromThePlayModesSpaceMenu, TestPlay]
   - id: 6
-    spec: 10
+    spec: 17
     implementation: |
-      GAME 上按 Enter（沒有暫停中的一局時）直接開一局、進 Play，不問名字
+      PLAYGROUND 上按 Enter（沒有暫停中的一局時）直接開一局、進 Gaming，不問名字
       一局有分數時，結束的時候開 tgo 的 text input 問誰玩的：Prompt 是 12,340 points: who played?，建議值（tgo TextInput.Suggest）ANON，
       hint 有 Tab:edit Backspace:clear；最多 16 個字（tgo TextInput.MaxLen）；Enter 用打的名字（去掉前後空白），沒打、清空了都是 ANON
       堆到頂：灰幕落完時才開，標題 GAME OVER、Enter:keep；Esc 也記成 ANON（tgo TextInput.OnCancel）；
-      灰幕落下到記下之前，GAME 的 Enter 與 [n]ew game 停用（tgo Action.Disabled），Enter:play 的 hint 拿掉，記下之後回來
+      灰幕落下到記下之前，PLAYGROUND 的 Enter 與 [n]ew game 停用（tgo Action.Disabled），Enter:play 的 hint 拿掉，記下之後回來
       [x] End game、[n]ew game、離開流程：見 task 10
       0 分的局不問、不記
     test: [TestNameIsAskedAsTheGameEnds, TestNameTypedIsKept, TestEscOnTheNameKeepsAnon, TestNameWithTrickyCharacters, TestNoPointsNotKept]
@@ -90,7 +90,7 @@ tasks:
       啟動時 scores.yaml 讀不了：tgo App.MoveAside 問要不要移成 scores.yaml.bak 重新開始；Enter 移開、從空的排行開始，Esc 離開
     test: [TestPathIsInTheDataDirectory, TestSaveThenLoad, TestLoadBroken, TestTopOutKeepsTheScore, TestNoPointsNotKept, TestFinishKeepsTheGameGoing, TestQuitWithAGameConfirmsAndKeepsAnon, TestBrokenScoresAskToMoveAside]
   - id: 8
-    spec: 3
+    spec: 17
     implementation: |
       Rank 畫面只有 [1] RANK，tgo List：NAME（可截短，最少 6 格）、SCORE（數字靠右，每三位一個逗號）、TIME（2006-01-02 15:04，本地時間，放不下第一個拿掉）
       footer 由 tgo 寫只有一個 panel 的那一種：Space:menu ?:help !:log q:quit
@@ -100,23 +100,23 @@ tasks:
       沒有 Enter 與其他動作；j|k、gg|G 由 tgo 移動
     test: [TestScoresBestFirst, TestTopOutKeepsTheScore, TestScreensSwitchOnTRS]
   - id: 9
-    spec: 15
+    spec: 17
     implementation: |
       消行：方塊落定、湊滿的那一刻，滿的那幾行離開堆疊，行數與分數馬上加（關卡跟著升），下一個方塊同時出現在最上面等著
       滿的那幾行整行畫成 #ffffff，100 ms 之後白色的從最下面那一行開始往左滑：一行 200 ms，等速（滑的距離照時間），上面那一行在下面那一行開始 50 ms 後跟著滑；
-      滑的那一行一次往左移一個 icon（2 欄），畫過場地左邊的空白、超過 GAME 的框就不畫了，滑走的地方畫底；窄寬時一樣從 GAME 的左邊滑出去
+      滑的那一行一次往左移一個 icon（2 欄），畫過場地左邊的空白、超過 PLAYGROUND 的框就不畫了，滑走的地方畫底；窄寬時一樣從 PLAYGROUND 的左邊滑出去
       全部滑出去之後，最下面那個空行上面的整片每 20 ms 往下降一列像素，一列一列補到沒有空行；最上面補空的格子；等著的方塊不跟著降
-      這段期間 Play 模式的鍵按了沒反應，方塊也不往下掉；降完方塊才開始掉，放不進去就結束（堆到頂）；有 popup 蓋著時動畫停著
+      這段期間 Gaming 模式的鍵按了沒反應，方塊也不往下掉；降完方塊才開始掉，放不進去就結束（堆到頂）；有 popup 蓋著時動畫停著
       結束：方塊由上往下一列像素一列像素變成框的灰，5 秒蓋滿整張圖（場地與兩格），灰的留著，場地上不寫字（第一版的紅色 END 拿掉了）
       堆到頂結束的，灰幕落完才開 popup：有分數的問誰玩的（task 6）；0 分的開 tgo App.Confirm：標題 PLAY，內容 Game over: no points, so nothing is kept.，
-      問句 Play again?，Enter:play 開下一局，Esc:cancel 回到 GAME（Enter:play）；[x] End game、[n]ew game 結束的不開
+      問句 Play again?，Enter:play 開下一局，Esc:cancel 回到 PLAYGROUND（Enter:play）；[x] End game、[n]ew game 結束的不開
       兩段動畫都由 tgo App.Tick 推：消行時每 16 ms 一格，灰幕每 40 ms 一格；消 1 行 0.32 秒、4 行 0.53 秒；灰幕不管有沒有 popup 都照走
     test: [TestLineClearSlidesOutToTheLeft, TestClearSlidesThenTheStackComesDown, TestClearScoresAtTheLevelAndGoesUp, TestTopOutKeepsTheScore, TestTheStackAtTheTopEnds, TestTopOutWithNoPoints, TestNoPointsNotKept]
   - id: 10
-    spec: 11
+    spec: 17
     implementation: |
-      GAME 的 panel operation（Play 外的 Space menu 與熱鍵）：
-      [n]ew game（start over from level 1）：有一局有分數時先開 task 6 的 text input，標題 NEW GAME、Enter:start；Enter 記下那一局，接著開新的一局、進 Play；
+      PLAYGROUND 的 panel operation（Gaming 外的 Space menu 與熱鍵）：
+      [n]ew game（start over from level 1）：有一局有分數時先開 task 6 的 text input，標題 NEW GAME、Enter:start；Enter 記下那一局，接著開新的一局、進 Gaming；
       Esc 回到遊戲；0 分或沒有一局時直接開新的一局
       [x] End game（keep this score and stop）：有一局有分數時先開同樣的 text input，標題 END GAME、Enter:end；Enter 記下、結束、灰幕開始，
       灰幕落完不再問；Esc 回到遊戲；0 分時直接結束；沒有一局時停用
@@ -141,14 +141,14 @@ tasks:
     test:
       - check: repo
   - id: 13
-    spec: 12
+    spec: 17
     implementation: |
       Settings 畫面只有 [1] KEYS，tgo Values（一列一個值）：表頭 ACTION、KEY；MOVE LEFT h、MOVE RIGHT l、DOWN A ROW j、ROTATE LEFT d、ROTATE RIGHT k、
       DROP Enter，最後 PAUSE Space（tgo Field.Disabled）；每一列有說明（tgo Field.Desc，? 的「每一列」）；hint Enter:edit
       Enter 在一列上開 tgo Select：標題 KEY: Rotate left，選項是 a 到 z、Enter、Space，現在的鍵選著
-      選到 Play 裡已經有作用的鍵（別的動作的鍵、它的方向鍵、Space、q、r、s）：不寫檔、鍵不變，tgo 跳 Warning toast：
+      選到 Gaming 裡已經有作用的鍵（別的動作的鍵、它的方向鍵、Space、q、r、s）：不寫檔、鍵不變，tgo 跳 Warning toast：
       Can't use k for Rotate left: it is Rotate right's key（Space 是 it pauses and opens the Space menu，q 是 it quits，r 是 it restarts，s 是 it saves and quits）
-      其他的 Enter 確定時（tgo Select.Commit）寫進設定檔，寫不進去 popup 不關、tgo 開 error popup，鍵不變；寫進去之後 Play 的鍵、footer、Space menu、
+      其他的 Enter 確定時（tgo Select.Commit）寫進設定檔，寫不進去 popup 不關、tgo 開 error popup，鍵不變；寫進去之後 Gaming 的鍵、footer、Space menu、
       ? 與 INFO 跟著換，App Log 記一筆 Success：Rotate left is now a
       設定檔：TETRU__CONFIG，不然 $XDG_CONFIG_HOME/tetru，不然 ~/.config/tetru 底下的 config.yaml；keys 底下 move_left、move_right、down、
       rotate_left、rotate_right、drop；沒寫的照預設；寫回時檔裡其他的 key 照留；先寫暫存檔再改名，目錄 0755、檔 0644
@@ -156,9 +156,9 @@ tasks:
       Esc 離開；排行的檔也讀不了時接著問它
     test: [TestDefaultIsTheUsersKeys, TestArrowsGoWithTheirLetters, TestUsedBySaysWhoHasAKey, TestPathIsInTheConfigDirectory, TestSaveThenLoadKeepsOtherKeys, TestLoadBadKeys, TestSettingsSetAKey, TestSettingsThatCantBeKept, TestBrokenSettingsAskToMoveAside, TestPauseIsAlwaysSpace, TestAKeyInUseIsRefused]
   - id: 14
-    spec: 13
+    spec: 17
     implementation: |
-      INFO 是 GAME 的 body 在右下畫的框（task 15）：框裡從上面一列一列寫，離框一格
+      INFO 是 PLAYGROUND 的 body 在右下畫的框（task 15）：框裡從上面一列一列寫，離框一格
       上面一段：Level: 1 / Lines: 0 / Score: 12,340 一行一個，label Overlay0、值 Lavender；沒在玩時是上一局的值，還沒玩過是 1、0、0
       一條 ╌ 的虛線（Overlay0），寬到離框一格
       下面一段：鍵一欄 5 格（Blue），空兩格，說明：h move left、l move right、j down a row、d rotate left、k rotate right、Enter drop（都照 Settings 現在的鍵）、
@@ -166,24 +166,24 @@ tasks:
       沒有 cursor、沒有鍵、拿不到 focus（task 15）
     test: [TestStatsInInfo, TestInfoShowsTheKeys, TestSettingsSetAKey, TestLeastSizeIsTheGameAlone]
   - id: 15
-    spec: 13
+    spec: 17
     implementation: |
-      Tetru 畫面的 Panels 只有 [1] GAME；NEXT 1、NEXT 2、INFO 是 GAME 的 body（tgo Body）在右邊那一欄畫的框，不是 tgo Panel：沒有 [N]，Tab、2–9 到不了，focus 一直在 GAME
+      Tetru 畫面的 Panels 只有 [1] PLAYGROUND；NEXT 1、NEXT 2、INFO 是 PLAYGROUND 的 body（tgo Body）在右邊那一欄畫的框，不是 tgo Panel：沒有 [N]，Tab、2–9 到不了，focus 一直在 PLAYGROUND
       footer 由 tgo 寫只有一個 panel 的那一種：Space:menu ?:help !:log q:quit（沒有 Tab|1–N）
-      框：細線 ┌─┐│└┘，Surface2；上框 ┌─ NEXT 1 ───┐（名字大寫、前後空一格、Overlay0）；寬是右邊那一欄的寬，右邊離 GAME 的框一格
+      框：細線 ┌─┐│└┘，Surface2；上框 ┌─ NEXT 1 ───┐（名字大寫、前後空一格、Overlay0）；寬是右邊那一欄的寬，右邊離 PLAYGROUND 的框一格
       窄寬（42–59 欄）時不畫框與 INFO（task 2）
     test: [TestTheBoxesAreNeverFocused, TestTetruScreen]
   - id: 16
-    spec: 12
+    spec: 17
     implementation: |
       存檔：TETRU__DATA 或 ~/.tetru 底下的 game.yaml（internal/saved），level、lines、score 與 stack（24 列，一列 12 個字，# 有方塊、. 沒有，由上往下）；
       整個檔寫（先寫暫存檔再改名），目錄 0755、檔 0644
       存的 stack 是 game.Stack()：落地的格子，消行還沒做完時是做完之後的樣子；正在掉的方塊、接下來的方塊不存
-      Save：Play 模式的 s（Space menu 的 [s]ave）與暫停時 GAME 的 panel operation [s]ave（沒有一局在玩時停用）；不問，寫好就回 tea.Quit 離開，
+      Save：Gaming 模式的 s（Space menu 的 [s]ave）與暫停時 PLAYGROUND 的 panel operation [s]ave（沒有一局在玩時停用）；不問，寫好就回 tea.Quit 離開，
       這一局標成不用記（main 的 Finish 不記成 ANON）；App Log 記一筆 Success：Saved the game: level 1, 134 points；
-      寫不進去：tgo App.Error 開 CAN'T SAVE THE GAME，路徑與原因，不離開
+      寫不進去：tgo App.Error 開 CAN'T SAVE THE PLAYGROUND，路徑與原因，不離開
       啟動時讀到 game.yaml：game.Resume 接著那一局（關卡、行數、分數照存的；地上的格子是 game.Kept，畫成 #ffffff；方塊從新的一袋來），
-      停在暫停（GAME 的 hint Enter:resume，INFO 寫存的分數）；讀進來就刪掉 game.yaml；App Log 記一筆 Info：Took up the game saved: level 1, 134 points
+      停在暫停（PLAYGROUND 的 hint Enter:resume，INFO 寫存的分數）；讀進來就刪掉 game.yaml；App Log 記一筆 Info：Took up the game saved: level 1, 134 points
       game.yaml 讀不了（YAML 錯、不是 24 列、一列不是 12 個 # 或 .、關卡不在 1–10、行數或分數是負的）：tgo App.MoveAside 問要不要移成 game.yaml.bak，
-      排在設定、排行的檔後面問；Enter 移開、沒有存檔，Esc 離開；讀進來之後刪不掉：tgo App.Error 開 CAN'T REMOVE THE GAME SAVED，說下次啟動還會再接一次
+      排在設定、排行的檔後面問；Enter 移開、沒有存檔，Esc 離開；讀進來之後刪不掉：tgo App.Error 開 CAN'T REMOVE THE PLAYGROUND SAVED，說下次啟動還會再接一次
     test: [TestPathIsBesideTheScores, TestSaveLoadRemove, TestLoadBroken, TestStackIsWhatASaveKeepsAndResumeTakesUp, TestSaveQuitsAndTheNextStartGoesOn, TestSaveFromThePanelWhenPaused, TestBrokenSaveAsksToMoveAside]

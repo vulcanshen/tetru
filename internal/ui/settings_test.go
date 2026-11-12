@@ -26,7 +26,7 @@ func TestScreensSwitchOnTRS(t *testing.T) {
 		t.Fatalf("S did not show the settings: %q", r)
 	}
 	d.Press("T")
-	if r := row(d, 2); !strings.Contains(r, "[1] GAME") {
+	if r := row(d, 2); !strings.Contains(r, "[1] PLAYGROUND") {
 		t.Fatalf("T did not go back to the game: %q", r)
 	}
 }

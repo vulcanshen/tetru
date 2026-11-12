@@ -54,7 +54,7 @@ type Set [len(about)]string
 
 // Default is the keys the user asked for (2026-11-11): h left, l right, j a
 // row down, d rotate left, k rotate right, Enter drop. d and k have no moving
-// to do in the Play mode, a piece never going up nor a half page down: the
+// to do in the Gaming mode, a piece never going up nor a half page down: the
 // mode may take them (tdp K12).
 func Default() Set { return Set{"h", "l", "j", "d", "k", "Enter"} }
 
@@ -71,14 +71,14 @@ func (s Set) Keys(a Action) []string {
 	return []string{s[a]}
 }
 
-// core are the keys offered that the Play mode keeps for itself, and what
+// core are the keys offered that the Gaming mode keeps for itself, and what
 // each does there (tdp K11): the core keys, and Restart and Save (user,
 // 2026-11-11). A key the player can't have.
 var core = map[string]string{"Space": "it pauses and opens the Space menu", "q": "it quits", "r": "it restarts", "s": "it saves and quits"}
 
 // Choices are the keys offered to the player for an action: the small
 // letters, Enter, and Space (tdp K11: which keys the player may choose is
-// the app's). One already doing something in the Play mode is refused
+// the app's). One already doing something in the Gaming mode is refused
 // (UsedBy).
 func Choices() []string {
 	var out []string
@@ -88,7 +88,7 @@ func Choices() []string {
 	return append(out, "Enter", "Space")
 }
 
-// UsedBy says what already has key k in the Play mode, other than action a:
+// UsedBy says what already has key k in the Gaming mode, other than action a:
 // another action, its arrow, or a core key (tdp K11); "" when nothing has it.
 func (s Set) UsedBy(a Action, k string) string {
 	if why, ok := core[k]; ok {

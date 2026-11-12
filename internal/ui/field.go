@@ -15,12 +15,12 @@ import (
 // 2026-11-11): a pixel is a square glyph two columns wide and a row high, a
 // block a pixel; the ground lit too, in surface0, as locku's board is; the
 // pieces to come a box of ground each. The field has no frame of its own:
-// GAME's is it (user, 2026-11-11: the panel is the game). GAME is the only
+// PLAYGROUND's is it (user, 2026-11-11: the panel is the game). PLAYGROUND is the only
 // panel (user, 2026-11-11: NEXT 1, NEXT 2 and INFO with no [N], never
 // focused): at its right are three boxes of its own, framed as content is
 // (tdp F1: a frame a panel's content draws is content, how it is drawn
 // the app's), Next 1 and Next 2 and INFO (user, 2026-11-11: at the
-// right); narrow, GAME draws the boxes with no frames, a pixel from the
+// right); narrow, PLAYGROUND draws the boxes with no frames, a pixel from the
 // field, a pixel apart, and no INFO.
 // A box is 6 pixels wide and 4 high (user, 2026-11-11: 4 × 6, after 5 × 5).
 const (
@@ -59,7 +59,7 @@ var inks = []terminu.Color{
 	terminu.Hex("#7f849c"),
 }
 
-// field is the GAME panel's body: the field of t's game and, at its right,
+// field is the PLAYGROUND panel's body: the field of t's game and, at its right,
 // the boxes of the pieces to come and INFO; narrow, the level, the rows and
 // the score over the field and the boxes beside it.
 type field struct{ t *Tetru }
@@ -170,9 +170,9 @@ func (f *field) Draw(w, h int, focused bool) []string {
 	return out
 }
 
-// split parts GAME's body, w × h, in the field's share, fw wide, and the
+// split parts PLAYGROUND's body, w × h, in the field's share, fw wide, and the
 // column of boxes at its right, cw wide with their frames and a cell from
-// GAME's frame, a third of the screen or INFO's least; and gives the scale
+// PLAYGROUND's frame, a third of the screen or INFO's least; and gives the scale
 // both are drawn at: twice where both have the room.
 func split(w, h int) (fw, cw, k int) {
 	side := max(sideW+1, (w+2)/3)
@@ -183,7 +183,7 @@ func split(w, h int) (fw, cw, k int) {
 	return fw, cw, k
 }
 
-// column is the boxes at GAME's right, cw wide and h high, every pixel k ×
+// column is the boxes at PLAYGROUND's right, cw wide and h high, every pixel k ×
 // k glyphs: Next 1 and Next 2, a box each in the middle of its frame, and
 // INFO under them down to the bottom.
 func (t *Tetru) column(sc *scene, cw, h, k int) []string {
@@ -214,7 +214,7 @@ func framed(title string, body []string, w int) []string {
 // drawn from its column 0 to its column x1, every pixel k × k glyphs, at
 // column left and line top: each row, white, slides out to the left as far
 // as it has gone, the bottom one first, over the blank left of the field
-// and out past GAME's frame (user, 2026-11-11), the ground showing where
+// and out past PLAYGROUND's frame (user, 2026-11-11), the ground showing where
 // it was.
 func slideRows(out []string, g *game.Game, sc *scene, w, k, x1, left, top int) {
 	if g == nil {
@@ -341,7 +341,7 @@ func middle(lines []string, cols, w, h int) []string {
 	return out
 }
 
-// Key takes nothing out of the Play mode: the keys are the mode's.
+// Key takes nothing out of the Gaming mode: the keys are the mode's.
 func (f *field) Key(string, tea.KeyMsg) (bool, tea.Cmd) { return false, nil }
 
 // HasItem is false: the field has no cursor; the piece falling is the

@@ -32,7 +32,7 @@ func open(t *testing.T, w, h int) (*Tetru, *tdptest.Driver) {
 	return tt, tdptest.Start(t, tt.App, w, h)
 }
 
-// play starts a game: Enter on GAME.
+// play starts a game: Enter on PLAYGROUND.
 func play(d *tdptest.Driver) { d.Press("Enter") }
 
 // keepAs answers who played the game over: once the curtain is down, the
@@ -114,22 +114,22 @@ func TestTetruScreen(t *testing.T) {
 		if r := row(d, 0); !strings.Contains(r, "[T]ETRU") || !strings.Contains(r, "[R]ANK") || !strings.Contains(r, "[S]ETTINGS") {
 			t.Fatalf("chips %q", r)
 		}
-		if r := row(d, 2); !strings.HasPrefix(r, "┏") || !strings.Contains(r, "[1] GAME") || !strings.HasSuffix(r, "┓") {
-			t.Fatalf("not GAME alone, focused, the whole width: %q", r)
+		if r := row(d, 2); !strings.HasPrefix(r, "┏") || !strings.Contains(r, "[1] PLAYGROUND") || !strings.HasSuffix(r, "┓") {
+			t.Fatalf("not PLAYGROUND alone, focused, the whole width: %q", r)
 		}
 		if r := row(d, 3); !strings.Contains(r, "┌─ NEXT 1 ─") || !strings.HasSuffix(r, "┐ ┃") {
-			t.Fatalf("NEXT 1 is not a box in GAME at its right: %q", r)
+			t.Fatalf("NEXT 1 is not a box in PLAYGROUND at its right: %q", r)
 		}
 		if !d.Has("┌─ NEXT 2 ─") || !d.Has("┌─ INFO ─") || d.Has("[2]") || d.Has("[3]") || d.Has("[4]") {
 			t.Fatal("no NEXT 2 or INFO box, or a box numbered")
 		}
 		for _, c := range []struct{ w, f, c int }{{58, 34, 23}, {75, 50, 24}, {148, 98, 49}} {
 			if f, cw, k := split(c.w, 27); f != c.f || cw != c.c || k != 1 {
-				t.Fatalf("GAME's body %d wide: the field's %d, the column %d, %d times", c.w, f, cw, k)
+				t.Fatalf("PLAYGROUND's body %d wide: the field's %d, the column %d, %d times", c.w, f, cw, k)
 			}
 		}
 		if !d.Has("Enter:play") {
-			t.Fatal("GAME's hint has no Enter:play")
+			t.Fatal("PLAYGROUND's hint has no Enter:play")
 		}
 	})
 }
@@ -141,19 +141,19 @@ func TestTheBoxesAreNeverFocused(t *testing.T) {
 	}
 	for _, k := range []string{"Tab", "2", "3", "4"} {
 		d.Press(k)
-		if r := row(d, 2); !strings.HasPrefix(r, "┏") || !strings.Contains(r, "[1] GAME") {
-			t.Fatalf("%s took the focus off GAME: %q", k, r)
+		if r := row(d, 2); !strings.HasPrefix(r, "┏") || !strings.Contains(r, "[1] PLAYGROUND") {
+			t.Fatalf("%s took the focus off PLAYGROUND: %q", k, r)
 		}
 	}
 }
 
 func TestNarrowDrawsTheBoxesWithNoFrames(t *testing.T) {
 	_, d := open(t, 50, 31)
-	if d.Has("NEXT") || d.Has("INFO") || !d.Has("[1] GAME") || !d.Has("Level: 1   Lines: 0  Score: 0") {
+	if d.Has("NEXT") || d.Has("INFO") || !d.Has("[1] PLAYGROUND") || !d.Has("Level: 1   Lines: 0  Score: 0") {
 		t.Fatal("narrow, the boxes are framed, or the level, the rows and the score are not over the field")
 	}
 	if got := widest(d); got != fieldW+boxW {
-		t.Fatalf("narrow, GAME draws %d pixels a row, not the field and the boxes", got)
+		t.Fatalf("narrow, PLAYGROUND draws %d pixels a row, not the field and the boxes", got)
 	}
 }
 
@@ -163,7 +163,7 @@ func TestLeastSizeIsTheGameAlone(t *testing.T) {
 		t.Fatalf("%d×%d is under the least size", minW, minH)
 	}
 	if r := row(d, minH-2); !strings.HasPrefix(r, "┗") {
-		t.Fatalf("GAME's frame is not right over the footer: %q", r)
+		t.Fatalf("PLAYGROUND's frame is not right over the footer: %q", r)
 	}
 	if got := strings.Count(strings.Join(d.Screen(), ""), pixelGlyph); got != fieldW*sceneH+2*boxW*boxH {
 		t.Fatalf("narrow, at the least size, %d pixels, not all of the field and the boxes", got)
@@ -265,15 +265,15 @@ func TestPlay(t *testing.T) {
 		play(d)
 		turnable(tt, d)
 		score := tt.g.Score
-		if !tt.playing() || !strings.Contains(row(d, 2), "Play") {
-			t.Fatal("not in the Play mode")
+		if !tt.playing() || !strings.Contains(row(d, 2), "Gaming") {
+			t.Fatal("not in the Gaming mode")
 		}
 		// 60 columns leave r:restart and s:save out of the footer.
 		if r := row(d, 31); !strings.HasPrefix(r, "Space:menu ?:help d:rotate left k:rotate right Esc:pause") {
 			t.Fatalf("footer %q", r)
 		}
 		if strings.Contains(row(d, 30), "Enter:") {
-			t.Fatal("GAME's hint stays in the Play mode")
+			t.Fatal("PLAYGROUND's hint stays in the Gaming mode")
 		}
 		at := tt.g.At
 		d.Press("h")
@@ -337,9 +337,9 @@ func TestTheGameStopsUnderAPopup(t *testing.T) {
 	tt, d := open(t, 60, 32)
 	play(d)
 	d.Press("Space")
-	for _, s := range []string{"ITEM OPERATION", "[d] Rotate left", "[k] Rotate right", "PLAY MODE", "move left", "drop to the bottom", "[r]estart", "[s]ave", "[Esc] Pause"} {
+	for _, s := range []string{"ITEM OPERATION", "[d] Rotate left", "[k] Rotate right", "GAMING MODE", "move left", "drop to the bottom", "[r]estart", "[s]ave", "[Esc] Pause"} {
 		if !d.Has(s) {
-			t.Fatalf("the Play mode's Space menu has no %q", s)
+			t.Fatalf("the Gaming mode's Space menu has no %q", s)
 		}
 	}
 	y := tt.g.At.Y
@@ -375,7 +375,7 @@ func TestEscPausesEnterResumes(t *testing.T) {
 	tt, d := open(t, 60, 32)
 	play(d)
 	d.Press("Esc")
-	if tt.playing() || !tt.paused() || strings.Contains(row(d, 2), "Play") {
+	if tt.playing() || !tt.paused() || strings.Contains(row(d, 2), "Gaming") {
 		t.Fatal("Esc did not pause")
 	}
 	if !d.Has("RESUME") || !d.Has("Go on with the game?") || !d.Has("Paused: level 1, 0 lines, 0 points.") || !d.Has("Enter:resume") {
@@ -393,11 +393,11 @@ func TestEscPausesEnterResumes(t *testing.T) {
 	d.Press("Esc")
 	d.Press("Esc")
 	if !tt.paused() || d.Has("RESUME") || !d.Has("Enter:resume") {
-		t.Fatal("Esc on the popup did not leave the game paused, Enter on GAME to resume")
+		t.Fatal("Esc on the popup did not leave the game paused, Enter on PLAYGROUND to resume")
 	}
 	d.Press("Enter")
 	if !tt.playing() {
-		t.Fatal("Enter on GAME did not resume")
+		t.Fatal("Enter on PLAYGROUND did not resume")
 	}
 }
 
@@ -405,8 +405,8 @@ func TestTabInPlaySaysToPauseFirst(t *testing.T) {
 	tt, d := open(t, 60, 32)
 	play(d)
 	d.Press("Tab")
-	if !tt.playing() || !d.Has("Press [Esc] to leave Play first") {
-		t.Fatal("Tab in the Play mode left it, or said nothing")
+	if !tt.playing() || !d.Has("Press [Esc] to leave Gaming first") {
+		t.Fatal("Tab in the Gaming mode left it, or said nothing")
 	}
 }
 
@@ -490,10 +490,10 @@ func TestTopOutKeepsTheScore(t *testing.T) {
 	play(d)
 	topOut(t, tt, d)
 	if tt.playing() {
-		t.Fatal("still in the Play mode after the end")
+		t.Fatal("still in the Gaming mode after the end")
 	}
 	if !d.Has("Score: " + comma(tt.g.Score)) {
-		t.Fatal("GAME lost the last game's score")
+		t.Fatal("PLAYGROUND lost the last game's score")
 	}
 	d.Advance(game.Curtain / 2)
 	if tt.g.Ended() || d.Has("GAME OVER") {
@@ -537,7 +537,7 @@ func TestTopOutWithNoPoints(t *testing.T) {
 	}
 	d.Press("Esc")
 	if d.Has("Play again?") || !d.Has("Enter:play") || len(kept(t)) != 0 {
-		t.Fatal("Esc on the popup did not leave GAME to play from")
+		t.Fatal("Esc on the popup did not leave PLAYGROUND to play from")
 	}
 	topOutAgain := func() {
 		play(d)
@@ -727,7 +727,7 @@ func TestLineClearSlidesOutToTheLeft(t *testing.T) {
 	if g.At != at || !tt.playing() {
 		t.Fatal("the piece was played while the row goes")
 	}
-	// At 60 × 32 GAME's body is 58 × 27, the field 24 columns in the middle
+	// At 60 × 32 PLAYGROUND's body is 58 × 27, the field 24 columns in the middle
 	// of its 34 at the left: at column 5 of the body, screen column 6; row
 	// y of it on screen row 4 + y.
 	y := game.Rows - 1
@@ -744,20 +744,28 @@ func TestLineClearSlidesOutToTheLeft(t *testing.T) {
 		t.Fatalf("the row going starts at column %d, not in place", first())
 	}
 	white := func() bool { return strings.Contains(tt.gameP.Body.Draw(58, 27, true)[1+y], "255;255;255") }
-	d.Advance(game.Flash / 2)
-	if first() != 6 || !white() {
-		t.Fatal("the row going is not white in place first")
+	// A frame at a time, wherever the frames fall: white in place, then out
+	// left of the field, then gone with the stack not down yet, then the
+	// stack down.
+	stage := 0
+	for range (game.ClearTime(1) + 100*time.Millisecond) / clearFrame {
+		d.Advance(clearFrame)
+		c, down := first(), g.Cell(0, game.Rows-2) == 0
+		switch {
+		case stage == 0 && c == 6 && white() && !down:
+			stage = 1
+		case stage == 1 && c >= 0 && c < 6 && white() && !down:
+			stage = 2
+		case stage == 2 && c == 6 && !white() && !down:
+			stage = 3
+		case stage == 3 && down:
+			stage = 4
+		}
 	}
-	d.Advance(game.Flash/2 + game.Slide*3/4)
-	if c := first(); c < 0 || c >= 6 || !white() {
-		t.Fatalf("the row going is not out left of the field: column %d", c)
+	if stage != 4 {
+		t.Fatalf("the clear got to %d of: white in place, out left of the field, gone with the stack up, the stack down", stage)
 	}
-	d.Advance(game.Slide / 4)
-	if first() != 6 || g.Cell(0, game.Rows-2) == 0 {
-		t.Fatal("the row did not slide out, or the stack came down before it had")
-	}
-	d.Advance(game.ClearTime(1))
-	if len(g.Going) != 0 || !g.Live() || g.Cell(0, game.Rows-1) == 0 || g.Cell(0, game.Rows-2) != 0 {
+	if len(g.Going) != 0 || !g.Live() || g.Cell(0, game.Rows-1) == 0 {
 		t.Fatal("the stack did not come down after the row")
 	}
 	if g.At != at {
@@ -781,7 +789,7 @@ func TestRestartFromThePlayModesSpaceMenu(t *testing.T) {
 	}
 	d.Press("r")
 	if tt.g.Score != 0 || !tt.playing() || d.Has("NEW GAME") {
-		t.Fatal("r in the Play mode with no points did not start over at once")
+		t.Fatal("r in the Gaming mode with no points did not start over at once")
 	}
 }
 
@@ -842,14 +850,14 @@ func TestSaveQuitsAndTheNextStartGoesOn(t *testing.T) {
 func TestSaveFromThePanelWhenPaused(t *testing.T) {
 	tt, d := open(t, 80, 32)
 	if a := tt.gameP.Actions[3]; a.Key != "s" || !a.Disabled() {
-		t.Fatal("Save is not GAME's, disabled with no game")
+		t.Fatal("Save is not PLAYGROUND's, disabled with no game")
 	}
 	play(d)
 	d.Press("Esc")
 	d.Press("Esc") // the popup: paused
 	d.Press("s")
 	if !d.Quit() {
-		t.Fatal("s on GAME, paused, did not save and quit")
+		t.Fatal("s on PLAYGROUND, paused, did not save and quit")
 	}
 	if _, err := os.Stat(filepath.Join(os.Getenv("TETRU__DATA"), "game.yaml")); err != nil {
 		t.Fatal("no game saved")
