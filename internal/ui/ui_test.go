@@ -1090,7 +1090,7 @@ func TestClearsByHowManyRows(t *testing.T) {
 	plain := regexp.MustCompile("\x1b\\[[0-9;]*m")
 	const flamingo, pink, white, ground = "242;205;205", "245;194;231", "255;255;255", "49;50;68"
 
-	const lavender = "180;190;254"
+	const rosewater = "245;224;220"
 	// goesRight says whether a block is right of the field, before KEYS.
 	goesRight := func(r string) bool {
 		rs := []rune(plain.ReplaceAllString(r, ""))
@@ -1133,7 +1133,7 @@ func TestClearsByHowManyRows(t *testing.T) {
 
 	g = clearOf(t, tt, 4)
 	g.Advance(game.Flash + game.Slide/2)
-	if r := bottom(); !strings.Contains(r, lavender) || !goesRight(r) || pieceColoured(r) {
-		t.Fatalf("four rows do not split in Lavender, half going right: %q", r)
+	if r := bottom(); !strings.Contains(r, rosewater) || !goesRight(r) || pieceColoured(r) {
+		t.Fatalf("four rows do not split in Rosewater, half going right: %q", r)
 	}
 }
