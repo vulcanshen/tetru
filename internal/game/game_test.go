@@ -341,3 +341,33 @@ func TestEndStopsThePiece(t *testing.T) {
 		t.Fatal("the piece moved after the end")
 	}
 }
+
+func TestFourBurstThenTheStackComesDownAtOnce(t *testing.T) {
+	g := with(I)
+	for y := Rows - 4; y < Rows; y++ {
+		g.fill(y, Cols-1)
+	}
+	g.Put(0, Rows-5, 1) // over them
+	g.Rotate(1)
+	for g.Move(1) {
+	}
+	g.Drop()
+	if len(g.Going) != 4 || g.Along() != 0 {
+		t.Fatalf("%d rows going, along %v", len(g.Going), g.Along())
+	}
+	g.Advance(Flash + (out(4)-Flash)/2)
+	if a := g.Along(); a < 0.4 || a > 0.6 {
+		t.Fatalf("half way, along %v", a)
+	}
+	g.Advance(out(4) - Flash - (out(4)-Flash)/2)
+	if g.Along() != 1 || g.Cell(0, Rows-5) == 0 {
+		t.Fatal("not out, or the stack came down first")
+	}
+	g.Advance(Settle)
+	if g.Cell(0, Rows-1) == 0 || g.Cell(0, Rows-5) != 0 || len(g.Going) != 0 || !g.Live() {
+		t.Fatal("the stack did not come down four rows at once")
+	}
+	if ClearTime(4) != out(4)+Settle || ClearTime(2) != out(2)+2*Settle {
+		t.Fatal("the clear times")
+	}
+}

@@ -33,7 +33,10 @@ const (
 	// the bottom one first, each taking Slide and the one over it starting
 	// Stagger after it; then the stack over them comes down a row every
 	// Settle till the rows they left are filled. About half what they were
-	// (user, 2026-11-11: too slow, not smooth): a row 0.32 s, four 0.53 s.
+	// (user, 2026-11-11: too slow, not smooth): a row 0.32 s. How the rows
+	// go is by how many there are (user, 2026-11-12), in the same time:
+	// one slides out, two split, three crumble and four burst (Along), the
+	// stack over four coming down at once, Settle after.
 	Flash   = 100 * time.Millisecond
 	Slide   = 200 * time.Millisecond
 	Stagger = 50 * time.Millisecond
@@ -125,6 +128,9 @@ const Kept = 8
 // ClearTime is how long a clear of n rows takes, from the flash to the
 // stack down.
 func ClearTime(n int) time.Duration {
+	if n >= 4 {
+		return out(n) + Settle
+	}
 	return out(n) + time.Duration(n)*Settle
 }
 
@@ -426,11 +432,16 @@ func (g *Game) clearRows(full []int) {
 }
 
 // settle steps the clear on to fx: once the rows have slid out, the stack
-// over the lowest row left empty comes down a row every Settle; with none
-// left the clear ends, and the piece waiting falls, or, with no room, it is
-// the end.
+// over the lowest row left empty comes down a row every Settle (over four,
+// all at once, Settle after); with none left the clear ends, and the piece
+// waiting falls, or, with no room, it is the end.
 func (g *Game) settle() {
 	gone := out(len(g.Going))
+	if len(g.Going) >= 4 {
+		for len(g.gaps) > 0 && g.fx >= gone+Settle {
+			g.gaps = closeGap(g.cells, g.gaps)
+		}
+	}
 	for n := len(g.Going) - len(g.gaps); len(g.gaps) > 0 && g.fx >= gone+time.Duration(n+1)*Settle; n++ {
 		g.gaps = closeGap(g.cells, g.gaps)
 	}
@@ -455,6 +466,17 @@ func (g *Game) Slid(i int) float64 {
 		return 1
 	}
 	return float64(k) / float64(Slide)
+}
+
+// Along is how far the rows going are on their way out, all of them
+// together, 0 to 1, after the flash: three crumbling, four bursting.
+func (g *Game) Along() float64 {
+	n := len(g.Going)
+	if n == 0 {
+		return 0
+	}
+	k, span := g.fx-Flash, out(n)-Flash
+	return min(1, max(0, float64(k)/float64(span)))
 }
 
 // End ends the game where it is: the player ended it.

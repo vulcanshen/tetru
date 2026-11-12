@@ -1,6 +1,7 @@
 package ui
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -1043,5 +1044,81 @@ func TestRankColoursTheFirstThree(t *testing.T) {
 		if strings.Contains(rows[4], rgb) {
 			t.Fatalf("the fourth, the cursor on it, is in a place's colour: %q", rows[4])
 		}
+	}
+}
+
+// clearOf puts in tt a game with n rows just gone full, the long piece
+// dropped upright in the last column, a block over them.
+func clearOf(t *testing.T, tt *Tetru, n int) *game.Game {
+	t.Helper()
+	var stack [game.Rows][game.Cols]bool
+	for y := game.Rows - 4; y < game.Rows; y++ {
+		for x := 1; x < game.Cols-1; x++ {
+			stack[y][x] = true
+		}
+		stack[y][0] = y >= game.Rows-n
+	}
+	stack[game.Rows-5][0] = true
+	var g *game.Game
+	for seed := uint64(1); ; seed++ {
+		if g = game.Resume(seed, 1, 0, 0, stack); g.Cur == 0 {
+			break
+		}
+	}
+	g.Rotate(1)
+	for g.Move(1) {
+	}
+	g.Drop()
+	if len(g.Going) != n {
+		t.Fatalf("%d rows going, not %d", len(g.Going), n)
+	}
+	tt.g = g
+	return g
+}
+
+func TestClearsByHowManyRows(t *testing.T) {
+	tt, _ := open(t, 80, 32)
+	// At 80 × 32 PLAYGROUND's body is 78 × 27, the field 24 columns from
+	// column 14 of its 52 at the left.
+	bottom := func() string { return tt.gameP.Body.Draw(78, 27, true)[1+game.Rows-1] }
+	plain := regexp.MustCompile("\x1b\\[[0-9;]*m")
+	const flamingo, pink, white, ground = "242;205;205", "245;194;231", "255;255;255", "49;50;68"
+
+	g := clearOf(t, tt, 2)
+	g.Advance(game.Flash + game.Slide/2)
+	r := bottom()
+	rs := []rune(plain.ReplaceAllString(r, ""))
+	right := false
+	for i, c := range rs {
+		if col := terminu.Width(string(rs[:i])); string(c) == pixelGlyph && col >= 38 && col < 52 {
+			right = true
+		}
+	}
+	if !strings.Contains(r, flamingo) || !right {
+		t.Fatalf("two rows do not split in Flamingo, half going right: %q", r)
+	}
+
+	g = clearOf(t, tt, 3)
+	if !strings.Contains(bottom(), pink) {
+		t.Fatal("three rows are not Pink")
+	}
+	g.Advance(game.Flash + (game.ClearTime(3)-game.Flash)/2)
+	if r := bottom(); !strings.Contains(r, pink) || !strings.Contains(r, white) || !strings.Contains(r, ground) {
+		t.Fatalf("three rows half way do not crumble, some blocks Pink, some white, some gone: %q", r)
+	}
+
+	g = clearOf(t, tt, 4)
+	if r := bottom(); !strings.Contains(r, white) {
+		t.Fatal("four rows do not go white first")
+	}
+	g.Advance(game.Flash + game.Slide/3)
+	colours := 0
+	for _, c := range inks[inkPiece : inkPiece+7] {
+		if strings.Contains(bottom(), fmt.Sprintf("%d;%d;%d", c.R(), c.G(), c.B())) {
+			colours++
+		}
+	}
+	if colours < 3 {
+		t.Fatalf("four rows burst in %d of the pieces' colours", colours)
 	}
 }

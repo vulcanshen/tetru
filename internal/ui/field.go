@@ -40,16 +40,19 @@ var pixelGlyph = string(rune(0xf0c8))
 const (
 	inkNone uint8 = iota
 	inkGround
-	inkPiece                // inkPiece + p is piece p's
-	inkWhite = inkPiece + 7 // game.Kept's too: inkPiece + game.Kept - 1
-	inkFrame = inkWhite + 1
+	inkPiece                   // inkPiece + p is piece p's
+	inkWhite    = inkPiece + 7 // game.Kept's too: inkPiece + game.Kept - 1
+	inkFrame    = inkWhite + 1
+	inkFlamingo = inkFrame + 1
+	inkPink     = inkFlamingo + 1
 )
 
 // inks are the colours of the inks, locku's: the ground surface0, the
 // pieces in the colours they usually have in catppuccin-mocha's (the long
 // one sky, the square yellow, T mauve, S green, Z red, J blue, L peach), a
 // row going and a block of a game saved and taken up white (user,
-// 2026-11-11), the curtain overlay1.
+// 2026-11-11), the curtain overlay1; two rows going flamingo, three pink,
+// colours no piece has (user, 2026-11-12).
 var inks = []terminu.Color{
 	{},
 	terminu.Hex("#313244"),
@@ -57,6 +60,7 @@ var inks = []terminu.Color{
 	terminu.Hex("#f38ba8"), terminu.Hex("#89b4fa"), terminu.Hex("#fab387"),
 	terminu.Hex("#ffffff"),
 	terminu.Hex("#7f849c"),
+	terminu.Hex("#f2cdcd"), terminu.Hex("#f5c2e7"),
 }
 
 // field is the PLAYGROUND panel's body: the field of t's game and, at its right,
@@ -75,8 +79,8 @@ func (s *scene) put(x, y int, ink uint8) {
 
 // picture is the scene of g, nil before the first game: the ground and the
 // boxes, the stack, the piece falling (or waiting at the top while rows
-// go), the pieces to come; the rows going are not in it, they slide out
-// over it (slideRows);
+// go), the pieces to come; the rows going are not in it, they go out
+// over it (clearRows);
 // at the end the pieces grey as far as the curtain is down. A pause and the
 // end are said by popups, not drawn here (user, 2026-11-11: locku draws
 // them as it has no popups; tetru does).
@@ -157,13 +161,15 @@ func (f *field) Draw(w, h int, focused bool) []string {
 		cols := max(2*sceneW, terminu.Width(row))
 		lines := append([]string{row, ""}, pixels(&sc, 0, sceneW, 0, sceneH, 1)...)
 		out := middle(lines, cols, w, h)
-		slideRows(out, t.g, &sc, w, 1, sceneW, max(0, (w-cols)/2), max(0, (h-len(lines))/2)+2)
+		// The boxes are right of the field: nothing goes out that way.
+		clearRows(out, t.g, &sc, w, 1, sceneW, max(0, (w-cols)/2), max(0, (h-len(lines))/2)+2, 0)
 		return out
 	}
 	fw, cw, k := split(w, h)
 	lines := pixels(&sc, 0, fieldW, 0, sceneH, k)
 	out := middle(lines, 2*fieldW*k, fw, h)
-	slideRows(out, t.g, &sc, fw, k, fieldW, max(0, (fw-2*fieldW*k)/2), max(0, (h-len(lines))/2))
+	left := max(0, (fw-2*fieldW*k)/2)
+	clearRows(out, t.g, &sc, fw, k, fieldW, left, max(0, (h-len(lines))/2), (fw-left-2*fieldW*k)/2)
 	for i, c := range t.column(&sc, cw, h, k) {
 		out[i] += c + " "
 	}
@@ -212,55 +218,118 @@ func framed(title string, body []string, w int) []string {
 	return append(out, line.Render("└"+strings.Repeat("─", max(0, w-2))+"┘"))
 }
 
-// slideRows draws the rows going over out, w wide, where the scene sc is
+// crumble is the order the blocks of a row go in as three crumble: block x
+// of row i goes at crumble[(x+5i) mod 12], of 12.
+var crumble = [game.Cols]int{7, 2, 10, 4, 0, 9, 5, 11, 1, 6, 3, 8}
+
+// clearRows draws the rows going over out, w wide, where the scene sc is
 // drawn from its column 0 to its column x1, every pixel k × k glyphs, at
-// column left and line top: each row, white, slides out to the left as far
-// as it has gone, the bottom one first, over the blank left of the field
-// and out past PLAYGROUND's frame (user, 2026-11-11), the ground showing where
-// it was.
-func slideRows(out []string, g *game.Game, sc *scene, w, k, x1, left, top int) {
-	if g == nil {
+// column left and line top, with right glyphs blank right of the field to
+// go into. How they go is by how many they are (user, 2026-11-12: a way
+// and a colour each, none a piece's colour), in about the same time:
+//   - one, white, slides out to the left over the blank left of the field
+//     and out past PLAYGROUND's frame (user, 2026-11-11);
+//   - two, Flamingo, split in the middle, the halves going out to either
+//     side, the right one as far as the blank there;
+//   - three, Pink, crumble, a block at a time in no order, each going
+//     white before it is gone;
+//   - four burst from their middle: white, then ring by ring outwards,
+//     each ring a piece's colour, white as it goes.
+//
+// Each bottom row first where they go one by one; the ground shows where
+// they were.
+func clearRows(out []string, g *game.Game, sc *scene, w, k, x1, left, top, right int) {
+	if g == nil || len(g.Going) == 0 {
 		return
 	}
 	cell := pixelGlyph + strings.Repeat(" ", max(0, 2-terminu.IconWidth()))
 	// lead is the glyphs left of the field, the first of them half cut
 	// off when left is odd.
 	lead := (left + 1) / 2
-	strip := game.Cols * k
+	strip, half := game.Cols*k, game.Cols/2*k
+	end := max(x1*k, strip+right) // past the last glyph drawn
 	for i, y := range g.Going {
-		f := g.Slid(i)
-		if f >= 1 {
-			continue
+		at := make([]uint8, lead+end) // glyph u's ink at u+lead, the field's first glyph being 0
+		for u := 0; u < x1*k; u++ {
+			at[u+lead] = sc.px[y][u/k]
 		}
-		from := -int(f*float64(lead+strip) + 0.5) // the row's first glyph, the field's first being 0
+		put := func(u int, ink uint8) {
+			if u >= -lead && u < end {
+				at[u+lead] = ink
+			}
+		}
+		block := func(x int, ink uint8) {
+			for j := range k {
+				put(x*k+j, ink)
+			}
+		}
+		switch n := len(g.Going); {
+		case n == 1:
+			if f := g.Slid(i); f < 1 {
+				from := -int(f*float64(lead+strip) + 0.5)
+				for u := from; u < from+strip; u++ {
+					put(u, inkWhite)
+				}
+			}
+		case n == 2:
+			if f := g.Slid(i); f < 1 {
+				l := -int(f*float64(lead+half) + 0.5)
+				for u := l; u < l+half; u++ {
+					put(u, inkFlamingo)
+				}
+				r := half + int(f*float64(right+half)+0.5)
+				for u := r; u < r+half && u < strip+right; u++ {
+					put(u, inkFlamingo)
+				}
+			}
+		case n == 3:
+			p := g.Along()
+			for x := range game.Cols {
+				at := float64(crumble[(x+5*i)%game.Cols]) / game.Cols * 0.85
+				switch {
+				case p <= at:
+					block(x, inkPink)
+				case p < at+0.15:
+					block(x, inkWhite)
+				}
+			}
+		default:
+			p := g.Along()
+			for x := range game.Cols {
+				// The ring: twice the steps from the middle of the four rows.
+				d := max(2*x-(game.Cols-1), game.Cols-1-2*x) + max(2*i-(n-1), n-1-2*i)
+				at := float64(d) / float64(game.Cols-1+n-1) * 0.85
+				switch {
+				case p == 0:
+					block(x, inkWhite)
+				case p <= at:
+					block(x, inkPiece+uint8(d/2%7))
+				case p < at+0.15:
+					block(x, inkWhite)
+				}
+			}
+		}
 		var b strings.Builder
 		u := -lead
 		if left%2 == 1 {
 			b.WriteString(" ")
 			u++
 		}
-		ink, n := inkNone, 0
+		ink, run := inkNone, 0
 		flush := func() {
 			if ink == inkNone {
-				b.WriteString(strings.Repeat("  ", n))
+				b.WriteString(strings.Repeat("  ", run))
 			} else {
-				b.WriteString(terminu.Fg(inks[ink]).Render(strings.Repeat(cell, n)))
+				b.WriteString(terminu.Fg(inks[ink]).Render(strings.Repeat(cell, run)))
 			}
-			n = 0
+			run = 0
 		}
-		for ; u < x1*k; u++ {
-			c := inkNone
-			switch {
-			case u >= from && u < from+strip:
-				c = inkWhite
-			case u >= 0:
-				c = sc.px[y][u/k]
-			}
-			if c != ink {
+		for ; u < end; u++ {
+			if c := at[u+lead]; c != ink {
 				flush()
 				ink = c
 			}
-			n++
+			run++
 		}
 		flush()
 		line := terminu.Pad(b.String(), w)
