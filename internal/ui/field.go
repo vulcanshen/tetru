@@ -43,18 +43,16 @@ const (
 	inkPiece                    // inkPiece + p is piece p's
 	inkWhite     = inkPiece + 7 // game.Kept's too: inkPiece + game.Kept - 1
 	inkFrame     = inkWhite + 1
-	inkFlamingo  = inkFrame + 1
-	inkPink      = inkFlamingo + 1
-	inkRosewater = inkPink + 1
+	inkRosewater = inkFrame + 1
 )
 
 // inks are the colours of the inks, locku's: the ground surface0, the
 // pieces in the colours they usually have in catppuccin-mocha's (the long
 // one sky, the square yellow, T mauve, S green, Z red, J blue, L peach), a
-// row going and a block of a game saved and taken up white (user,
-// 2026-11-11), the curtain overlay1; two rows going flamingo, three pink,
-// four rosewater, colours no piece has (user, 2026-11-12; four in one
-// colour, not the pieces' in turn: lavender, then rosewater).
+// block of a game saved and taken up white (user, 2026-11-11), the curtain
+// overlay1; the rows going rosewater, a colour no piece has, however many
+// they are (user, 2026-11-12: with the ways they go, the colours are
+// nothing much; all rosewater).
 var inks = []terminu.Color{
 	{},
 	terminu.Hex("#313244"),
@@ -62,7 +60,7 @@ var inks = []terminu.Color{
 	terminu.Hex("#f38ba8"), terminu.Hex("#89b4fa"), terminu.Hex("#fab387"),
 	terminu.Hex("#ffffff"),
 	terminu.Hex("#7f849c"),
-	terminu.Hex("#f2cdcd"), terminu.Hex("#f5c2e7"), terminu.Hex("#f5e0dc"),
+	terminu.Hex("#f5e0dc"),
 }
 
 // field is the PLAYGROUND panel's body: the field of t's game and, at its right,
@@ -227,17 +225,17 @@ var crumble = [game.Cols]int{7, 2, 10, 4, 0, 9, 5, 11, 1, 6, 3, 8}
 // clearRows draws the rows going over out, w wide, where the scene sc is
 // drawn from its column 0 to its column x1, every pixel k × k glyphs, at
 // column left and line top, with right glyphs blank right of the field to
-// go into. How they go is by how many they are (user, 2026-11-12: a way
-// and a colour each, none a piece's colour; then two's way and four's
+// go into. They are Rosewater (user, 2026-11-12), and how they go is by how
+// many they are (user, 2026-11-12: a way each, two's way and four's
 // swapped), in about the same time:
-//   - one, white, slides out to the left over the blank left of the field
-//     and out past PLAYGROUND's frame (user, 2026-11-11);
-//   - two, Flamingo, burst from their middle: white, then ring by ring
-//     outwards, white as each goes;
-//   - three, Pink, crumble, a block at a time in no order, each going
-//     white before it is gone;
-//   - four, Rosewater, split in the middle, the halves going out to either
-//     side, the right one as far as the blank there.
+//   - one slides out to the left over the blank left of the field and out
+//     past PLAYGROUND's frame (user, 2026-11-11);
+//   - two burst from their middle: white, then ring by ring outwards,
+//     white as each goes;
+//   - three crumble, a block at a time in no order, each going white
+//     before it is gone;
+//   - four split in the middle, the halves going out to either side, the
+//     right one as far as the blank there.
 //
 // Each bottom row first where they go one by one; the ground shows where
 // they were.
@@ -266,8 +264,7 @@ func clearRows(out []string, g *game.Game, sc *scene, w, k, x1, left, top, right
 				put(x*k+j, ink)
 			}
 		}
-		n := len(g.Going)
-		ink := []uint8{inkWhite, inkFlamingo, inkPink, inkRosewater}[min(n, 4)-1]
+		n, ink := len(g.Going), inkRosewater
 		switch n {
 		case 1: // slide
 			if f := g.Slid(i); f < 1 {

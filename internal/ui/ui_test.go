@@ -759,7 +759,8 @@ func TestLineClearSlidesOutToTheLeft(t *testing.T) {
 	if first() != 6 {
 		t.Fatalf("the row going starts at column %d, not in place", first())
 	}
-	white := func() bool { return strings.Contains(tt.gameP.Body.Draw(58, 27, true)[1+y], "255;255;255") }
+	// shown says whether the row going is drawn: Rosewater (user, 2026-11-12).
+	shown := func() bool { return strings.Contains(tt.gameP.Body.Draw(58, 27, true)[1+y], "245;224;220") }
 	// A frame at a time, wherever the frames fall: white in place, then out
 	// left of the field, then gone with the stack not down yet, then the
 	// stack down.
@@ -768,11 +769,11 @@ func TestLineClearSlidesOutToTheLeft(t *testing.T) {
 		d.Advance(clearFrame)
 		c, down := first(), g.Cell(0, game.Rows-2) == 0
 		switch {
-		case stage == 0 && c == 6 && white() && !down:
+		case stage == 0 && c == 6 && shown() && !down:
 			stage = 1
-		case stage == 1 && c >= 0 && c < 6 && white() && !down:
+		case stage == 1 && c >= 0 && c < 6 && shown() && !down:
 			stage = 2
-		case stage == 2 && c == 6 && !white() && !down:
+		case stage == 2 && c == 6 && !shown() && !down:
 			stage = 3
 		case stage == 3 && down:
 			stage = 4
@@ -1088,7 +1089,7 @@ func TestClearsByHowManyRows(t *testing.T) {
 	// column 14 of its 52 at the left.
 	bottom := func() string { return tt.gameP.Body.Draw(78, 27, true)[1+game.Rows-1] }
 	plain := regexp.MustCompile("\x1b\\[[0-9;]*m")
-	const flamingo, pink, white, ground = "242;205;205", "245;194;231", "255;255;255", "49;50;68"
+	const white, ground = "255;255;255", "49;50;68"
 
 	const rosewater = "245;224;220"
 	// goesRight says whether a block is right of the field, before KEYS.
@@ -1118,17 +1119,17 @@ func TestClearsByHowManyRows(t *testing.T) {
 		t.Fatal("two rows do not go white first")
 	}
 	g.Advance(game.Flash + (game.ClearTime(2)-game.Flash)/2)
-	if r := bottom(); !strings.Contains(r, flamingo) || !strings.Contains(r, ground) || pieceColoured(r) {
-		t.Fatalf("two rows do not burst in Flamingo alone, the middle gone: %q", r)
+	if r := bottom(); !strings.Contains(r, rosewater) || !strings.Contains(r, ground) || pieceColoured(r) {
+		t.Fatalf("two rows do not burst in Rosewater alone, the middle gone: %q", r)
 	}
 
 	g = clearOf(t, tt, 3)
-	if !strings.Contains(bottom(), pink) {
-		t.Fatal("three rows are not Pink")
+	if !strings.Contains(bottom(), rosewater) {
+		t.Fatal("three rows are not Rosewater")
 	}
 	g.Advance(game.Flash + (game.ClearTime(3)-game.Flash)/2)
-	if r := bottom(); !strings.Contains(r, pink) || !strings.Contains(r, white) || !strings.Contains(r, ground) {
-		t.Fatalf("three rows half way do not crumble, some blocks Pink, some white, some gone: %q", r)
+	if r := bottom(); !strings.Contains(r, rosewater) || !strings.Contains(r, white) || !strings.Contains(r, ground) {
+		t.Fatalf("three rows half way do not crumble, some blocks Rosewater, some white, some gone: %q", r)
 	}
 
 	g = clearOf(t, tt, 4)

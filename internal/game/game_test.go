@@ -246,13 +246,14 @@ func TestClearSlidesThenTheStackComesDown(t *testing.T) {
 	if g.Slid(0) != 1 || g.Slid(1) != 1 || g.Cell(0, Rows-2) == 0 {
 		t.Fatal("the rows have not slid out, or the stack came down first")
 	}
-	g.Advance(Settle)
-	if g.Cell(0, Rows-1) == 0 || g.Cell(0, Rows-2) != 0 || g.Cell(0, Rows-3) == 0 || g.Live() {
-		t.Fatal("the stack did not come down a row")
+	g.Advance(Settle - time.Millisecond)
+	if g.Cell(0, Rows-2) == 0 || g.Live() {
+		t.Fatal("the stack came down before Settle")
 	}
-	g.Advance(Settle)
+	// Over two rows the stack comes down at once (user, 2026-11-12).
+	g.Advance(time.Millisecond)
 	if g.Cell(0, Rows-1) == 0 || g.Cell(0, Rows-2) == 0 || g.Cell(0, Rows-3) != 0 || len(g.Going) != 0 || !g.Live() {
-		t.Fatal("the stack did not come down the second row, or the clear did not end")
+		t.Fatal("the stack did not come down both rows at once, or the clear did not end")
 	}
 	if g.At != at {
 		t.Fatal("the piece waiting came down with the stack")
@@ -367,7 +368,7 @@ func TestFourBurstThenTheStackComesDownAtOnce(t *testing.T) {
 	if g.Cell(0, Rows-1) == 0 || g.Cell(0, Rows-5) != 0 || len(g.Going) != 0 || !g.Live() {
 		t.Fatal("the stack did not come down four rows at once")
 	}
-	if ClearTime(4) != out(4)+Settle || ClearTime(2) != out(2)+2*Settle {
+	if ClearTime(4) != out(4)+Settle || ClearTime(2) != out(2)+Settle || ClearTime(3) != out(3)+3*Settle {
 		t.Fatal("the clear times")
 	}
 }

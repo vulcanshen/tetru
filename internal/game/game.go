@@ -36,7 +36,7 @@ const (
 	// (user, 2026-11-11: too slow, not smooth): a row 0.32 s. How the rows
 	// go is by how many there are (user, 2026-11-12), in the same time:
 	// one slides out, two burst, three crumble (Along) and four split, the
-	// stack over four coming down at once, Settle after.
+	// stack over two or four coming down at once, Settle after (Whole).
 	Flash   = 100 * time.Millisecond
 	Slide   = 200 * time.Millisecond
 	Stagger = 50 * time.Millisecond
@@ -128,11 +128,15 @@ const Kept = 8
 // ClearTime is how long a clear of n rows takes, from the flash to the
 // stack down.
 func ClearTime(n int) time.Duration {
-	if n >= 4 {
+	if Whole(n) {
 		return out(n) + Settle
 	}
 	return out(n) + time.Duration(n)*Settle
 }
+
+// Whole says whether the stack over n rows going comes down at once, not a
+// row at a time: over two and four (user, 2026-11-12).
+func Whole(n int) bool { return n == 2 || n >= 4 }
 
 // out is how long n rows going take to have slid out.
 func out(n int) time.Duration { return Flash + Slide + time.Duration(n-1)*Stagger }
@@ -432,12 +436,12 @@ func (g *Game) clearRows(full []int) {
 }
 
 // settle steps the clear on to fx: once the rows have slid out, the stack
-// over the lowest row left empty comes down a row every Settle (over four,
-// all at once, Settle after); with none left the clear ends, and the piece
+// over the lowest row left empty comes down a row every Settle (or all at
+// once, Settle after: Whole); with none left the clear ends, and the piece
 // waiting falls, or, with no room, it is the end.
 func (g *Game) settle() {
 	gone := out(len(g.Going))
-	if len(g.Going) >= 4 {
+	if Whole(len(g.Going)) {
 		for len(g.gaps) > 0 && g.fx >= gone+Settle {
 			g.gaps = closeGap(g.cells, g.gaps)
 		}
