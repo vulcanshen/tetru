@@ -117,7 +117,10 @@ func NewTetru() *Tetru {
 	t.rankP = &terminu.Panel{Label: "Rank", Body: t.list}
 	t.gameP = &terminu.Panel{Label: "Playground", Body: &field{t}, OnEsc: func() tea.Cmd { return nil }}
 	keysP := &terminu.Panel{Label: "Keys", Body: &terminu.Values{Header: [2]string{"Action", "Key"}, Fields: t.keyFields()}}
-	t.play = &terminu.Mode{Name: "Gaming", Exit: "pause", Pause: true, OnExit: t.pause}
+	// The mode's Space menu lists Restart and Save alone (user, 2026-11-11;
+	// tdp K11: what an app's own mode lists there is the app's): not the
+	// keys to play, nor [Esc] Pause, which the footer has.
+	t.play = &terminu.Mode{Name: "Gaming", Exit: "pause", Pause: true, NoLeaveRow: true, OnExit: t.pause}
 	t.setModeKeys()
 	t.setActions()
 	t.setRows("")
@@ -416,23 +419,21 @@ func (t *Tetru) setRows(sel string) {
 
 // setModeKeys are the Gaming mode's keys, the player's (Settings): the moves
 // with their arrows too (tdp K12) and the drop, all the way down, are
-// moving: shown in the mode's Space menu, not in the footer, which keeps
-// room for Esc:pause; the turns are things done to the falling piece, run
-// from the Space menu too (tdp K11). A key that is h, j, k or l takes its
-// arrow too (tdp K12): by default ↑ turns left with k, which has no moving
-// to do in the mode, a piece never going up.
+// moving: not in the footer, which keeps room for Esc:pause; the turns are
+// things done to the falling piece. None of these is in the mode's Space
+// menu (user, 2026-11-11: it has Restart and Save; tdp K11), all of them in
+// its ? and in INFO. A key that is h, j, k or l takes its arrow too (tdp
+// K12): by default ↑ turns left with k, which has no moving to do in the
+// mode, a piece never going up.
 func (t *Tetru) setModeKeys() {
 	k := t.keys
 	t.play.Keys = []terminu.ModeKey{
-		{Key: k[keys.Left], Keys: k.Keys(keys.Left), Desc: "move left", NoFooter: true, Do: t.do(keys.Left)},
-		{Key: k[keys.Right], Keys: k.Keys(keys.Right), Desc: "move right", NoFooter: true, Do: t.do(keys.Right)},
-		{Key: k[keys.Down], Keys: k.Keys(keys.Down), Desc: "down a row", NoFooter: true, Do: t.do(keys.Down)},
-		{Key: k[keys.RotateLeft], Keys: k.Keys(keys.RotateLeft), Desc: "rotate left", Item: true, Label: keys.RotateLeft.Label(), MenuDesc: keys.RotateLeft.Desc(), Do: t.do(keys.RotateLeft)},
-		{Key: k[keys.RotateRight], Keys: k.Keys(keys.RotateRight), Desc: "rotate right", Item: true, Label: keys.RotateRight.Label(), MenuDesc: keys.RotateRight.Desc(), Do: t.do(keys.RotateRight)},
-		{Key: k[keys.Drop], Keys: k.Keys(keys.Drop), Desc: "drop to the bottom", NoFooter: true, Do: t.do(keys.Drop)},
-		// TODO(tdp #7): the user wants the mode's Space menu to have Restart
-		// and Save alone (2026-11-11), not the keys above; tdp menu.4 lists a
-		// mode's keys there, so they are the mode's too, for now.
+		{Key: k[keys.Left], Keys: k.Keys(keys.Left), Desc: "move left", NoFooter: true, NoMenu: true, Do: t.do(keys.Left)},
+		{Key: k[keys.Right], Keys: k.Keys(keys.Right), Desc: "move right", NoFooter: true, NoMenu: true, Do: t.do(keys.Right)},
+		{Key: k[keys.Down], Keys: k.Keys(keys.Down), Desc: "down a row", NoFooter: true, NoMenu: true, Do: t.do(keys.Down)},
+		{Key: k[keys.RotateLeft], Keys: k.Keys(keys.RotateLeft), Desc: "rotate left", Item: true, NoMenu: true, Label: keys.RotateLeft.Label(), MenuDesc: keys.RotateLeft.Desc(), Do: t.do(keys.RotateLeft)},
+		{Key: k[keys.RotateRight], Keys: k.Keys(keys.RotateRight), Desc: "rotate right", Item: true, NoMenu: true, Label: keys.RotateRight.Label(), MenuDesc: keys.RotateRight.Desc(), Do: t.do(keys.RotateRight)},
+		{Key: k[keys.Drop], Keys: k.Keys(keys.Drop), Desc: "drop to the bottom", NoFooter: true, NoMenu: true, Do: t.do(keys.Drop)},
 		{Key: "r", Desc: "restart", Label: "Restart", MenuDesc: "start over from level 1", Do: func(string) tea.Cmd { return t.newGame() }},
 		{Key: "s", Desc: "save", Label: "Save", MenuDesc: saveDesc, Do: func(string) tea.Cmd { return t.saveGame() }},
 	}

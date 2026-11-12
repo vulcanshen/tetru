@@ -337,9 +337,15 @@ func TestTheGameStopsUnderAPopup(t *testing.T) {
 	tt, d := open(t, 60, 32)
 	play(d)
 	d.Press("Space")
-	for _, s := range []string{"ITEM OPERATION", "[d] Rotate left", "[k] Rotate right", "GAMING MODE", "move left", "drop to the bottom", "[r]estart", "[s]ave", "[Esc] Pause"} {
+	for _, s := range []string{"GAMING MODE", "[r]estart", "[s]ave"} {
 		if !d.Has(s) {
 			t.Fatalf("the Gaming mode's Space menu has no %q", s)
+		}
+	}
+	// INFO beside it has the keys, "move left" among them, in lower case.
+	for _, s := range []string{"ITEM OPERATION", "Rotate left", "Rotate right", "drop to the bottom", "[Esc] Pause"} {
+		if d.Has(s) {
+			t.Fatalf("the Gaming mode's Space menu has %q, not Restart and Save alone", s)
 		}
 	}
 	y := tt.g.At.Y
@@ -360,14 +366,21 @@ func TestTheGameStopsUnderAPopup(t *testing.T) {
 	}
 }
 
-func TestSpaceMenuRotates(t *testing.T) {
+func TestSpaceMenuRunsRestartAndTheKeysAreInHelp(t *testing.T) {
 	tt, d := open(t, 60, 32)
 	play(d)
-	turnable(tt, d)
+	d.Press("?")
+	for _, s := range []string{"move left", "move right", "down a row", "rotate left", "rotate right", "drop to the bottom", "restart", "save"} {
+		if !d.Has(s) {
+			t.Fatalf("the Gaming mode's ? has no %q", s)
+		}
+	}
+	d.Press("Esc")
+	g := tt.g
 	d.Press("Space")
-	d.Press("Enter") // the first row: Rotate left
-	if tt.g.At.Turn == 0 || !tt.playing() {
-		t.Fatal("the menu's Rotate left did not turn the piece and go back to playing")
+	d.Press("Enter") // the first row: Restart, with no points at once
+	if tt.g == g || !tt.playing() {
+		t.Fatal("the menu's Restart did not start over")
 	}
 }
 

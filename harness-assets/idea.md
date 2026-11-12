@@ -48,6 +48,7 @@
   再後來問：為什麼 h/l/j/Enter 又出現在 Play mode 的 menu 裡面？聽了 tdp 的規定之後選：重新打開 tdp #7。
   又說：應該不是讓遊戲例外，而是讓 app 特殊模式中可以不再 tdp space menu 內的限制（#7 照這樣改了標題與內文）。
 - （2026-11-12）「Play」模式名稱改成「Gaming」模式；panel 1 title 名稱從 GAME 改成 PLAYGROUND。
+- （2026-11-12）tdp #7 定案（使用者選 A），terminu-go v1.2.4-beta.1 做到：玩的時候的 Space menu 只列 restart、save。
 
 ## 關卡
 
