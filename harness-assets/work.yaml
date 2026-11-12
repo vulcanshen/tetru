@@ -40,7 +40,7 @@ tasks:
       tgo App.Tick 每 40 ms 一格推進遊戲（README 的計時器）；消行時每 16 ms 一格（task 9）
     test: [TestPiecesComeSevenToABag, TestSameSeedSameGame, TestPieceComesInAtTheTopInTheMiddle, TestMoveStopsAtTheWalls, TestRotateTurnsAndComesBack, TestRotateKicksOffTheWall, TestDownScoresARow, TestDropSetsThePieceAndScoresTwoARow, TestGravityAtTheLevelsSpeed, TestLockWaitsAndMovingRestartsIt, TestLockResetsRunOut, TestClearScoresAtTheLevelAndGoesUp, TestTheSpeedStopsAtTheLastLevel, TestTheStackAtTheTopEnds, TestEndStopsThePiece, TestTheGameFalls]
   - id: 4
-    spec: 49
+    spec: 50
     implementation: |
       開始或繼續一局時，PLAYGROUND 進入 tgo 的模式 Gaming（tgo Panel.EnterMode）：tgo 把外框換成模式色、上框右邊畫 ┫Gaming┣
       Gaming 的鍵（tgo ModeKey）照 Settings 的鍵（task 13），預設：h、← 左一格；l、→ 右一格；j、↓ 往下一格；d、PgDn 左旋（逆時針）；k、↑ 右旋（順時針）；
@@ -50,11 +50,11 @@ tasks:
       Enter 在 PLAYGROUND 上（Gaming 外）：沒有一局在暫停時開新的一局（task 6），有就繼續（task 5）；hint Enter:play，暫停時 Enter:resume
     test: [TestPlay, TestTheGamingFooterHasTheTurnsAndTheDrop, TestSpaceMenuRunsRestartAndTheKeysAreInHelp, TestTheGameFalls, TestSettingsSetAKey]
   - id: 5
-    spec: 48
+    spec: 50
     implementation: |
       Gaming 裡按 Space：tgo 開 Gaming 的 Space menu，標題 [1] PLAYGROUND，只有 GAMING MODE 的 [r]estart（start over from level 1）、
       [q]uit（leave tetru; a game going goes on next time），選了 [r]estart 就等於按 r，選了 [q]uit 就是 task 10 的離開流程；玩的六個鍵標 tgo ModeKey.NoMenu、模式標 Mode.NoLeaveRow
-      （tgo v1.2.4），都不列，[Esc] Pause 也不列；? 列 Gaming 的每個鍵（照 Settings 裡現在的鍵）、r、q 與 Esc
+      （tgo v1.2.4 起），都不列，[Esc] Pause 也不列；q 是 core key：沒有 Do 的 tgo ModeKey {Key: q, Desc: quit, Label: Quit}（tgo v1.2.5），按 q 或選 [q]uit 都是 tgo 的離開流程；? 列 Gaming 的每個鍵（照 Settings 裡現在的鍵）、r 與 Esc，q 列在 core key 裡一次
       Gaming 模式的 r：跟 PLAYGROUND 的 n 一樣（值得記的先開 NEW GAME 問誰玩的，不然直接開新的一局）；q：task 10 的離開流程（q 本來就是 core key）；沒有 s（Save 拿掉了，task 16）；footer 是
       Space:menu ?:help d:rotate left k:rotate right Enter:drop r:restart q:quit Esc:pause（task 4），窄的終端機放不下的由 tgo 收掉，Esc:pause 留著
       遊戲每 40 ms 一格，有任何 popup 開著（Space menu、?、confirm）或終端機比 42×32 小時不往前走，popup 關掉就接著走；有沒有 popup 是問

@@ -1,6 +1,6 @@
-id: 49
-from: v1.2.3
-to: v1.2.4
+id: 50
+from: v1.2.4
+to: v1.2.5
 tasks:
   - id: 1
     spec: 45
@@ -75,9 +75,9 @@ tasks:
       - '新的方塊放不進場地，或固定時有一格還在場地上方，遊戲結束（照 locku）'
       - '名字是 tetru；不用別的遊戲的名稱、商標與音樂'
   - id: 4
-    spec: 49
+    spec: 50
     request: '遊戲的按鍵：h 左、l 右、j 下一格、d 左旋、k 右旋、Enter 快速向下；這是遊戲，要讓使用者好玩，跟 tdp 衝突就請 tdp 調整'
-    tdp: [tdp K11, tdp K12, tdp K3, tdp P5, tdp M5, tdp panel.3, tdp screen.2, tdp menu.4, tdp K6, tdp panel.1]
+    tdp: [tdp K11, tdp K12, tdp K3, tdp P5, tdp M5, tdp panel.3, tdp screen.2, tdp menu.4, tdp K6, tdp panel.1, tdp M6]
     remark:
       - '遊戲進行中是 PLAYGROUND 的模式 Gaming（tdp K11：進入之後一部分鍵換成模式自己的意思，Esc 離開）：外框換成模式色、上框右邊 ┫Gaming┣（tdp panel.3）；只有 Gaming 的鍵與 core key 作用，亂按的其他鍵不出聲'
       - 'Gaming 的鍵是使用者在 Settings 設的（task 13），預設照使用者 2026-11-11 說的：h 左、l 右、j 往下一格、d 左旋、k 右旋、Enter 落到底（原本是 k 左旋、i 右旋，使用者玩過之後改的）'
@@ -86,11 +86,11 @@ tasks:
       - '方向鍵跟著字母：h|j|k|l 就是 ←|↓|↑|→，u|d 就是 PgUp|PgDn（tdp K12），哪個動作的鍵是這幾個字母，它的方向鍵或 PgUp|PgDn 就做那個動作；預設 ← 左、→ 右、↓ 往下、PgDn 左旋、↑ 右旋。動作設成別的字母時，原本那個字母與它的方向鍵就不作用'
       - 'Enter 在 Gaming 裡是落到底並固定：K11 的表沒有 Enter，照 tdp K3「對 focus 的東西做最直觀的動作」，Gaming 裡 focus 的是落下中的方塊，把它放到底就是最直觀的（跟 Drag mode 的 Enter 放下一樣）。Gaming 外 Enter 在 PLAYGROUND 上是開始一局或繼續（tdp K3：panel 沒有項目時，對整個 panel 做最直觀的動作）'
       - '旋轉與落到底是對落下中的方塊做的事，在 footer；左右與往下一格是移動，不在 footer（見下面的 footer 那一條）。這些鍵都在 ?（tdp K6），不列在 Space menu（task 5）'
-      - note: 'footer 寫 q:quit（使用者 2026-11-12：Gaming 模式中 footer 加入 q:quit）。q 是 core key，在任何模式裡都是進入 K9 的離開流程，不是 Gaming 自己的鍵；這裡只是把它寫在 footer 上。review 判違反 tdp v1.2.4 的 screen.2（模式的 footer 只寫模式自己的鍵），回報 tdp #13，使用者 2026-11-12 選 A，tdp 改成通用的寫法（本機 4fcf1bd，還沒發版）：app 自己的模式，footer 在 Space:menu ?:help 與最後的 Esc:<離開的動詞> 中間寫哪些鍵由 app 自行決定，模式裡能按的鍵都可以，包括 core key，每個鍵做的事照它在模式裡的作用（screen.2、screen-36）。tetru 的「… r:restart q:quit Esc:pause」合 screen-36。等 tdp 發版再拿新版對'
+      - note: 'footer 寫 q:quit（使用者 2026-11-12：Gaming 模式中 footer 加入 q:quit）。q 是 core key，在任何模式裡都是進入 K9 的離開流程，不是 Gaming 自己的鍵；這裡只是把它寫在 footer 上。v1.2.4 的 screen.2 只准寫模式自己的鍵（2026-11-12 review），回報 tdp #13，使用者選 A，tdp v1.2.5 定案：app 自己的模式，footer 在 Space:menu ?:help 與最後的 Esc:<離開的動詞> 中間寫哪些鍵由 app 自行決定，模式裡能按的鍵都可以，core key 也可以（例：q:quit），每個鍵做的事照它在模式裡的作用（K11、screen.2、screen-36）。tgo v1.2.5：沒有 Do 的 ModeKey {Key: q, Desc: quit}'
         issue: tdp #13
 
   - id: 5
-    spec: 48
+    spec: 50
     request: 'Space 暫停，並打開 Space menu；Space 不能改；暫停用 popup 顯示，不畫在遊戲裡（那是 locku 的限制，tetru 是獨立的 app）；玩的時候的 Space menu 不用列 h、l、j、k、Enter，連 d、k 都不用，應該是給 restart、save（使用者 2026-11-11）；後來使用者一度說列的確實是這個模式的鍵，再問為什麼 h、l、j、Enter 出現在裡面，選了重新打開 tdp #7（2026-11-11）；save 不給使用者操作，Gaming 中的 Space menu 只有 restart 和 quit（使用者 2026-11-12：save 存完直接 quit，玩到一半不小心按到 s 就慘了）'
     tdp: [tdp K5, tdp K11, tdp K4, tdp menu.4, tdp M2, tdp M7, tdp L1, tdp screen.7, tdp F1, tdp F6, tdp confirm, tdp K12, tdp K6, tdp screen.2, tdp M5, tdp toast, tdp K9, tdp K1, tdp K2]
     remark:
@@ -102,13 +102,13 @@ tasks:
       - 'Esc 離開 Gaming＝暫停（tdp K4：Esc 是安全的出口，不會丟掉這一局），開 confirm 說遊戲停了（使用者 2026-11-11：暫停用 popup，場地上什麼都不畫）：內容 Paused: level 3, 25 lines, 12,340 points.，問句 Go on with the game?，Enter:resume 回到 Gaming，Esc:cancel 留在暫停。讀一段提醒、Enter 接受、Esc 取消就是 confirm（tdp F1），要不要問 app 可以自行決定（tdp F6）；標題照 tdp confirm.2 寫 Enter 做的動作 RESUME，不寫 PAUSED'
       - 'confirm 關掉之後遊戲照樣停著，PLAYGROUND 的 hint 是 Enter:resume，Enter 一樣回到 Gaming'
       - '暫停時 PLAYGROUND 的 Space menu 是一般的（tdp M2）：PANEL OPERATION 的 [Enter] Resume、[n]ew game、[x] End game，與 Global operation（換畫面、離開都在這裡）；沒有 Save（task 16）'
-      - 'Tab、數字鍵在 Gaming 裡不暫停、不出聲：Tetru 畫面只有 PLAYGROUND 一個 panel，它們在模式外本來就不做事，在模式裡也不作用（tdp K11-5 的新寫法：在模式外也不會做事的鍵，在模式裡也不作用，不出聲，tdp 本機草稿、還沒發版；照 v1.2.4 的 K11 不暫停時它們照常換 panel，只有一個 panel 時也是不做事）。原本暫停、跳 Info toast：Press [Esc] to leave Gaming first'
+      - 'Tab、數字鍵在 Gaming 裡不暫停、不出聲：Tetru 畫面只有 PLAYGROUND 一個 panel，它們在模式外本來就不做事，在模式裡也不作用（照 tdp K11，模式不暫停 Tab 與數字鍵時它們照常作用：K2 的 Tab 在只有一個 panel 時回到同一個，K1 的數字鍵沒有那個號碼的 panel 時不作用，所以什麼都不做、不出聲）。原本暫停、跳 Info toast：Press [Esc] to leave Gaming first'
       - 'Space 一直是 Space（使用者 2026-11-11：除了 Space 以外都能設），也是 tdp K1、P5 的 core key：Settings 不列它（task 13）'
-      - note: 'Esc 離開 Gaming 時接著開 RESUME confirm：tdp K11、K4 沒寫離開模式時能不能開 popup（2026-11-12 review）。使用者 2026-11-12 選 A：離開 app 自己的模式時要不要跳 popup，app 可以自行決定（tdp 本機改了 K4、K11、K11-3，加了 K11-16，還沒發版）。要守的三點 tetru 都做到（TestEscPausesEnterResumes）：只跳一個 popup；跳出來時模式已經離開，PLAYGROUND 的模式名、外框顏色都恢復；RESUME 上按 Esc 是關掉它、留在模式外面（暫停），回到 Gaming 是 popup 的 Enter:resume。等 tdp 發版再拿新版對'
+      - note: 'Esc 離開 Gaming 時接著開 RESUME confirm：v1.2.4 的 K11、K4 沒寫離開模式時能不能開 popup（2026-11-12 review），回報 tdp #9，使用者選 A，tdp v1.2.5 定案：離開 app 自己的模式時要不要跳 popup，app 可以自行決定（K11、K4、K11-3、K11-16）。要守的三點 tetru 都做到（TestEscPausesEnterResumes）：只跳一個 popup；跳出來時模式已經離開，PLAYGROUND 的模式名、外框顏色都恢復；RESUME 上按 Esc 是關掉它、留在模式外面（暫停），回到 Gaming 是 popup 的 Enter:resume。tgo v1.2.5 的 Mode.OnExit 在離開之後才跑'
         issue: tdp #9
-      - note: '清單 K11-8「模式裡沒有任何可以執行的按鍵清單」跟 K11 本文、K11-15、menu.4 矛盾（Space menu 的 [r]estart、[s]ave 能執行）；照本文，不改。tdp 回覆：K11-8 是模式還沒有 Space menu 時留下的，tdp 本機已拿掉（7ebc24f，還沒發版），能不能執行由 menu-24、menu-25 寫（現在能執行的是 [r]estart、[q]uit）'
+      - note: '模式的 Space menu 裡能執行的列（[r]estart、[q]uit）：原本 tdp 清單有一條說模式裡沒有能執行的按鍵清單，跟 K11 本文、K11-15、menu.4 矛盾，回報 tdp #12；tdp v1.2.5 拿掉那一條，能不能執行由 menu-24、menu-25 寫，tetru 照本文不改'
         issue: tdp #12
-      - note: 'footer 寫 q:quit（使用者 2026-11-12：Gaming 模式中 footer 加入 q:quit）。q 是 core key，在任何模式裡都是進入 K9 的離開流程，不是 Gaming 自己的鍵；這裡只是把它寫在 footer 上。review 判違反 tdp v1.2.4 的 screen.2（模式的 footer 只寫模式自己的鍵），回報 tdp #13，使用者 2026-11-12 選 A，tdp 改成通用的寫法（本機 4fcf1bd，還沒發版）：app 自己的模式，footer 在 Space:menu ?:help 與最後的 Esc:<離開的動詞> 中間寫哪些鍵由 app 自行決定，模式裡能按的鍵都可以，包括 core key，每個鍵做的事照它在模式裡的作用（screen.2、screen-36）。tetru 的「… r:restart q:quit Esc:pause」合 screen-36。等 tdp 發版再拿新版對'
+      - note: 'footer 寫 q:quit（使用者 2026-11-12：Gaming 模式中 footer 加入 q:quit）。q 是 core key，在任何模式裡都是進入 K9 的離開流程，不是 Gaming 自己的鍵；這裡只是把它寫在 footer 上。v1.2.4 的 screen.2 只准寫模式自己的鍵（2026-11-12 review），回報 tdp #13，使用者選 A，tdp v1.2.5 定案：app 自己的模式，footer 在 Space:menu ?:help 與最後的 Esc:<離開的動詞> 中間寫哪些鍵由 app 自行決定，模式裡能按的鍵都可以，core key 也可以（例：q:quit），每個鍵做的事照它在模式裡的作用（K11、screen.2、screen-36）。tgo v1.2.5：沒有 Do 的 ModeKey {Key: q, Desc: quit}'
         issue: tdp #13
 
   - id: 6

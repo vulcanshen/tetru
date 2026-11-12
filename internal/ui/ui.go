@@ -543,9 +543,10 @@ func (t *Tetru) setModeKeys() {
 		{Key: k[keys.RotateRight], Keys: k.Keys(keys.RotateRight), Desc: "rotate right", Item: true, NoMenu: true, Label: keys.RotateRight.Label(), MenuDesc: keys.RotateRight.Desc(), Disabled: t.still, Do: t.do(keys.RotateRight)},
 		{Key: k[keys.Drop], Keys: k.Keys(keys.Drop), Desc: "drop", NoMenu: true, Disabled: t.still, Do: t.do(keys.Drop)},
 		{Key: "r", Desc: "restart", Label: "Restart", MenuDesc: "start over from level 1", Disabled: t.waiting, Do: func(string) tea.Cmd { return t.newGame() }},
-		// Quit, as q does in the mode (tdp K11), listed in its Space menu (user,
-		// 2026-11-12: Restart and Quit there).
-		{Key: "q", Desc: "quit", Label: "Quit", MenuDesc: quitDesc, Do: func(string) tea.Cmd { return t.quit() }},
+		// q, a core key, the quit flow in any mode (tdp K11, K9), written in the
+		// footer and listed in the Space menu (user, 2026-11-12: Restart and Quit
+		// there; tdp v1.2.5 screen.2): no Do, the key does what it does.
+		{Key: "q", Desc: "quit", Label: "Quit", MenuDesc: quitDesc},
 	}
 }
 
