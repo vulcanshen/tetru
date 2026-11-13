@@ -50,10 +50,10 @@ tasks:
       Enter 在 PLAYGROUND 上（Gaming 外）：沒有一局在暫停時開新的一局（task 6），有就繼續（task 5）；hint Enter:play，暫停時 Enter:resume
     test: [TestPlay, TestTheGamingFooterHasTheTurnsAndTheDrop, TestSpaceMenuRunsRestartAndTheKeysAreInHelp, TestTheGameFalls, TestSettingsSetAKey, TestArrowsKeepTheirDefault, TestEnterAndTheMovesAreThePlayers]
   - id: 5
-    spec: 67
+    spec: 68
     implementation: |
       Gaming 裡按 Space：tgo 開 Gaming 的 Space menu，標題 [1] PLAYGROUND，只有 GAMING MODE 的 [r]estart（start over from level 1）、
-      [q]uit（leave tetru; a game going goes on next time），選了 [r]estart 就等於按 r（tgo 先關掉 menu 再跑 ModeKey.Do，所以開的 popup 上 Esc 回到遊戲；使用者 2026-11-13 覺得這樣正常），選了 [q]uit 就是 task 10 的離開流程；玩的六個鍵標 tgo ModeKey.NoMenu、模式標 Mode.NoLeaveRow
+      [q]uit（leave tetru; a game going goes on next time），選了 [r]estart 就等於按 r（tgo 先關掉 menu 再跑 ModeKey.Do，所以開的 popup 上 Esc 回到遊戲；使用者 2026-11-13 覺得這樣正常，tdp v1.2.10 K11：app 自己的模式裡由 app 決定），選了 [q]uit 就是 task 10 的離開流程；玩的六個鍵標 tgo ModeKey.NoMenu、模式標 Mode.NoLeaveRow
       （tgo v1.2.4 起），都不列，[Esc] Pause 也不列；q 是 core key：沒有 Do 的 tgo ModeKey {Key: q, Desc: quit, Label: Quit}（tgo v1.2.5），按 q 或選 [q]uit 都是 tgo 的離開流程；? 列 Gaming 的每個鍵（照 Settings 裡現在的鍵）、r 與 Esc，q 列在 core key 裡一次
       Gaming 模式的 r：跟 PLAYGROUND 的 n 一樣（task 10 的 newGame：值得記的先開 NEW GAME 問誰玩的，不然先開 NEW GAME 的 confirm）；q：task 10 的離開流程（q 本來就是 core key）；沒有 s（Save 拿掉了，task 16）；footer 是
       Space:menu ?:help d|k:rotate Enter:drop r:restart q:quit Esc:pause（task 4），窄的終端機放不下的由 tgo 收掉，Esc:pause 留著
@@ -119,7 +119,7 @@ tasks:
       兩段動畫都由 tgo App.Tick 推：消行時每 16 ms 一格，灰幕每 40 ms 一格；消 1 行 0.32 秒、2 行 0.37、3 行 0.42、4 行 0.47 秒（game.ClearTime）；灰幕不管有沒有 popup 都照走
     test: [TestOneRowFlashesFadesThenTheStackComesDown, TestClearsByHowManyRows, TestFourBurstThenTheStackComesDownAtOnce, TestClearSlidesThenTheStackComesDown, TestClearScoresAtTheLevelAndGoesUp, TestTopOutKeepsTheScore, TestTheStackAtTheTopEnds, TestTopOutWithNoPoints, TestNoPointsNotKept, TestNameIsAskedAsTheGameEnds, TestEscOnTheNameKeepsAnon]
   - id: 10
-    spec: 67
+    spec: 68
     implementation: |
       PLAYGROUND 的 panel operation（Gaming 外的 Space menu 與熱鍵）：
       [n]ew game（start over from level 1）：有一局值得記時先開 task 6 的 text input，標題 NEW GAME、Enter:start；Enter 記下那一局，接著開新的一局、進 Gaming；
@@ -130,7 +130,7 @@ tasks:
       之後什麼都不說（原本直接結束、跳 Info toast，review 2026-11-13 判違反 tdp F6）；沒有一局時停用
       從暫停時的 Space menu 選的（[n]ew game、[x] End game）：AskFor 的 confirm 開在 menu 上面，Esc 回到 menu，Enter 之後動作沒開 popup，tgo 關掉 menu；
       問名字的 text input 也開在 menu 上面（tgo Action：從 menu 開 popup 時 menu 留在下面，tdp F4、confirm.3），Esc 回到 menu，記下時 askName 用 tgo App.CloseAll
-      把底下的 menu 一起關掉（tdp T1）；Gaming 的 Space menu 選 [r]estart：tgo 先關 menu，Esc 回到遊戲
+      把底下的 menu 一起關掉（tdp T1）；Gaming 的 Space menu 選 [r]estart：tgo 先關 menu，Esc 回到遊戲（tdp v1.2.10 K11：app 自己的模式裡開的 popup 回到哪裡由 app 決定）
       離開流程（tgo App.QuitFlow、QuitDesc leave tetru; a game going goes on next time）：不問。有一局在玩（玩著或暫停中）時回一個訊息（quitKeep），
       收到時把這一局存起來（task 16）、回 tea.Quit；沒有一局在玩時直接回 tea.Quit。有 popup 開著時 tgo 先開 Quit tetru?，Enter 才送出那個訊息，Esc 什麼都沒存
       存不起來：tgo App.Error 開 CAN'T SAVE THE GAME，路徑與原因、[Ctrl-C] twice quits all the same, the score so far kept for ANON.，不離開；離開流程中再按一次 Ctrl-C 由 tgo 立刻離開（main 的 Finish 存起來）

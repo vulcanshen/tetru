@@ -1,6 +1,6 @@
-id: 67
-from: v1.2.8
-to: v1.2.9
+id: 68
+from: v1.2.9
+to: v1.2.10
 tasks:
   - id: 1
     spec: 45
@@ -91,7 +91,7 @@ tasks:
       - '? 的寫法（tdp v1.2.8 K11、K12、M5）：字母改走以後照預設作用的方向鍵與 PgUp|PgDn，寫在它做的動作那一列、用 | 接在使用者選的鍵後面（a|← move left、g|↓ down a row）；在預設的字母上不寫（同一個鍵）；預設沒有作用的 PgUp 不寫。兩個旋轉在 footer 是一項 d|k:rotate，在 ? 一律分兩列（d rotate left、k rotate right；左旋改到 Enter 時 Enter|PgDn rotate left）：一項裡的 | 只用一種意思，一對裡接上做同一件事的鍵就拆成兩項（M5）；預設時也分兩列，? 的樣子不跟著設定變，也寫得出哪個往左、哪個往右（tdp #14）'
 
   - id: 5
-    spec: 67
+    spec: 68
     request: 'Space 暫停，並打開 Space menu；Space 不能改；暫停用 popup 顯示，不畫在遊戲裡（那是 locku 的限制，tetru 是獨立的 app）；玩的時候的 Space menu 不用列 h、l、j、k、Enter，連 d、k 都不用，應該是給 restart、save（使用者 2026-11-11）；後來使用者一度說列的確實是這個模式的鍵，再問為什麼 h、l、j、Enter 出現在裡面，選了重新打開 tdp #7（2026-11-11）；save 不給使用者操作，Gaming 中的 Space menu 只有 restart 和 quit（使用者 2026-11-12：save 存完直接 quit，玩到一半不小心按到 s 就慘了）'
     tdp: [tdp K5, tdp K11, tdp K4, tdp menu.4, tdp M2, tdp M7, tdp L1, tdp screen.7, tdp F1, tdp F6, tdp confirm, tdp K12, tdp K6, tdp screen.2, tdp M5, tdp toast, tdp K9, tdp K1, tdp K2, tdp P5, tdp M3, tdp panel.16, tdp note.5, tdp F4, tdp T1]
     remark:
@@ -168,14 +168,14 @@ tasks:
       - 'tdp v1.2.6：怎麼結束、結束前顯示什麼是 app 的事，tdp 不要求跳 popup；tetru 照使用者的，灰幕落完在 Gaming 裡開 KEEP SCORE 或 PLAY（K11-21）。不管怎麼離開，模式名與外框顏色恢復，模式的 Space menu 與 ? 一起關掉（tgo v1.2.6 的 Panel.LeaveMode 會關）；離開時最多一個 popup（K11-16）；遊戲玩到哪裡不算要先問的東西（K11-23）'
 
   - id: 10
-    spec: 67
+    spec: 68
     request: '玩家可以中途結束、重新開始或離開，結束或離開時記下當下的分數；有一局在玩時按 q 先跳 confirm，記下分數，名字直接用 ANON（使用者 2026-11-11）。後來（使用者 2026-11-12）：要 quit 的時候正在遊戲，app 自動存檔，也不用問，下次進來使用者不想繼續直接 restart 就好。再後來（使用者 2026-11-13）：玩到一半不小心按到 r，就 restart 了，這不行'
-    tdp: [tdp M2, tdp M3, tdp M5, tdp M6, tdp F6, tdp text, tdp K9, tdp confirm, tdp popup.1, tdp K4, tdp input.1, tdp note.6, tdp F5, tdp M4, tdp P5, tdp K12, tdp T1, tdp note.7, tdp panel.16, tdp F4, tdp menu.4]
+    tdp: [tdp M2, tdp M3, tdp M5, tdp M6, tdp F6, tdp text, tdp K9, tdp confirm, tdp popup.1, tdp K4, tdp input.1, tdp note.6, tdp F5, tdp M4, tdp P5, tdp K12, tdp T1, tdp note.7, tdp panel.16, tdp F4, tdp menu.4, tdp K11]
     remark:
       - '[x] End game（keep this score and stop）與 [n]ew game（start over from level 1）是 PLAYGROUND 的 panel operation（tdp M2、M3）；n、x 是領域熱鍵（tdp P5），不佔移動的字母'
-      - '有一局值得記時（task 7），兩個都先問誰玩的（task 6），那就是確認（tdp F6：哪些要確認 app 可以自行決定）：說出分數，Esc 取消。不值得記的局：[x] End game 與重新開始（Gaming 的 r、Space menu 的 Restart、暫停時的 [n]ew game）都先開 confirm（[x] End game 原本直接結束、事後跳 Info toast，review 2026-11-13 判違反 tdp F6：決定要確認的每次都確認，值得記的局問名字就是確認，不值得記的也要問）（使用者 2026-11-13：玩到一半不小心按到 r 就 restart 了，這不行；tdp F6：決定要確認的每次都確認，所以重新開始不管值不值得記，每次都先開一個 popup）：標題跟問名字的一樣（NEW GAME、END GAME），內容一句 Peach 的警告 This game ends, not kept: no points.（或 150 points, not in the best 20），問句 Start a new game? 或 End this game?，Enter:start 重開、Enter:end 結束，之後什麼都不說（task 6），Esc 回到遊戲，從暫停時的 Space menu 選的回到那個 menu（tdp F4、confirm.3）；從 menu 選的，答完（Enter 開新局、結束，或問名字記下）menu 跟著關掉（tdp T1：做完的事結束整疊 popup；使用者 2026-11-13：Enter 之後 popup 沒關、還卡著，要選 Enter 去 resume，不合理）。Gaming 的 Space menu 選 Restart 時 menu 先關掉才開 confirm，Esc 回到遊戲（使用者 2026-11-13：這反而很正常；tdp F4 寫的是回到 menu，terminu-go 的模式 menu 也做不到，見下面的 note）；開著時遊戲停著（popup 蓋住，task 5）。沒有一局在玩時 [x] End game 停用（tdp M6）'
+      - '有一局值得記時（task 7），兩個都先問誰玩的（task 6），那就是確認（tdp F6：哪些要確認 app 可以自行決定）：說出分數，Esc 取消。不值得記的局：[x] End game 與重新開始（Gaming 的 r、Space menu 的 Restart、暫停時的 [n]ew game）都先開 confirm（[x] End game 原本直接結束、事後跳 Info toast，review 2026-11-13 判違反 tdp F6：決定要確認的每次都確認，值得記的局問名字就是確認，不值得記的也要問）（使用者 2026-11-13：玩到一半不小心按到 r 就 restart 了，這不行；tdp F6：決定要確認的每次都確認，所以重新開始不管值不值得記，每次都先開一個 popup）：標題跟問名字的一樣（NEW GAME、END GAME），內容一句 Peach 的警告 This game ends, not kept: no points.（或 150 points, not in the best 20），問句 Start a new game? 或 End this game?，Enter:start 重開、Enter:end 結束，之後什麼都不說（task 6），Esc 回到遊戲，從暫停時的 Space menu 選的回到那個 menu（tdp F4、confirm.3）；從 menu 選的，答完（Enter 開新局、結束，或問名字記下）menu 跟著關掉（tdp T1：做完的事結束整疊 popup；使用者 2026-11-13：Enter 之後 popup 沒關、還卡著，要選 Enter 去 resume，不合理）。Gaming 的 Space menu 選 Restart 時 menu 先關掉才開 confirm，Esc 回到遊戲（使用者 2026-11-13：這反而很正常；tdp v1.2.10 K11：app 自己的模式裡開的 popup 取消後回到哪裡、menu 留不留，app 可以自行決定，見下面的 note）；開著時遊戲停著（popup 蓋住，task 5）。沒有一局在玩時 [x] End game 停用（tdp M6）'
       - '離開流程（tdp K9：離開流程與問什麼，app 可以自行決定，可以直接離開）：不問。有一局在玩（玩著或暫停中）時先把這一局存起來（task 16），再離開；沒有一局在玩時直接離開（使用者 2026-11-12：要 quit 的時候正在遊戲，app 自動存檔，也不用問，下次進來不想繼續直接 restart）。有 popup 開著時（Space menu、?、confirm）照 tdp K9 先開 Quit tetru?，答 Enter 才存、才離開，Esc 回到 popup，什麼都沒存。存不起來：開 error popup Can''t save the game，路徑與原因，說連按兩次 [Ctrl-C] 一樣可以離開、分數記成 ANON（tdp M5：句子裡的鍵加方括號），不離開。原本是開 QUIT confirm、把分數記成 ANON（使用者 2026-11-11）'
-      - note: 'Gaming 的 Space menu 選 Restart 開的 NEW GAME（confirm 或問名字）上 Esc 回到遊戲，不回 menu：review 2026-11-13（tdp v1.2.9）判違反 confirm.3、F4、T1、menu.4（task 5 同一點）。使用者覺得回到遊戲正常；terminu-go 的 ModeKey 從模式 menu 跑時先關 menu，app 補不回來。使用者 2026-11-13 要求不發 GitHub，送給本機的 terminu session（2026-11-13，列了 A 照 tdp 改 terminu-go、B 照使用者改 tdp、C 不改），等它跟使用者定案；暫時照現在：Esc 回到遊戲'
+      - note: 'Gaming 的 Space menu 選 Restart 開的 NEW GAME（confirm 或問名字）上 Esc 回到遊戲，不回 menu：review 2026-11-13 照 tdp v1.2.9 判違反 confirm.3、F4、T1、menu.4（task 5 同一點）；使用者覺得回到遊戲正常，2026-11-13 要求不發 GitHub、送給本機的 terminu session。使用者選 A，tdp v1.2.10 定案：app 自己的模式裡開出的 popup 屬於模式裡面，取消或關掉後回到模式還是回到開它的 Space menu、menu 要不要留在底下，app 可以自行決定（K11，F4、T1、confirm.3、menu.4 加了例外）；popup 本身照它的元件畫、照它的元件答。terminu-go v1.2.11 照舊：模式 menu 的列先關 menu 才跑 ModeKey.Do。tetru 選回到遊戲'
         issue: 本機 terminu session 2026-11-13
   - id: 11
     spec: 40
