@@ -102,18 +102,17 @@ func two(level int) (rows [5]string) {
 // field's height short of four of its rows over them and four under them,
 // sx as many glyphs as fit at the narrower side with a glyph to spare, at
 // most sy; a glyph or more from the field, the same on both sides, in the
-// middle of the field's height. Past 9, two figures where they have room,
-// a glyph a pixel at least, else its letter.
+// middle of the field's height. Past 9, two figures where 10, as wide as
+// any of them, has room, a glyph a pixel at least, and as wide a pixel as
+// 10's, else its letter: at a width 10 to 15 are all figures or all
+// letters (user, 2026-11-13: narrow, 11 was 11 and 12 C, 11 the narrower).
 func (r room) place(level int) figure {
 	pad := 4 * r.H / sceneH
-	f := figure{sy: (r.H - 2*pad) / 5}
-	shapes := [][5]string{font[level-1]}
+	f := figure{rows: font[level-1], sy: (r.H - 2*pad) / 5}
+	f.sx = min(f.sy, (min(r.L, r.R)-1)/len(f.rows[0]))
 	if level >= 10 {
-		shapes = [][5]string{two(level), font[level-1]}
-	}
-	for _, rows := range shapes {
-		if f.rows, f.sx = rows, min(f.sy, (min(r.L, r.R)-1)/len(rows[0])); f.sx > 0 {
-			break
+		if sx := min(f.sy, (min(r.L, r.R)-1)/len(two(10)[0])); sx > 0 {
+			f.rows, f.sx = two(level), sx
 		}
 	}
 	if f.sx <= 0 || f.sy <= 0 {

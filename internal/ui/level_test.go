@@ -347,6 +347,17 @@ func TestTwoFiguresPast9WhereTheyHaveRoom(t *testing.T) {
 	if roomAt(76, 32).place(10).rows != font[9] || roomAt(78, 32).place(10).rows != two(10) {
 		t.Fatal("10 is not two figures from 78 columns, A under")
 	}
+	// At a width, 10 to 15 all figures, as wide a pixel, or all letters
+	// (user, 2026-11-13: narrow, 11 was 11 and 12 C).
+	for w := 66; w <= 160; w++ {
+		r := roomAt(w, 40)
+		ten := r.place(10)
+		for lv := 11; lv <= game.MaxLevel; lv++ {
+			if f := r.place(lv); (f.rows == two(lv)) != (ten.rows == two(10)) || f.sx != ten.sx {
+				t.Fatalf("%d columns: level %d is %q, %d a pixel, and 10 %q, %d", w, lv, f.rows, f.sx, ten.rows, ten.sx)
+			}
+		}
+	}
 	tt, d := open(t, 120, 40)
 	play(d)
 	tt.g.Level, tt.g.Lines = 10, 9*game.LinesPerLevel

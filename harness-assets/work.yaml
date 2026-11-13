@@ -210,10 +210,10 @@ tasks:
       keys.SaveHint 與 keys.Save 都經過 write（讀進整個檔、改自己那一個 key、先寫暫存檔再改名），彼此不動對方
     test: [TestLandingIsWhereADropSetsAtEveryLevel, TestTheHintIsALighterGreyAtEveryLevelWhileOn, TestSettingsSwitchTheHint, TestTheHintIsOnTillSwitchedOff, TestSettingsThatCantBeKept, TestBrokenSettingsAskToMoveAside]
   - id: 18
-    spec: 65
+    spec: 66
     implementation: |
       ui level.go：banner 記兩邊畫的關卡（lv）、被掃走的那一關（from）、掃了多久（at，sweepTime 800 ms）與波浪（wave，waveTime 2 s）；begin 開局與 restart 都 sweepTo(1, 第一個方塊)，啟動時接著存檔那一局 show(它的關卡)；step 跟著遊戲每一格走（Esc、popup 蓋住時遊戲不走，它也不走），消行做完、g.Level 跟 lv 不一樣就 sweepTo(新的關卡, g.Last)，by 記下轉場用哪個方塊的顏色
-      room 是場地兩邊的空間（左右各幾個 icon、場地寬與高），side 是兩邊除了緊鄰場地那一格以外的地方；room.place 給每一關的 figure：font 是 1–9、A–F 的 3×5，一關一個；第 10 關起先試 two(關卡)：兩格寬的 1（one）、空一格、再 0（zero）或 font 的 2–5（11 是兩個 one），6 格寬，sx 有 1 以上就用它，不然用 font 的字母（78 欄起是兩個字）；sy 是場地高扣掉上下各 4 格（4*H/sceneH 列）之後的五分之一，sx 是窄的那一邊放得下的最大、最多 sy；sx 是 0 就不畫
+      room 是場地兩邊的空間（左右各幾個 icon、場地寬與高），side 是兩邊除了緊鄰場地那一格以外的地方；room.place 給每一關的 figure：font 是 1–9、A–F 的 3×5，一關一個；第 10 關起先試 two(關卡)：兩格寬的 1（one）、空一格、再 0（zero）或 font 的 2–5（11 是兩個 one），6 格寬；用 two(10) 的寬（6）算 sx，有 1 以上就用 two(關卡) 與這個 sx（11 只有 5 格寬也一樣），不然用 font 的字母，所以同一個寬度下 10–15 全是兩個字或全是字母（78 欄起是兩個字）；sy 是場地高扣掉上下各 4 格（4*H/sceneH 列）之後的五分之一，sx 是窄的那一邊放得下的最大、最多 sy；sx 是 0 就不畫
       face：字上的格子從腳往上亮到 Lines%20 的比例，其餘 Surface0；關卡升了、消行還沒做完時亮滿；最後一關 F 全亮。亮的顏色 Lavender（inkLevel #b4befe），最後一關金色（inkGold #f2b753）；每一關玩的時候，亮的部分上面有一段那個顏色的 +1（#7378a1、#92754c，與底色正中間），高 sy 列，照 wave（2 s 一個，從腳底下往上走到過了頂，接著下一個）往上走；沒亮的部分不經過；暫停、結束時沒有波浪
       banner.ink：掃的時候，room.band 給的方塊色（inkPiece+by，場地高的五分之一、至少 2 列）與三段漸暗的尾巴（inkTrail+3*by 到 +2，每段場地高的十分之一）蓋滿兩邊的 side，從場地的底往上走；下面是新的一關的字，上面是舊的字亮滿；inkTrail 的 21 個顏色在 init 由 toGround 算：每個方塊色往底色走 1/4、2/4、3/4（跟消行的白色淡出 inkFade 同一個算法）
       field Draw：寬的排法有兩邊時，場地的每一列用 glyphs 一個 icon 一個 icon 畫（場地與兩邊在同一條格線上）；clearRows 每一列也經過 sides.lay，消行的特效蓋在兩邊上，沒蓋到的地方照畫
