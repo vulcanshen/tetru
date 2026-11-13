@@ -13,10 +13,11 @@ Each release names the version of terminu design (tdp) it follows.
 - Twenty rows to a level, and fifteen levels: the speeds of the ten levels, a row a second to ten, are spread over the
   fifteen, so each level is a smaller step faster than the one before.
 - The level stands big at both sides of the field, from 66 columns wide, with four rows clear above and below it and as
-  wide as the sides allow, one character, 1 to 9 then A to F: it lights up from the foot as you clear the level's
-  twenty rows, and over what is lit waves go up, one after another, in the colour half way to the ground. When the
-  level goes up, a band in the colour of the piece that cleared the last rows sweeps up over both sides with a fading trail and
-  brings in the next one while you play on. The last level, F, is all lit, in gold.
+  wide as the sides allow: 1 to 15, or A to F for 10 to 15 under 78 columns, where two figures have no room. It lights
+  up from the foot as you clear the level's twenty rows, and over what is lit waves go up, one after another, in the
+  colour half way to the ground. When the level goes up, a band in the colour of the piece that cleared the last rows
+  sweeps up over both sides with a fading trail and brings in the next one while you play on. The last level is all
+  lit, in gold.
 
 ## v0.1.0 — tdp v1.2.8
 

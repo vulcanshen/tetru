@@ -329,7 +329,35 @@ func TestWavesGoUpEveryLevel(t *testing.T) {
 	}
 }
 
-func TestTheLastLevelIsFInGold(t *testing.T) {
+func TestTwoFiguresPast9WhereTheyHaveRoom(t *testing.T) {
+	// 10 to 15 where the sides have room for two figures, A to F where
+	// they have not (user, 2026-11-13: wide, 10 to 15).
+	if two(10) != [5]string{".#.###", "##.#.#", ".#.#.#", ".#.#.#", ".#.###"} || two(11) != [5]string{".#..#", "##.##", ".#..#", ".#..#", ".#..#"} || two(15)[4] != ".#.##." {
+		t.Fatalf("10, 11 and 15 are not two figures: %q %q %q", two(10), two(11), two(15))
+	}
+	wide, narrow := roomAt(120, 40), roomAt(70, 32)
+	for lv := 10; lv <= game.MaxLevel; lv++ {
+		if f := wide.place(lv); f.rows != two(lv) || f.sx < 1 {
+			t.Fatalf("120×40: level %d is %q", lv, f.rows)
+		}
+		if f := narrow.place(lv); f.rows != font[lv-1] || f.sx < 1 {
+			t.Fatalf("70×32: level %d is %q, not its letter", lv, f.rows)
+		}
+	}
+	if roomAt(76, 32).place(10).rows != font[9] || roomAt(78, 32).place(10).rows != two(10) {
+		t.Fatal("10 is not two figures from 78 columns, A under")
+	}
+	tt, d := open(t, 120, 40)
+	play(d)
+	tt.g.Level, tt.g.Lines = 10, 9*game.LinesPerLevel
+	d.Advance(frame + sweepTime)
+	f := wide.place(10)
+	if l, r := atSides(d, 120, 40); tt.lv.lv != 10 || l != lit(f.rows)*f.sx*f.sy || r != l {
+		t.Fatalf("the 10 at the sides is %d and %d glyphs", l, r)
+	}
+}
+
+func TestTheLastLevelIsGold(t *testing.T) {
 	// Fifteen levels, 1 to F, one character wide and narrow (user,
 	// 2026-11-13).
 	if game.MaxLevel != 15 || font[9] != [5]string{".#.", "#.#", "###", "#.#", "#.#"} || font[14] != [5]string{"###", "#..", "##.", "#..", "#.."} {

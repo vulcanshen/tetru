@@ -24,8 +24,8 @@ with the player's name and the time, and ranks them, the best first.
   speed stays.
 - **The level beside the field**: from 66 columns wide, the level stands big at both sides of the field, four rows
   clear of its top and its foot, and lights up from the foot as you clear its twenty rows, waves going up it; a
-  band in the colour of the piece that cleared the last rows sweeps up both sides to bring in the next. Past 9 the
-  levels are A to F, and the last, F, is gold.
+  band in the colour of the piece that cleared the last rows sweeps up both sides to bring in the next. Past 9, under 78
+  columns, the levels are A to F; the last is gold.
 - **A hint, if you like**: a lighter grey on the ground shows where the piece lands if you drop it now, at every
   level; switch it off on the Settings screen.
 - **The best twenty kept**: the place, the name, the score and the time, the best first on the Rank screen, the first

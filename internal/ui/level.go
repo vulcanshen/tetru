@@ -14,15 +14,16 @@ import (
 // the blank there is for), in the field's square glyph: a 3 × 5 font, a
 // pixel of it sx glyphs across and sy lines down, as high as the field
 // lets it be and as wide as the sides let it be (user, 2026-11-13: bigger
-// where the terminal is narrow). One character, 1 to 9 then A to F (user,
-// 2026-11-13: fifteen levels, so that one character does wide and narrow;
-// 10 tried before), four of the field's rows clear of its top and its foot
+// where the terminal is narrow). 1 to 9, then 10 to 15 where the sides
+// have room for two figures, A to F where they have not (user, 2026-11-13:
+// fifteen levels, wide 10 to 15, narrow A to F; A to F everywhere was a
+// misreading), four of the field's rows clear of its top and its foot
 // (user, 2026-11-13: too high, two rows clear). It lights up from its foot
 // as the level's rows are cleared, Lavender over the ground, and over what
 // is lit waves go up from its foot, one after another, in the colour half
 // way to the ground (user, 2026-11-13: the waves, not a breath; the breath,
 // a heartbeat a second, too often, a blinking; not white, too much);
-// the last level, F, is all lit, gold (user, 2026-11-13). As the level
+// the last level, 15 or F, is all lit, gold (user, 2026-11-13). As the level
 // goes up, a band with a fading trail goes up over the whole of both sides
 // in the colour of the piece that cleared the level's last rows (user,
 // 2026-11-13: colour, the piece that fell), the next level's figure under
@@ -36,7 +37,8 @@ const (
 	waveTime = 2 * time.Second
 )
 
-// font are the levels' figures, 3 × 5, # on: 1 to 9, then A to F.
+// font are the levels' figures, 3 × 5, # on: 1 to 9, then A to F, 10 to
+// 15 where two figures have no room.
 var font = [game.MaxLevel][5]string{
 	{".#.", "##.", ".#.", ".#.", "###"},
 	{"##.", "..#", ".#.", "#..", "###"},
@@ -72,15 +74,48 @@ type figure struct {
 	lu, ru, y0 int
 }
 
+// one and zero are the figures of 10 to 15 besides font's: a 1 two pixels
+// wide, as their first figure and for 11 their second, so that two figures
+// have room from 78 columns, and a 0.
+var (
+	one  = [5]string{".#", "##", ".#", ".#", ".#"}
+	zero = [5]string{"###", "#.#", "#.#", "#.#", "###"}
+)
+
+// two is level, 10 to 15, in two figures a pixel apart.
+func two(level int) (rows [5]string) {
+	second := one
+	switch d := level - 10; d {
+	case 0:
+		second = zero
+	case 1:
+	default:
+		second = font[d-1]
+	}
+	for i := range rows {
+		rows[i] = one[i] + "." + second[i]
+	}
+	return rows
+}
+
 // place places level's figure in r: sy as many lines as five fit in the
 // field's height short of four of its rows over them and four under them,
 // sx as many glyphs as fit at the narrower side with a glyph to spare, at
 // most sy; a glyph or more from the field, the same on both sides, in the
-// middle of the field's height.
+// middle of the field's height. Past 9, two figures where they have room,
+// a glyph a pixel at least, else its letter.
 func (r room) place(level int) figure {
 	pad := 4 * r.H / sceneH
-	f := figure{rows: font[level-1], sy: (r.H - 2*pad) / 5}
-	f.sx = min(f.sy, (min(r.L, r.R)-1)/len(f.rows[0]))
+	f := figure{sy: (r.H - 2*pad) / 5}
+	shapes := [][5]string{font[level-1]}
+	if level >= 10 {
+		shapes = [][5]string{two(level), font[level-1]}
+	}
+	for _, rows := range shapes {
+		if f.rows, f.sx = rows, min(f.sy, (min(r.L, r.R)-1)/len(rows[0])); f.sx > 0 {
+			break
+		}
+	}
 	if f.sx <= 0 || f.sy <= 0 {
 		return figure{}
 	}
