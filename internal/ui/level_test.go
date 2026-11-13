@@ -21,6 +21,18 @@ func layout(w, h int) (fw, left, right, k int) {
 	return fw, left, (fw - left - 2*fieldW*k) / 2, k
 }
 
+// roomAt is the room by the field on a w × h terminal.
+func roomAt(w, h int) room {
+	_, left, right, k := layout(w, h)
+	return room{L: left / 2, R: right, strip: fieldW * k, H: sceneH * k}
+}
+
+// sidesAt are the sides as tt draws them on a w × h terminal.
+func sidesAt(tt *Tetru, w, h int) sides {
+	_, left, right, k := layout(w, h)
+	return tt.sides(k, left, right)
+}
+
 // atSides counts the square glyphs on screen left of the field and right
 // of it, short of the boxes.
 func atSides(d *tdptest.Driver, w, h int) (l, r int) {
@@ -42,13 +54,41 @@ func atSides(d *tdptest.Driver, w, h int) (l, r int) {
 	return l, r
 }
 
-// on is how many pixels of level's figure are on.
-func on(level int) int {
+// lit is how many pixels of a figure's font are on.
+func lit(rows [5]string) int {
 	n := 0
-	for _, r := range font[level-1] {
+	for _, r := range rows {
 		n += strings.Count(r, "#")
 	}
 	return n
+}
+
+// lineInk is the ink of line y of f's left figure as sd draws it: the one
+// ink all its glyphs on the font have, 255 when they differ.
+func lineInk(sd sides, f figure, y int) uint8 {
+	ink := inkNone
+	for u := f.lu; u < f.lu+len(f.rows[0])*f.sx; u++ {
+		if on, _ := f.at(u, f.y0+y); !on {
+			continue
+		}
+		switch c := sd.ink(u, f.y0+y); {
+		case ink == inkNone:
+			ink = c
+		case c != ink:
+			return 255
+		}
+	}
+	return ink
+}
+
+// whole says whether every glyph at the sides of line l is ink.
+func whole(sd sides, r room, l int, ink uint8) bool {
+	for u := -r.L; u < r.strip+r.R; u++ {
+		if r.side(u) && sd.ink(u, l) != ink {
+			return false
+		}
+	}
+	return true
 }
 
 // fullFoot fills the field's foot but where the piece falling lands on it:
@@ -71,30 +111,6 @@ func fullFoot(g *game.Game) {
 	}
 }
 
-// figure is the level's figures as tt draws them on a w × h terminal.
-func figure(tt *Tetru, w, h int) sides {
-	_, left, right, k := layout(w, h)
-	return tt.sides(k, left, right)
-}
-
-// lineInk is the ink of line y of the figure across it: the one ink all
-// its glyphs that are on the font have, or 255 when they differ.
-func lineInk(sd sides, level, y int) uint8 {
-	ink := inkNone
-	for x := range 3 * sd.s {
-		if font[level-1][y/sd.s][x/sd.s] != '#' {
-			continue
-		}
-		switch c := sd.ink(x, y); {
-		case ink == inkNone:
-			ink = c
-		case c != ink:
-			return 255
-		}
-	}
-	return ink
-}
-
 func TestTheLevelIsBigAtTheSides(t *testing.T) {
 	_, d := open(t, 120, 40)
 	if l, r := atSides(d, 120, 40); l+r != 0 {
@@ -102,24 +118,26 @@ func TestTheLevelIsBigAtTheSides(t *testing.T) {
 	}
 	play(d)
 	d.Advance(sweepTime)
-	_, left, right, k := layout(120, 40)
-	sd := place(k, left, right)
-	if l, r := atSides(d, 120, 40); sd.s != 4 || l != on(1)*sd.s*sd.s || r != l {
-		t.Fatalf("120×40: the 1 at the sides is %d and %d glyphs, not %d each, %d times", l, r, on(1)*16, sd.s)
+	for _, c := range []struct{ w, h, sx, sy int }{
+		{120, 40, 4, 4},
+		// Narrow, as high as wide (user, 2026-11-13: bigger narrow).
+		{70, 32, 1, 4},
+		{150, 54, 5, 9},
+	} {
+		d.Resize(c.w, c.h)
+		r := roomAt(c.w, c.h)
+		f := r.place(1)
+		if l, rr := atSides(d, c.w, c.h); f.sx != c.sx || f.sy != c.sy || l != lit(f.rows)*f.sx*f.sy || rr != l {
+			t.Fatalf("%d×%d: the 1 is %d and %d glyphs, %d × %d a pixel", c.w, c.h, l, rr, f.sx, f.sy)
+		}
+		if f.sy != r.H/5 || -f.lu-3*f.sx != f.ru-r.strip || f.ru-r.strip < 1 || f.y0 != (r.H-5*f.sy)/2 {
+			t.Fatalf("%d×%d: the figures are not as high as the field lets them, as far from it on both sides, in the middle: %+v", c.w, c.h, f)
+		}
 	}
-	if -sd.lu-3*sd.s != sd.ru-fieldW*k || sd.ru-fieldW*k < 1 || sd.y0 != (sceneH-5*sd.s)/2 {
-		t.Fatalf("the figures are not as far from the field on both sides, a glyph or more, in the middle of its height: %+v", sd)
-	}
-	// 60 columns leave 5 at either side: no room for 3 glyphs and one more.
+	// 60 columns leave 2 glyphs at either side: no room for 1 and one more.
 	d.Resize(60, 32)
 	if l, r := atSides(d, 60, 32); l+r != 0 {
 		t.Fatalf("60×32: figures with no room, %d and %d glyphs", l, r)
-	}
-	d.Resize(150, 54)
-	_, left, right, k = layout(150, 54)
-	sd = place(k, left, right)
-	if l, r := atSides(d, 150, 54); k != 2 || sd.s != 5 || l != on(1)*25 || r != l {
-		t.Fatalf("150×54: the 1 is %d and %d glyphs, %d times, the field %d times", l, r, sd.s, k)
 	}
 }
 
@@ -127,12 +145,13 @@ func TestTheLevelFillsFromItsFoot(t *testing.T) {
 	g := game.New(1)
 	var b banner
 	b.show(1)
-	const s = 4
-	lit := func() int {
-		n, top := 0, -1
-		for y := range 5 * s {
-			for x := range 3 * s {
-				switch b.ink(g, x, y, s, false) {
+	r := room{L: 17, R: 17, strip: fieldW, H: sceneH}
+	f := r.place(1)
+	lines := func() int {
+		top := -1
+		for y := range 5 * f.sy {
+			for u := f.lu; u < f.lu+3*f.sx; u++ {
+				switch b.ink(g, r, u, f.y0+y, false) {
 				case inkLevel:
 					if top < 0 {
 						top = y
@@ -144,20 +163,20 @@ func TestTheLevelFillsFromItsFoot(t *testing.T) {
 				}
 			}
 		}
-		if top >= 0 {
-			n = 5*s - top
+		if top < 0 {
+			return 0
 		}
-		return n
+		return 5*f.sy - top
 	}
 	for _, c := range []struct{ lines, lit int }{{0, 0}, {3, 6}, {9, 18}} {
 		g.Lines = c.lines
-		if got := lit(); got != c.lit {
+		if got := lines(); got != c.lit {
 			t.Fatalf("%d of the level's rows lit %d lines of 20, not %d", c.lines, got, c.lit)
 		}
 	}
 	// The tenth row: the level up, its clear not over, the 1 is full.
 	g.Lines, g.Level = 10, 2
-	if got := lit(); got != 5*s {
+	if got := lines(); got != 5*f.sy {
 		t.Fatalf("the level up lit %d lines of 20, not all", got)
 	}
 }
@@ -170,10 +189,12 @@ func TestTheLevelUpSweepsTheNextIn(t *testing.T) {
 	g.Lines = game.LinesPerLevel - 1
 	fullFoot(g)
 	d.Press("Enter")
+	r := roomAt(120, 40)
+	one, two := r.place(1), r.place(2)
 	if g.Level != 2 || len(g.Going) != 1 || tt.lv.lv != 1 {
 		t.Fatalf("the tenth row: level %d, %d rows going, the sides at %d", g.Level, len(g.Going), tt.lv.lv)
 	}
-	if sd := figure(tt, 120, 40); lineInk(sd, 1, 0) != inkLevel {
+	if lineInk(sidesAt(tt, 120, 40), one, 0) != inkLevel {
 		t.Fatal("the 1 is not full as the tenth row goes")
 	}
 	d.Advance(game.ClearTime(1) + frame)
@@ -181,15 +202,22 @@ func TestTheLevelUpSweepsTheNextIn(t *testing.T) {
 		t.Fatalf("the clear over, the 2 does not sweep in: %+v", tt.lv)
 	}
 	d.Advance(sweepTime / 2)
-	sd := figure(tt, 120, 40)
-	white := -1
-	for y := range 5 * sd.s {
-		if sd.ink(0, y) == inkWhite && sd.ink(3*sd.s-1, y) == inkWhite {
-			white = y
+	// Half way: a band of white across the whole of both sides (user,
+	// 2026-11-13: bigger), fading under it, the 2 under that empty, the 1
+	// over it full.
+	sd := sidesAt(tt, 120, 40)
+	white, fading := 0, 0
+	for l := range r.H {
+		switch {
+		case whole(sd, r, l, inkWhite):
+			white++
+		case whole(sd, r, l, inkFade), whole(sd, r, l, inkFade+1), whole(sd, r, l, inkFade+2):
+			fading++
 		}
 	}
-	if white <= 0 || white >= 5*sd.s-1 || lineInk(sd, 2, 5*sd.s-1) != inkGround || lineInk(sd, 1, 0) != inkLevel {
-		t.Fatalf("half way: the white line at %d, the 2 under it empty, the 1 over it full", white)
+	w, step := r.band()
+	if white != w || fading != 3*step || lineInk(sd, two, 5*two.sy-1) != inkGround || lineInk(sd, one, 0) != inkLevel {
+		t.Fatalf("half way: %d lines white, %d fading", white, fading)
 	}
 	at := g.At
 	d.Press("h")
@@ -197,15 +225,25 @@ func TestTheLevelUpSweepsTheNextIn(t *testing.T) {
 		t.Fatal("the game stopped under the sweep")
 	}
 	d.Advance(sweepTime)
-	sd = figure(tt, 120, 40)
-	for y := range 5 * sd.s {
-		if c := lineInk(sd, 2, y); c != inkGround {
+	sd = sidesAt(tt, 120, 40)
+	for y := range 5 * two.sy {
+		if c := lineInk(sd, two, y); c != inkGround {
 			t.Fatalf("the sweep over, the 2's line %d is %d, not the ground", y, c)
 		}
 	}
 }
 
-func TestTheLastLevelIsABeatingA(t *testing.T) {
+func TestTheLastLevelIsTenBeating(t *testing.T) {
+	// 10 where it has room (user, 2026-11-13), its 1 narrow so that it has
+	// room from 78 columns; A where not.
+	for _, c := range []struct {
+		w, h, sx int
+		rows     [5]string
+	}{{120, 40, 2, ten}, {80, 32, 1, ten}, {78, 32, 1, ten}, {76, 32, 1, letterA}, {70, 32, 1, letterA}} {
+		if f := roomAt(c.w, c.h).place(game.MaxLevel); f.rows != c.rows || f.sx != c.sx {
+			t.Fatalf("%d×%d: the last level is %v, %d a pixel", c.w, c.h, f.rows, f.sx)
+		}
+	}
 	for _, c := range []struct {
 		at  time.Duration
 		lit uint8
@@ -219,23 +257,24 @@ func TestTheLastLevelIsABeatingA(t *testing.T) {
 	g := tt.g
 	g.Level, g.Lines = game.MaxLevel, 90
 	d.Advance(frame + sweepTime)
-	if tt.lv.lv != game.MaxLevel || font[game.MaxLevel-1] != [5]string{".#.", "#.#", "###", "#.#", "#.#"} {
-		t.Fatal("the last level is not drawn A")
+	f := roomAt(120, 40).place(game.MaxLevel)
+	if tt.lv.lv != game.MaxLevel {
+		t.Fatal("the last level did not sweep in")
 	}
 	tt.lv.beat = rise
-	sd := figure(tt, 120, 40)
-	if lineInk(sd, game.MaxLevel, 0) != inkLevel+3 || lineInk(sd, game.MaxLevel, 5*sd.s-1) != inkLevel+3 {
-		t.Fatal("the A is not all white at the top of its heartbeat")
+	sd := sidesAt(tt, 120, 40)
+	if lineInk(sd, f, 0) != inkLevel+3 || lineInk(sd, f, 5*f.sy-1) != inkLevel+3 {
+		t.Fatal("the 10 is not all white at the top of its heartbeat")
 	}
 	tt.lv.beat = beatTime - frame
-	sd = figure(tt, 120, 40)
-	if lineInk(sd, game.MaxLevel, 0) != inkLevel || lineInk(sd, game.MaxLevel, 5*sd.s-1) != inkLevel {
-		t.Fatal("the A at no rows of its own is not all lit")
+	sd = sidesAt(tt, 120, 40)
+	if lineInk(sd, f, 0) != inkLevel || lineInk(sd, f, 5*f.sy-1) != inkLevel {
+		t.Fatal("the 10 at no rows of its own is not all lit")
 	}
 	d.Press("Esc")
 	tt.lv.beat = rise
-	if sd = figure(tt, 120, 40); lineInk(sd, game.MaxLevel, 0) != inkLevel {
-		t.Fatal("the A beats paused")
+	if lineInk(sidesAt(tt, 120, 40), f, 0) != inkLevel {
+		t.Fatal("the 10 beats paused")
 	}
 }
 
@@ -250,11 +289,12 @@ func TestAGameTakenUpShowsItsLevelAtOnce(t *testing.T) {
 	if tt.lv.lv != 3 || tt.lv.at != sweepTime {
 		t.Fatalf("the game taken up does not show its level at once: %+v", tt.lv)
 	}
-	sd := figure(tt, 120, 40)
-	if lineInk(sd, 3, 5*sd.s-1) != inkLevel || lineInk(sd, 3, 0) != inkGround {
+	f := roomAt(120, 40).place(3)
+	sd := sidesAt(tt, 120, 40)
+	if lineInk(sd, f, 5*f.sy-1) != inkLevel || lineInk(sd, f, 0) != inkGround {
 		t.Fatal("the 3 is not half full")
 	}
-	if l, r := atSides(d, 120, 40); l != on(3)*sd.s*sd.s || r != l {
+	if l, r := atSides(d, 120, 40); l != lit(f.rows)*f.sx*f.sy || r != l {
 		t.Fatalf("the 3 at the sides is %d and %d glyphs", l, r)
 	}
 }
@@ -275,26 +315,31 @@ func TestRestartSweepsOneIn(t *testing.T) {
 
 func TestWhatGoesOutIsOverTheFigures(t *testing.T) {
 	const lead = 6
-	sd := sides{s: 1, lu: -4, ru: fieldW + 1, y0: 2, ink: func(x, y int) uint8 { return inkLevel }}
+	sd := sides{on: true, ink: func(u, l int) uint8 {
+		if u < 0 && l == 2 {
+			return inkLevel
+		}
+		return inkNone
+	}}
 	at := make([]uint8, lead+fieldW+6)
 	for u := range fieldW {
 		at[u+lead] = inkGround
 	}
 	at[lead-3] = inkWhite // dust going out over the left figure
 	got := sd.lay(at, lead, 2)
-	for u := -4; u < -1; u++ {
+	for u := -lead; u < 0; u++ {
 		want := inkLevel
 		if u == -3 {
 			want = inkWhite
 		}
 		if got[u+lead] != want {
-			t.Fatalf("glyph %d of the left figure is %d, not %d", u, got[u+lead], want)
+			t.Fatalf("glyph %d left of the field is %d, not %d", u, got[u+lead], want)
 		}
 	}
-	if got[lead] != inkGround || got[fieldW+1+lead] != inkLevel || got[lead-1] != inkNone {
-		t.Fatal("the field, the right figure or the gap is wrong")
+	if got[lead] != inkGround || got[lead+fieldW] != inkNone {
+		t.Fatal("the field or the right is drawn over")
 	}
-	if line := sd.lay(at, lead, 1); line[lead-4] != inkNone {
-		t.Fatal("a figure on a line over it")
+	if (sides{}).lay(at, lead, 2)[lead-1] != inkNone {
+		t.Fatal("figures with no sides")
 	}
 }

@@ -204,11 +204,11 @@ tasks:
       ui picture 先把這四格畫成 inkHint（#6c7086，同一個 nf-fa-square），再畫正在掉的方塊蓋在上面；寬窄兩種排法畫的是同一張圖
     test: [TestLandingIsWhereADropSetsToLevelFive, TestTheHintIsALighterGreyToLevelFive]
   - id: 18
-    spec: 56
+    spec: 57
     implementation: |
-      ui level.go：banner 記兩邊畫的關卡（lv）、白線掃走的那一關（from）、白線走了多久（at，sweepTime 600 ms）與 A 的心跳（beat，beatTime 1000 ms）；begin 開局與 restart 都 sweepTo(1)，啟動時接著存檔那一局 show(它的關卡)；step 跟著遊戲每一格走（Esc、popup 蓋住時遊戲不走，它也不走），消行做完、g.Level 跟 lv 不一樣就 sweepTo 新的關卡
-      font 是 1–9 與 A 的 3×5；place 照場地兩邊的空間定放大倍數 s（3s+1 個 icon 放得下窄的那一邊、5s 不超過場地的高）、離場地的距離（至少一個 icon、兩邊一樣）與上下置中；放不下時 s 是 0，不畫（65 欄以下、窄寬的排法）
-      face：字上的格子從腳往上亮到 Lines%10 的比例，Lavender（inkLevel #b4befe），其餘 Surface0；關卡升了、消行還沒做完時亮滿；第十關 A 全亮，玩的時候照 heartbeat（0 ms 撲通一下到白、280 ms 第二下到六成，各 80 ms 升、160 ms 降）分四段 inkLevel 到 inkLevel+3（#ffffff），暫停、結束時停在 inkLevel
-      banner.ink：白線（inkWhite，高 s/2 列、至少 1 列，橫跨字寬）從字腳往上走，下面是新的一關的字，上面是舊的字亮滿
-      field Draw：寬的排法把字所在的列用 glyphs 一個 icon 一個 icon畫（場地與兩邊的字在同一條格線上）；clearRows 每一列也經過 sides.lay，消行的特效蓋在字上，沒蓋到的地方字照畫
-    test: [TestTheLevelIsBigAtTheSides, TestTheLevelFillsFromItsFoot, TestTheLevelUpSweepsTheNextIn, TestTheLastLevelIsABeatingA, TestAGameTakenUpShowsItsLevelAtOnce, TestRestartSweepsOneIn, TestWhatGoesOutIsOverTheFigures]
+      ui level.go：banner 記兩邊畫的關卡（lv）、被掃走的那一關（from）、掃了多久（at，sweepTime 800 ms）與心跳（beat，beatTime 1000 ms）；begin 開局與 restart 都 sweepTo(1)，啟動時接著存檔那一局 show(它的關卡)；step 跟著遊戲每一格走（Esc、popup 蓋住時遊戲不走，它也不走），消行做完、g.Level 跟 lv 不一樣就 sweepTo 新的關卡
+      room 是場地兩邊的空間（左右各幾個 icon、場地寬與高），side 是兩邊除了緊鄰場地那一格以外的地方；room.place 給每一關的 figure：digits 是 0–9 的 3×5，第十關先試 ten（1 兩格寬、隔一格接 0，6 格寬），放不下用 letterA；sy 是場地高的五分之一，sx 是窄的那一邊放得下的最大、最多 sy；sx 是 0 就不畫
+      face：字上的格子從腳往上亮到 Lines%10 的比例，Lavender（inkLevel #b4befe），其餘 Surface0；關卡升了、消行還沒做完時亮滿；第十關全亮，玩的時候照 heartbeat（0 ms 撲通一下到白、280 ms 第二下到六成，各 80 ms 升、160 ms 降）分四段 inkLevel 到 inkLevel+3（#ffffff），暫停、結束時停在 inkLevel
+      banner.ink：掃的時候，room.band 給的白色（sy 列、至少 2 列）與三段漸暗的尾巴（inkFade 到 inkFade+2，每段 sy/2 列）蓋滿兩邊的 side，從場地的底往上走；下面是新的一關的字，上面是舊的字亮滿
+      field Draw：寬的排法有兩邊時，場地的每一列用 glyphs 一個 icon 一個 icon 畫（場地與兩邊在同一條格線上）；clearRows 每一列也經過 sides.lay，消行的特效蓋在兩邊上，沒蓋到的地方照畫
+    test: [TestTheLevelIsBigAtTheSides, TestTheLevelFillsFromItsFoot, TestTheLevelUpSweepsTheNextIn, TestTheLastLevelIsTenBeating, TestAGameTakenUpShowsItsLevelAtOnce, TestRestartSweepsOneIn, TestWhatGoesOutIsOverTheFigures]

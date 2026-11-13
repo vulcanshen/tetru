@@ -4,9 +4,10 @@ Each release names the version of terminu design (tdp) it follows.
 
 ## Unreleased
 
-- The level stands big at both sides of the field, from 66 columns wide: it lights up from the foot as you clear the
-  level's ten rows, and when the level goes up, a white line sweeps up over it and brings in the next one while you
-  play on. The tenth level is an A, all lit, beating like a heart.
+- The level stands big at both sides of the field, from 66 columns wide, as tall as the field and as wide as the
+  sides allow: it lights up from the foot as you clear the level's ten rows, and when the level goes up, a band of
+  white with a fading trail sweeps up over both sides and brings in the next one while you play on. The tenth level is
+  10 (an A below 78 columns), all lit, beating like a heart.
 
 ## v0.1.0 — tdp v1.2.8
 

@@ -188,9 +188,9 @@ func (f *field) Draw(w, h int, focused bool) []string {
 	left := max(0, (fw-2*fieldW*k)/2)
 	top, right := max(0, (h-len(lines))/2), (fw-left-2*fieldW*k)/2
 	sd := t.sides(k, left, right)
-	// The lines the figures are on, the field's glyphs and theirs.
+	// The field's lines, its glyphs and the sides'.
 	lead, end := (left+1)/2, fieldW*k+right
-	for l := sd.y0; sd.s > 0 && l < sd.y0+5*sd.s && top+l < h; l++ {
+	for l := 0; sd.on && l < sceneH*k && top+l < h; l++ {
 		at := make([]uint8, lead+end)
 		for u := range fieldW * k {
 			at[u+lead] = sc.px[l/k][u/k]
