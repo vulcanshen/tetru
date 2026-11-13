@@ -45,6 +45,7 @@ const (
 	inkFrame = inkWhite + 1
 	inkFade  = inkFrame + 1 // inkFade + f, f 0 to 2: white a quarter, a half, three quarters to the ground
 	inkHint  = inkFade + 3
+	inkLevel = inkHint + 1 // inkLevel + b, b 0 to 3: the level's figures lit, Lavender to white (heartbeat)
 )
 
 // inks are the colours of the inks, locku's: the ground surface0, the
@@ -55,7 +56,9 @@ const (
 // rosewater, then white), the curtain overlay1, three steps of white
 // fading to the ground, and the hint overlay0, a grey lighter than the
 // ground and a little darker than the curtain (user, 2026-11-12: a lighter
-// grey; surface2 first, then overlay0, lighter still).
+// grey; surface2 first, then overlay0, lighter still); the level's figures
+// lit, lavender, as INFO's values, and three steps up to white as the last
+// level's heartbeats (user, 2026-11-13).
 var inks = []terminu.Color{
 	{},
 	terminu.Hex("#313244"),
@@ -65,6 +68,7 @@ var inks = []terminu.Color{
 	terminu.Hex("#7f849c"),
 	terminu.Hex("#ccccd0"), terminu.Hex("#9899a2"), terminu.Hex("#656573"),
 	terminu.Hex("#6c7086"),
+	terminu.Hex("#b4befe"), terminu.Hex("#cdd4fe"), terminu.Hex("#e6e9fe"), terminu.Hex("#ffffff"),
 }
 
 // field is the PLAYGROUND panel's body: the field of t's game and, at its right,
@@ -158,11 +162,11 @@ func preview(s *scene, p, x, y int) {
 	}
 }
 
-// Draw is the field in the middle of the left of w × h cells and the
-// column of boxes at the right, at the scale split gives (user,
-// 2026-11-11: the field alone, the level, the rows and the score in
-// INFO); narrow, the level, the rows and the score over the field and the
-// boxes beside it.
+// Draw is the field in the middle of the left of w × h cells, the level
+// big at its sides where there is room (sides), and the column of boxes
+// at the right, at the scale split gives (user, 2026-11-11: the field
+// alone, the level, the rows and the score in INFO); narrow, the level,
+// the rows and the score over the field and the boxes beside it.
 func (f *field) Draw(w, h int, focused bool) []string {
 	t := f.t
 	sc := picture(t.g)
@@ -175,14 +179,25 @@ func (f *field) Draw(w, h int, focused bool) []string {
 		lines := append(head, pixels(&sc, 0, sceneW, 0, sceneH, 1)...)
 		out := middle(lines, cols, w, h)
 		// The boxes are right of the field: nothing goes out that way.
-		clearRows(out, t.g, &sc, w, 1, sceneW, max(0, (w-cols)/2), max(0, (h-len(lines))/2)+len(head), 0)
+		clearRows(out, t.g, &sc, w, 1, sceneW, max(0, (w-cols)/2), max(0, (h-len(lines))/2)+len(head), 0, sides{})
 		return out
 	}
 	fw, cw, k := split(w, h)
 	lines := pixels(&sc, 0, fieldW, 0, sceneH, k)
 	out := middle(lines, 2*fieldW*k, fw, h)
 	left := max(0, (fw-2*fieldW*k)/2)
-	clearRows(out, t.g, &sc, fw, k, fieldW, left, max(0, (h-len(lines))/2), (fw-left-2*fieldW*k)/2)
+	top, right := max(0, (h-len(lines))/2), (fw-left-2*fieldW*k)/2
+	sd := t.sides(k, left, right)
+	// The lines the figures are on, the field's glyphs and theirs.
+	lead, end := (left+1)/2, fieldW*k+right
+	for l := sd.y0; sd.s > 0 && l < sd.y0+5*sd.s && top+l < h; l++ {
+		at := make([]uint8, lead+end)
+		for u := range fieldW * k {
+			at[u+lead] = sc.px[l/k][u/k]
+		}
+		out[top+l] = glyphs(sd.lay(at, lead, l), make([]uint8, lead+end), left, fw)
+	}
+	clearRows(out, t.g, &sc, fw, k, fieldW, left, top, right, sd)
 	for i, c := range t.column(&sc, cw, h, k) {
 		out[i] += c + " "
 	}
@@ -280,12 +295,12 @@ func breaking(t, gone, span float64) uint8 {
 //     not a row at a time; all breaking together, all to dust, then going
 //     out, a glyph more).
 //
-// The ground shows where they were.
-func clearRows(out []string, g *game.Game, sc *scene, w, k, x1, left, top, right int) {
+// The ground shows where they were; the level's figures at the sides, sd,
+// where nothing going out is over them.
+func clearRows(out []string, g *game.Game, sc *scene, w, k, x1, left, top, right int, sd sides) {
 	if g == nil || len(g.Going) == 0 {
 		return
 	}
-	pad := strings.Repeat(" ", max(0, 2-terminu.IconWidth()))
 	// lead is the glyphs left of the field, the first of them half cut
 	// off when left is odd.
 	lead := (left + 1) / 2
@@ -362,43 +377,51 @@ func clearRows(out []string, g *game.Game, sc *scene, w, k, x1, left, top, right
 				}
 			}
 		}
-		var b strings.Builder
-		u := -lead
-		if left%2 == 1 {
-			b.WriteString(" ")
-			u++
-		}
-		ink, shape, run := inkNone, uint8(0), 0
-		flush := func() {
-			if ink == inkNone {
-				b.WriteString(strings.Repeat("  ", run))
-			} else {
-				glyph := pixelGlyph
-				switch {
-				case shape == blown:
-					glyph = windblown
-				case shape > 0:
-					glyph = broken[shape-1]
-				}
-				b.WriteString(terminu.Fg(inks[ink]).Render(strings.Repeat(glyph+pad, run)))
-			}
-			run = 0
-		}
-		for ; u < end; u++ {
-			if c, s := at[u+lead], sh[u+lead]; c != ink || s != shape {
-				flush()
-				ink, shape = c, s
-			}
-			run++
-		}
-		flush()
-		line := terminu.Pad(b.String(), w)
 		for j := range k {
 			if l := top + y*k + j; l >= 0 && l < len(out) {
-				out[l] = line
+				out[l] = glyphs(sd.lay(at, lead, y*k+j), sh, left, w)
 			}
 		}
 	}
+}
+
+// glyphs is a line w wide of the glyphs at, inks, shaped sh (breaking):
+// the field's, the glyphs right of it and, first, those left of it, the
+// field starting at column left; the first of them half cut off, a blank,
+// when left is odd.
+func glyphs(at, sh []uint8, left, w int) string {
+	pad := strings.Repeat(" ", max(0, 2-terminu.IconWidth()))
+	var b strings.Builder
+	u := 0
+	if left%2 == 1 {
+		b.WriteString(" ")
+		u++
+	}
+	ink, shape, run := inkNone, uint8(0), 0
+	flush := func() {
+		if ink == inkNone {
+			b.WriteString(strings.Repeat("  ", run))
+		} else {
+			glyph := pixelGlyph
+			switch {
+			case shape == blown:
+				glyph = windblown
+			case shape > 0:
+				glyph = broken[shape-1]
+			}
+			b.WriteString(terminu.Fg(inks[ink]).Render(strings.Repeat(glyph+pad, run)))
+		}
+		run = 0
+	}
+	for ; u < len(at); u++ {
+		if at[u] != ink || sh[u] != shape {
+			flush()
+			ink, shape = at[u], sh[u]
+		}
+		run++
+	}
+	flush()
+	return terminu.Pad(b.String(), w)
 }
 
 // stats are the level, the rows cleared and the score, of the game or of

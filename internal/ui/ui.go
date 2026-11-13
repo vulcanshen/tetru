@@ -75,6 +75,7 @@ type Tetru struct {
 	g      *game.Game // the game, nil before the first
 	saved  bool       // its score is kept (or it was not worth keeping, or it is saved to go on with)
 	topped bool       // it ended reaching the top: a popup says so once the curtain is down
+	lv     banner     // its level at the field's sides
 
 	ticking bool          // a frame is on its way
 	done    bool          // the program is ending: no more frames
@@ -97,6 +98,7 @@ func NewTetru() *Tetru {
 	var sg *saved.Game
 	if sg, t.stashErr = saved.Load(t.stash); sg != nil {
 		t.g = game.Resume(t.seed(), sg.Level, sg.Lines, sg.Score, sg.Stack)
+		t.lv.show(t.g.Level)
 		t.rmErr = saved.Remove(t.stash)
 		t.App.Log(terminu.Info, "Took up the game saved: level "+strconv.Itoa(sg.Level)+", "+comma(sg.Score)+" points")
 	}
@@ -265,9 +267,11 @@ func (t *Tetru) enter() tea.Cmd {
 	return t.begin()
 }
 
-// begin starts a new game, in the Gaming mode.
+// begin starts a new game, in the Gaming mode, its level swept in at the
+// field's sides.
 func (t *Tetru) begin() tea.Cmd {
 	t.g, t.saved, t.topped = game.New(t.seed()), false, false
+	t.lv.sweepTo(t.g.Level)
 	return t.resume()
 }
 
@@ -664,6 +668,7 @@ func (t *Tetru) step(dt time.Duration) tea.Cmd {
 			return nil
 		}
 		t.g.Advance(dt)
+		t.lv.step(t.g, dt)
 		if t.g.Ended() && t.topped {
 			// The curtain is down: the end is said now, not as the stack
 			// reaches the top, when the player may still be pressing Enter to
@@ -684,6 +689,7 @@ func (t *Tetru) step(dt time.Duration) tea.Cmd {
 	}
 	if !t.hidden() {
 		t.g.Advance(dt)
+		t.lv.step(t.g, dt)
 		if t.g.Over {
 			return t.over()
 		}

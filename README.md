@@ -21,6 +21,9 @@ with the player's name and the time, and ranks them, the best first.
 - **Your keys**: every key you play with can be changed on the Settings screen; `Esc` (pause) and `Space` (the menu)
   stay as they are.
 - **Ten levels of speed**: a level every ten rows, from a row a second to ten a second; past the tenth the speed stays.
+- **The level beside the field**: from 66 columns wide, the level stands big at both sides of the field and lights up
+  from the foot as you clear its ten rows; a white line sweeps up over it to bring in the next. The tenth is an A that
+  beats like a heart.
 - **A hint up to level five**: a lighter grey on the ground shows where the piece lands if you drop it now; from the
   sixth level on, there is no hint.
 - **The best twenty kept**: the place, the name, the score and the time, the best first on the Rank screen, the first

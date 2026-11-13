@@ -2,6 +2,12 @@
 
 Each release names the version of terminu design (tdp) it follows.
 
+## Unreleased
+
+- The level stands big at both sides of the field, from 66 columns wide: it lights up from the foot as you clear the
+  level's ten rows, and when the level goes up, a white line sweeps up over it and brings in the next one while you
+  play on. The tenth level is an A, all lit, beating like a heart.
+
 ## v0.1.0 — tdp v1.2.8
 
 The first stable version: a falling-block game for the terminal, for macOS, Linux and Windows, from Homebrew, Scoop
