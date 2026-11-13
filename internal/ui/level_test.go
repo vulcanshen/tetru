@@ -119,19 +119,22 @@ func TestTheLevelIsBigAtTheSides(t *testing.T) {
 	play(d)
 	d.Advance(sweepTime)
 	for _, c := range []struct{ w, h, sx, sy int }{
-		{120, 40, 4, 4},
+		{120, 40, 3, 3},
 		// Narrow, as high as wide (user, 2026-11-13: bigger narrow).
-		{70, 32, 1, 4},
-		{150, 54, 5, 9},
+		{70, 32, 1, 3},
+		{150, 54, 5, 6},
 	} {
 		d.Resize(c.w, c.h)
 		r := roomAt(c.w, c.h)
+		_, _, _, k := layout(c.w, c.h)
 		f := r.place(1)
 		if l, rr := atSides(d, c.w, c.h); f.sx != c.sx || f.sy != c.sy || l != lit(f.rows)*f.sx*f.sy || rr != l {
 			t.Fatalf("%d×%d: the 1 is %d and %d glyphs, %d × %d a pixel", c.w, c.h, l, rr, f.sx, f.sy)
 		}
-		if f.sy != r.H/5 || -f.lu-3*f.sx != f.ru-r.strip || f.ru-r.strip < 1 || f.y0 != (r.H-5*f.sy)/2 {
-			t.Fatalf("%d×%d: the figures are not as high as the field lets them, as far from it on both sides, in the middle: %+v", c.w, c.h, f)
+		// Four of the field's rows clear over them and under them (user,
+		// 2026-11-13: too high, two clear).
+		if f.y0 < 4*k || r.H-f.y0-5*f.sy < 4*k || 5*(f.sy+1) <= r.H-8*k || -f.lu-3*f.sx != f.ru-r.strip || f.ru-r.strip < 1 || f.y0 != (r.H-5*f.sy)/2 {
+			t.Fatalf("%d×%d: the figures are not as high as four rows clear of the field's top and foot let them, as far from it on both sides, in the middle: %+v", c.w, c.h, f)
 		}
 	}
 	// 60 columns leave 2 glyphs at either side: no room for 1 and one more.
@@ -168,17 +171,20 @@ func TestTheLevelFillsFromItsFoot(t *testing.T) {
 		}
 		return 5*f.sy - top
 	}
-	// Twenty rows a level (user, 2026-11-13): a row lights a line of 20.
-	for _, c := range []struct{ lines, lit int }{{0, 0}, {3, 3}, {19, 19}} {
+	// Twenty rows a level (user, 2026-11-13), over 15 lines.
+	if f.sy != 3 {
+		t.Fatalf("the 1 is %d lines a pixel", f.sy)
+	}
+	for _, c := range []struct{ lines, lit int }{{0, 0}, {3, 2}, {10, 8}, {19, 14}} {
 		g.Lines = c.lines
 		if got := lines(); got != c.lit {
-			t.Fatalf("%d of the level's rows lit %d lines of 20, not %d", c.lines, got, c.lit)
+			t.Fatalf("%d of the level's rows lit %d lines of 15, not %d", c.lines, got, c.lit)
 		}
 	}
 	// The twentieth row: the level up, its clear not over, the 1 is full.
 	g.Lines, g.Level = game.LinesPerLevel, 2
 	if got := lines(); got != 5*f.sy {
-		t.Fatalf("the level up lit %d lines of 20, not all", got)
+		t.Fatalf("the level up lit %d lines of 15, not all", got)
 	}
 }
 
@@ -189,36 +195,49 @@ func TestTheLevelUpSweepsTheNextIn(t *testing.T) {
 	g := tt.g
 	g.Lines = game.LinesPerLevel - 1
 	fullFoot(g)
+	p := uint8(g.Cur)
 	d.Press("Enter")
 	r := roomAt(120, 40)
 	one, two := r.place(1), r.place(2)
 	if g.Level != 2 || len(g.Going) != 1 || tt.lv.lv != 1 {
-		t.Fatalf("the tenth row: level %d, %d rows going, the sides at %d", g.Level, len(g.Going), tt.lv.lv)
+		t.Fatalf("the twentieth row: level %d, %d rows going, the sides at %d", g.Level, len(g.Going), tt.lv.lv)
 	}
+	tt.lv.beat = 0 // the heartbeat at rest
 	if lineInk(sidesAt(tt, 120, 40), one, 0) != inkLevel {
-		t.Fatal("the 1 is not full as the tenth row goes")
+		t.Fatal("the 1 is not full as the twentieth row goes")
 	}
 	d.Advance(game.ClearTime(1) + frame)
-	if len(g.Going) != 0 || tt.lv.lv != 2 || tt.lv.from != 1 || tt.lv.at >= sweepTime {
-		t.Fatalf("the clear over, the 2 does not sweep in: %+v", tt.lv)
+	if len(g.Going) != 0 || tt.lv.lv != 2 || tt.lv.from != 1 || tt.lv.at >= sweepTime || tt.lv.by != int(p) {
+		t.Fatalf("the clear over, the 2 does not sweep in, in piece %d's colour: %+v", p, tt.lv)
 	}
 	d.Advance(sweepTime / 2)
-	// Half way: a band of white across the whole of both sides (user,
-	// 2026-11-13: bigger), fading under it, the 2 under that empty, the 1
-	// over it full.
+	// Half way: a band across the whole of both sides (user, 2026-11-13:
+	// bigger) in the colour of the piece that cleared the row (user,
+	// 2026-11-13), fading under it, the 2 under that empty, the 1 over it
+	// full.
+	tt.lv.beat = 0
 	sd := sidesAt(tt, 120, 40)
-	white, fading := 0, 0
+	band, fading := 0, 0
 	for l := range r.H {
 		switch {
-		case whole(sd, r, l, inkWhite):
-			white++
-		case whole(sd, r, l, inkFade), whole(sd, r, l, inkFade+1), whole(sd, r, l, inkFade+2):
+		case whole(sd, r, l, inkPiece+p):
+			band++
+		case whole(sd, r, l, inkTrail+3*p), whole(sd, r, l, inkTrail+3*p+1), whole(sd, r, l, inkTrail+3*p+2):
 			fading++
 		}
 	}
 	w, step := r.band()
-	if white != w || fading != 3*step || lineInk(sd, two, 5*two.sy-1) != inkGround || lineInk(sd, one, 0) != inkLevel {
-		t.Fatalf("half way: %d lines white, %d fading", white, fading)
+	if band != w || fading != 3*step || lineInk(sd, two, 5*two.sy-1) != inkGround || lineInk(sd, one, 0) != inkLevel {
+		t.Fatalf("half way: %d lines in the piece's colour, %d fading", band, fading)
+	}
+	// The trail fades as the clear's white does.
+	for f := range 3 {
+		if toGround(inks[inkWhite], f+1) != inks[inkFade+uint8(f)] {
+			t.Fatalf("a trail %d quarters to the ground is not as the white's", f+1)
+		}
+	}
+	if inks[inkTrail+1] != terminu.Hex("#5d8798") {
+		t.Fatalf("sky half way to the ground is %v", inks[inkTrail+1])
 	}
 	at := g.At
 	d.Press("h")
@@ -234,16 +253,43 @@ func TestTheLevelUpSweepsTheNextIn(t *testing.T) {
 	}
 }
 
-func TestTheLastLevelIsFBreathing(t *testing.T) {
+func TestEveryLevelBreathes(t *testing.T) {
+	// Every level, what is lit of it (user, 2026-11-13): Lavender, half way
+	// to the ground, the ground; what is not lit stays the ground.
+	tt, d := open(t, 120, 40)
+	play(d)
+	tt.g.Lines = game.LinesPerLevel / 2
+	d.Advance(sweepTime)
+	f := roomAt(120, 40).place(1)
+	seen := map[uint8]bool{}
+	for at := time.Duration(0); at < beatTime; at += frame {
+		tt.lv.beat = at
+		sd := sidesAt(tt, 120, 40)
+		if top := lineInk(sd, f, 0); top != inkGround {
+			t.Fatalf("the 1's top, not lit, is %d %v into the heartbeat", top, at)
+		}
+		seen[lineInk(sd, f, 5*f.sy-1)] = true
+	}
+	if len(seen) != 3 || !seen[inkLevel] || !seen[inkLevel+1] || !seen[inkGround] || inks[inkLevel+1] != terminu.Hex("#7378a1") {
+		t.Fatalf("the 1 beats through %v, not Lavender, half way and the ground", seen)
+	}
+	d.Press("Esc")
+	tt.lv.beat = rise
+	if lineInk(sidesAt(tt, 120, 40), f, 5*f.sy-1) != inkLevel {
+		t.Fatal("the 1 beats paused")
+	}
+}
+
+func TestTheLastLevelIsFInGold(t *testing.T) {
 	// Fifteen levels, 1 to F, one character wide and narrow (user,
 	// 2026-11-13).
 	if game.MaxLevel != 15 || font[9] != [5]string{".#.", "#.#", "###", "#.#", "#.#"} || font[14] != [5]string{"###", "#..", "##.", "#..", "#.."} {
 		t.Fatal("the levels are not 1 to F")
 	}
-	if f := roomAt(70, 32).place(game.MaxLevel); f.sx != 1 || f.sy != 4 {
+	if f := roomAt(70, 32).place(game.MaxLevel); f.sx != 1 || f.sy != 3 {
 		t.Fatalf("70×32: F is %d × %d a pixel", f.sx, f.sy)
 	}
-	// Lavender, half way to the ground, the ground: no white (user,
+	// Its colour, half way to the ground, the ground: no white (user,
 	// 2026-11-13: white too much).
 	for _, c := range []struct {
 		at  time.Duration
@@ -272,12 +318,13 @@ func TestTheLastLevelIsFBreathing(t *testing.T) {
 		}
 		seen[top] = true
 	}
-	if len(seen) != 3 || !seen[inkLevel] || !seen[inkLevel+1] || !seen[inkGround] || inks[inkLevel+1] != terminu.Hex("#7378a1") {
-		t.Fatalf("the F beats through %v, not Lavender, half way and the ground", seen)
+	// Gold, the family's icons' (user, 2026-11-13: gold at the fifteenth).
+	if len(seen) != 3 || !seen[inkGold] || !seen[inkGold+1] || !seen[inkGround] || inks[inkGold] != terminu.Hex("#f2b753") || inks[inkGold+1] != terminu.Hex("#92754c") {
+		t.Fatalf("the F beats through %v, not gold, half way and the ground", seen)
 	}
 	d.Press("Esc")
 	tt.lv.beat = rise
-	if lineInk(sidesAt(tt, 120, 40), f, 0) != inkLevel {
+	if lineInk(sidesAt(tt, 120, 40), f, 0) != inkGold {
 		t.Fatal("the F beats paused")
 	}
 }
@@ -313,8 +360,8 @@ func TestRestartSweepsOneIn(t *testing.T) {
 	}
 	d.Press("r")
 	d.Press("Enter") // no points: the confirm
-	if tt.g.Level != 1 || tt.lv.lv != 1 || tt.lv.from != 4 || tt.lv.at != 0 {
-		t.Fatalf("restart does not sweep the 1 in over the 4: %+v", tt.lv)
+	if tt.g.Level != 1 || tt.lv.lv != 1 || tt.lv.from != 4 || tt.lv.at != 0 || tt.lv.by != tt.g.Cur {
+		t.Fatalf("restart does not sweep the 1 in over the 4 in the first piece's colour: %+v", tt.lv)
 	}
 }
 

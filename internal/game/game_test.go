@@ -147,6 +147,16 @@ func TestGravityAtTheLevelsSpeed(t *testing.T) {
 	if g.At.Y != y+1 {
 		t.Fatal("did not fall a row in a second at level 1")
 	}
+	// The tenth level's speed is the fifteenth's (user, 2026-11-13), every
+	// level faster than the one before it.
+	if Interval(MaxLevel) != 100*time.Millisecond {
+		t.Fatalf("the last level falls a row in %v, not a tenth of a second", Interval(MaxLevel))
+	}
+	for l := 2; l <= MaxLevel; l++ {
+		if Interval(l) >= Interval(l-1) {
+			t.Fatalf("level %d is no faster than %d", l, l-1)
+		}
+	}
 }
 
 func TestLockWaitsAndMovingRestartsIt(t *testing.T) {
@@ -197,6 +207,9 @@ func TestClearScoresAtTheLevelAndGoesUp(t *testing.T) {
 	fell := g.Drop()
 	if len(g.Going) != 4 || g.Going[0] != Rows-1 || g.Going[3] != Rows-4 {
 		t.Fatalf("rows going, the bottom first: %v", g.Going)
+	}
+	if g.Last != I {
+		t.Fatalf("the piece that cleared the rows is %d, not the long one", g.Last)
 	}
 	g.Advance(ClearTime(4))
 	if got := g.Score - score; got != 800*3+2*fell {

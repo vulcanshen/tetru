@@ -109,10 +109,11 @@ func sameBlocks(a, b [][2]int) bool {
 // Shape is piece p's blocks as it comes in, for a box of the queue.
 func Shape(p int) [][2]int { return turns[p][0] }
 
-// intervals are the time a piece takes to fall a row at each level: the
-// first ten as they were, the five after them going on faster (2026-11-13),
-// to 25 rows a second.
-var intervals = [MaxLevel]time.Duration{1000, 800, 650, 520, 420, 330, 260, 200, 150, 100, 85, 70, 58, 48, 40}
+// intervals are the time a piece takes to fall a row at each level: the ten
+// levels' speeds as they were, a row a second to ten, drawn out over the
+// fifteen, the steps between them smaller (user, 2026-11-13: the tenth's
+// speed the fifteenth's).
+var intervals = [MaxLevel]time.Duration{1000, 866, 754, 660, 572, 497, 433, 372, 319, 274, 232, 196, 163, 130, 100}
 
 // Interval is the time a piece takes to fall a row at level; the last
 // level's past it.
@@ -146,6 +147,7 @@ type Game struct {
 	bag   []int   // the pieces still to come from this bag
 
 	Cur  int   // the piece falling
+	Last int   // the piece set last: the one whose rows go, while a clear is under way
 	At   Spot  // where it is
 	Next []int // the pieces to come, the next first
 
@@ -399,6 +401,7 @@ func (g *Game) Drop() int {
 // set puts the piece in the stack: a block over the field is the end; the
 // rows it fills start going; else the next piece comes in.
 func (g *Game) set() {
+	g.Last = g.Cur
 	over := false
 	for _, b := range g.Blocks() {
 		if b[1] < 0 {

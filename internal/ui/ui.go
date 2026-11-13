@@ -268,10 +268,10 @@ func (t *Tetru) enter() tea.Cmd {
 }
 
 // begin starts a new game, in the Gaming mode, its level swept in at the
-// field's sides.
+// field's sides in its first piece's colour.
 func (t *Tetru) begin() tea.Cmd {
 	t.g, t.saved, t.topped = game.New(t.seed()), false, false
-	t.lv.sweepTo(t.g.Level)
+	t.lv.sweepTo(t.g.Level, t.g.Cur)
 	return t.resume()
 }
 

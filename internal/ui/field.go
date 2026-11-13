@@ -45,7 +45,9 @@ const (
 	inkFrame = inkWhite + 1
 	inkFade  = inkFrame + 1 // inkFade + f, f 0 to 2: white a quarter, a half, three quarters to the ground
 	inkHint  = inkFade + 3
-	inkLevel = inkHint + 1 // the level's figures lit, Lavender; inkLevel + 1 half way to the ground (heartbeat)
+	inkLevel = inkHint + 1  // the level's figures lit, Lavender; inkLevel + 1 half way to the ground (heartbeat)
+	inkGold  = inkLevel + 2 // the last level's figures, gold; inkGold + 1 half way to the ground
+	inkTrail = inkGold + 2  // inkTrail + 3p + f, f 0 to 2: piece p's a quarter, a half, three quarters to the ground
 )
 
 // inks are the colours of the inks, locku's: the ground surface0, the
@@ -58,7 +60,10 @@ const (
 // ground and a little darker than the curtain (user, 2026-11-12: a lighter
 // grey; surface2 first, then overlay0, lighter still); the level's figures
 // lit, lavender, as INFO's values, and half way from it to the ground, as
-// the last level's heartbeats (user, 2026-11-13: not white, too much).
+// they beat (user, 2026-11-13: not white, too much); the last level's,
+// gold, the family's icons' (user, 2026-11-13: gold at the fifteenth), and
+// half way from it to the ground; then (level.go) the pieces' fading to the
+// ground, the level up's band.
 var inks = []terminu.Color{
 	{},
 	terminu.Hex("#313244"),
@@ -69,6 +74,7 @@ var inks = []terminu.Color{
 	terminu.Hex("#ccccd0"), terminu.Hex("#9899a2"), terminu.Hex("#656573"),
 	terminu.Hex("#6c7086"),
 	terminu.Hex("#b4befe"), terminu.Hex("#7378a1"),
+	terminu.Hex("#f2b753"), terminu.Hex("#92754c"),
 }
 
 // field is the PLAYGROUND panel's body: the field of t's game and, at its right,
