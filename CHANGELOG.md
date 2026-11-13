@@ -2,7 +2,9 @@
 
 Each release names the version of terminu design (tdp) it follows.
 
-## Unreleased
+## v0.1.0-beta.2 — tdp v1.2.8
+
+The second beta: more of the keys are yours to set, and the end of a game stays part of it.
 
 - Settings: `Enter` and the moves can go to other keys too, and a letter so freed to another action. The arrows keep
   what they do at first: move left to `a` and `←` still moves left, and `?` writes it `a|←`.
@@ -12,6 +14,8 @@ Each release names the version of terminu design (tdp) it follows.
   second `Esc` leaves. The keys to play show greyed while there is nothing to move.
 - `Tab` and the digits do nothing while playing, with no message: there is only one panel to go to.
 - The Settings warning and log write keys in brackets: `Can't use [k] for Rotate left`.
+- As a beta it is a GitHub pre-release only: download it from the release. Homebrew, Scoop and the install scripts
+  get the first stable one.
 
 ## v0.1.0-beta.1 — tdp v1.2.4
 
