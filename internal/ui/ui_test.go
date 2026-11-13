@@ -392,7 +392,8 @@ func TestSpaceMenuRunsRestartAndTheKeysAreInHelp(t *testing.T) {
 	d.Press("Esc")
 	g := tt.g
 	d.Press("Space")
-	d.Press("Enter") // the first row: Restart, with no points at once
+	d.Press("Enter") // the first row: Restart
+	d.Press("Enter") // with no points, the confirm
 	if tt.g == g || !tt.playing() {
 		t.Fatal("the menu's Restart did not start over")
 	}
@@ -902,9 +903,39 @@ func TestRestartFromThePlayModesSpaceMenu(t *testing.T) {
 	if all := kept(t); len(all) != 1 || tt.g == g || !tt.playing() {
 		t.Fatalf("Restart kept %+v, or no new game going", all)
 	}
+	// No points: a confirm first (user, 2026-11-13: r pressed by mistake
+	// started over), every time (tdp F6).
+	g = tt.g
+	for range 2 {
+		d.Press("r")
+		if tt.g != g || !d.Has("NEW GAME") || !d.Has("This game ends, not kept: no points.") || !d.Has("Start a new game?") || !d.Has("Enter:start") {
+			t.Fatal("r in the Gaming mode with no points did not ask first")
+		}
+		d.Press("Esc")
+		if tt.g != g || !tt.playing() || d.Has("NEW GAME") {
+			t.Fatal("Esc on the confirm did not go back to the game")
+		}
+	}
 	d.Press("r")
-	if tt.g.Score != 0 || !tt.playing() || d.Has("NEW GAME") {
-		t.Fatal("r in the Gaming mode with no points did not start over at once")
+	d.Press("Enter")
+	if tt.g == g || tt.g.Score != 0 || !tt.playing() {
+		t.Fatal("Enter on the confirm did not start over")
+	}
+}
+
+func TestRByMistakeStopsTheGame(t *testing.T) {
+	tt, d := open(t, 80, 32)
+	play(d)
+	g, at := tt.g, tt.g.At
+	d.Press("r")
+	d.Advance(3 * time.Second)
+	if tt.g != g || g.At != at || len(kept(t)) != 0 {
+		t.Fatal("the game went on, or over, under the confirm")
+	}
+	d.Press("Esc")
+	d.Advance(game.Interval(1) + frame)
+	if tt.g != g || g.At == at || !tt.playing() {
+		t.Fatal("the game did not go on after Esc")
 	}
 }
 
@@ -1309,7 +1340,7 @@ func TestTheHintIsALighterGreyToLevelFive(t *testing.T) {
 	}
 }
 
-func TestRestartNotInTheRankSaysNothing(t *testing.T) {
+func TestRestartNotInTheRankAsksFirstSaysNothingAfter(t *testing.T) {
 	dir := t.TempDir()
 	t.Setenv("TETRU__DATA", dir)
 	t.Setenv("TETRU__CONFIG", t.TempDir())
@@ -1326,8 +1357,12 @@ func TestRestartNotInTheRankSaysNothing(t *testing.T) {
 	g := tt.g
 	g.Score = 50 // under the twentieth
 	d.Press("r")
+	if tt.g != g || !d.Has("NEW GAME") || !d.Has("This game ends, not kept: 50 points, not in the best 20.") {
+		t.Fatal("restart with a game not in the best twenty did not ask first, saying why it is not kept")
+	}
+	d.Press("Enter")
 	if tt.g == g || !tt.playing() || d.Has("NEW GAME") || d.Has("not in the best") {
-		t.Fatal("restart with a game not in the best twenty asked, said so, or did not start over")
+		t.Fatal("restart with a game not in the best twenty said so after, or did not start over")
 	}
 	if len(kept(t)) != scores.Most {
 		t.Fatal("the scores were written")

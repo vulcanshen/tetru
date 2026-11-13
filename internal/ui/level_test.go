@@ -312,6 +312,7 @@ func TestRestartSweepsOneIn(t *testing.T) {
 		t.Fatal("the 4 did not sweep in")
 	}
 	d.Press("r")
+	d.Press("Enter") // no points: the confirm
 	if tt.g.Level != 1 || tt.lv.lv != 1 || tt.lv.from != 4 || tt.lv.at != 0 {
 		t.Fatalf("restart does not sweep the 1 in over the 4: %+v", tt.lv)
 	}

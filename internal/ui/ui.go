@@ -387,17 +387,29 @@ func (t *Tetru) pause() tea.Cmd {
 
 // newGame ends the game going, its score kept for the name asked, and
 // starts the next; Esc on the name goes back to the game. A game not worth
-// keeping starts over at once, nothing said (user, 2026-11-12: restarting,
-// no Info that it is not in the rank).
+// keeping is asked about first, a confirm titled as the name's is (tdp F6:
+// every time; user, 2026-11-13: r pressed by mistake started over), that
+// it ends not kept and why its warning (Peach); Enter starts over, nothing
+// said after (user, 2026-11-12: restarting, no Info that it is not in the
+// rank), Esc goes back to the game.
 func (t *Tetru) newGame() tea.Cmd {
 	if !t.going() {
 		return t.begin()
 	}
+	again := func() tea.Cmd { return tea.Batch(t.finish(), t.begin()) }
 	if !t.worth() {
-		t.saved = true
-		return tea.Batch(t.finish(), t.begin())
+		return t.App.Confirm(terminu.Ask{
+			Title:    "New game",
+			Question: "Start a new game?",
+			Verb:     "start",
+			Details:  []string{"This game ends, not kept: " + t.notKept() + "."},
+			Warn:     []int{0},
+		}, func() tea.Cmd {
+			t.saved = true
+			return again()
+		})
 	}
-	return t.askName("New game", "start", func() tea.Cmd { return tea.Batch(t.finish(), t.begin()) })
+	return t.askName("New game", "start", again)
 }
 
 // endGame ends the game going, its score kept for the name asked; Esc on

@@ -4,6 +4,8 @@ Each release names the version of terminu design (tdp) it follows.
 
 ## Unreleased
 
+- Restarting a game that would not be kept (no points, or not in the best twenty) asks first: `r` pressed by mistake
+  no longer throws the game away. `Esc` goes back to it.
 - Twenty rows to a level, and fifteen levels: the first ten as fast as they were, the five after them faster still,
   up to 25 rows a second at the fifteenth.
 - The level stands big at both sides of the field, from 66 columns wide, as tall as the field and as wide as the

@@ -1,4 +1,4 @@
-id: 58
+id: 59
 from: v1.2.7
 to: v1.2.8
 tasks:
@@ -91,13 +91,13 @@ tasks:
       - '? 的寫法（tdp v1.2.8 K11、K12、M5）：字母改走以後照預設作用的方向鍵與 PgUp|PgDn，寫在它做的動作那一列、用 | 接在使用者選的鍵後面（a|← move left、g|↓ down a row）；在預設的字母上不寫（同一個鍵）；預設沒有作用的 PgUp 不寫。兩個旋轉在 footer 是一項 d|k:rotate，在 ? 一律分兩列（d rotate left、k rotate right；左旋改到 Enter 時 Enter|PgDn rotate left）：一項裡的 | 只用一種意思，一對裡接上做同一件事的鍵就拆成兩項（M5）；預設時也分兩列，? 的樣子不跟著設定變，也寫得出哪個往左、哪個往右（tdp #14）'
 
   - id: 5
-    spec: 53
+    spec: 59
     request: 'Space 暫停，並打開 Space menu；Space 不能改；暫停用 popup 顯示，不畫在遊戲裡（那是 locku 的限制，tetru 是獨立的 app）；玩的時候的 Space menu 不用列 h、l、j、k、Enter，連 d、k 都不用，應該是給 restart、save（使用者 2026-11-11）；後來使用者一度說列的確實是這個模式的鍵，再問為什麼 h、l、j、Enter 出現在裡面，選了重新打開 tdp #7（2026-11-11）；save 不給使用者操作，Gaming 中的 Space menu 只有 restart 和 quit（使用者 2026-11-12：save 存完直接 quit，玩到一半不小心按到 s 就慘了）'
     tdp: [tdp K5, tdp K11, tdp K4, tdp menu.4, tdp M2, tdp M7, tdp L1, tdp screen.7, tdp F1, tdp F6, tdp confirm, tdp K12, tdp K6, tdp screen.2, tdp M5, tdp toast, tdp K9, tdp K1, tdp K2, tdp P5, tdp M3, tdp panel.16, tdp note.5]
     remark:
       - 'Gaming 裡按 Space 開 Gaming 模式的 Space menu（tdp K11：app 自己的模式，Space menu 列什麼 app 可以自行決定；標題與樣子照 menu.4）：只有 GAMING MODE 的 [r]estart、[q]uit（使用者 2026-11-12：Gaming 中的 Space menu 應該只有 restart 和 quit；原本是 restart、save），選了等於按 r、q。玩的鍵不列，都在 ? 與 INFO；[Esc] Pause 那一列也不列（K11：留不留 app 決定；使用者要的只有這兩列，Esc:pause 在 footer）。menu 開著遊戲就停，Esc 或 Space 關掉就接著玩'
       - 'tdp #7：原本 tdp menu.4、K11 要模式的 Space menu 列模式本身的鍵，tetru 暫時照列（TODO(tdp #7)）。使用者 2026-11-11 把 #7 改成問 app 自己的模式，選 A：tdp v1.2.4 定案（K11 的 app 自己的模式的 Space menu、K11-15），列什麼 app 可以自行決定；要守的：Space 照樣打開、至少一列，標題與樣子照 menu.4，模式的每個鍵照樣在 ?，footer 照舊。tgo v1.2.4 的 ModeKey.NoMenu、Mode.NoLeaveRow 做到（v1.2.4-beta.1 起，2026-11-12）'
-      - 'Gaming 模式加兩個鍵（模式的鍵 app 可以自行決定，tdp K11）：r Restart（start over from level 1，跟 PLAYGROUND 的 [n]ew game 一樣：值得記的（task 7）先問誰玩的，不然直接重開）；q Quit（leave tetru; a game going goes on next time）：q 是 core key，在模式裡照 tdp K11 本來就進離開流程，不是 Gaming 自己的鍵；這裡只是把它列進 Space menu（K11-15）與 footer（tdp #13），選了就是離開流程（task 10）。footer 寫 r:restart q:quit；放不下時 tgo 先收掉中間的鍵，Esc:pause 留著（60 欄時就是這樣）。r 不給玩家設成玩的鍵（task 13）。原本還有 s Save（存檔並離開），使用者 2026-11-12 拿掉：玩到一半不小心按到 s 就離開了（task 16）'
+      - 'Gaming 模式加兩個鍵（模式的鍵 app 可以自行決定，tdp K11）：r Restart（start over from level 1，跟 PLAYGROUND 的 [n]ew game 一樣：值得記的（task 7）先問誰玩的，不然先開 confirm 再重開（task 10；使用者 2026-11-13：玩到一半不小心按到 r 就 restart 了，這不行））；q Quit（leave tetru; a game going goes on next time）：q 是 core key，在模式裡照 tdp K11 本來就進離開流程，不是 Gaming 自己的鍵；這裡只是把它列進 Space menu（K11-15）與 footer（tdp #13），選了就是離開流程（task 10）。footer 寫 r:restart q:quit；放不下時 tgo 先收掉中間的鍵，Esc:pause 留著（60 欄時就是這樣）。r 不給玩家設成玩的鍵（task 13）。原本還有 s Save（存檔並離開），使用者 2026-11-12 拿掉：玩到一半不小心按到 s 就離開了（task 16）'
       - '遊戲只在 Gaming 裡、沒有任何 popup、終端機不比最低尺寸小時才走；toast 不是 popup，不擋'
       - '有沒有東西蓋在畫面上用 tgo App.Covered()（popup 開著、收起動畫播到一半、splash 開著都算，toast 不算；tgo #3 回報後 v1.2.3 加的）'
       - 'Esc 離開 Gaming＝暫停（tdp K4：Esc 是安全的出口，不會丟掉這一局），開 confirm 說遊戲停了（使用者 2026-11-11：暫停用 popup，場地上什麼都不畫）：內容 Paused: level 3, 25 lines, 12,340 points.，問句 Go on with the game?，Enter:resume 回到 Gaming，Esc:cancel 留在暫停。讀一段提醒、Enter 接受、Esc 取消就是 confirm（tdp F1），要不要問 app 可以自行決定（tdp F6）；標題照 tdp confirm.2 寫 Enter 做的動作 RESUME，不寫 PAUSED'
@@ -114,12 +114,12 @@ tasks:
       - 'Gaming 是 app 自己的模式（tdp v1.2.6：P5 的開口，K11 的「app 自己的模式」）：玩遊戲是 tdp 的元件和規則都沒有的事（K11-17）；只由使用者的動作進入，PLAYGROUND 的 Enter（Play、Resume）、[n]ew game、RESUME 與 PLAY 的 Enter、模式裡的 r，啟動時有存檔也只停在暫停（K11-18）；模式的鍵與 Space menu 只作用在遊戲上，最多離開模式，[q]uit 與 q:quit 是 core key q（K11-19）；除了 core key 與移動鍵，每個鍵都在 Space menu 或 60 欄時的 footer：60 欄時 footer 放得下 d|k:rotate、Enter:drop、r:restart，旋轉與落到底改到哪個鍵都放得下（task 4），r 也在 Space menu（K11-20）；一次只有這一個模式（K11-22）'
 
   - id: 6
-    spec: 47
+    spec: 59
     request: '每一筆分數記姓名；不用先填名字，直接進遊戲，結束時再問，不填預設就是 ANON'
     tdp: [tdp text, tdp input.6, tdp K3, tdp K4, tdp K9, tdp M6, tdp panel.1, tdp toast, tdp popup.1, tdp input.1, tdp input.2, tdp note.7]
     remark:
       - 'PLAYGROUND 上按 Enter 直接開始一局，不問名字（使用者 2026-11-11）'
-      - '一局值得記（有分數、擠得進前二十名，task 7）時，結束的時候開 text input（tdp text）問誰玩的：寫出分數（12,340 points: who played?），建議值是 ANON（tdp input.6：什麼都沒碰按 Enter 就用它）；打了名字就用那個名字，清空了也是 ANON；最多 16 個字。不值得記的局不問、不記：0 分的什麼都不說；有分數但擠不進前二十名的，[x] End game 時跳 Info toast（tdp toast）說不記：150 points, not in the best 20, so nothing is kept.；重新開始（Gaming 的 r、[n]ew game）時什麼都不說，直接重開（使用者 2026-11-12：restart 沒有進排行榜不需要跳 info）'
+      - '一局值得記（有分數、擠得進前二十名，task 7）時，結束的時候開 text input（tdp text）問誰玩的：寫出分數（12,340 points: who played?），建議值是 ANON（tdp input.6：什麼都沒碰按 Enter 就用它）；打了名字就用那個名字，清空了也是 ANON；最多 16 個字。不值得記的局不問、不記：0 分的什麼都不說；有分數但擠不進前二十名的，[x] End game 時跳 Info toast（tdp toast）說不記：150 points, not in the best 20, so nothing is kept.；重新開始（Gaming 的 r、[n]ew game）先開 task 10 的 confirm，Enter 重開之後什麼都不說（使用者 2026-11-12：restart 沒有進排行榜不需要跳 info）'
       - '怎麼結束就在哪裡問：堆到頂時等灰幕落完才問（玩家可能還在按 Enter 落方塊，一出來就問會被那個 Enter 直接收下 ANON）；灰幕落下時 Enter 與 [n]ew game 不作用，hint 也拿掉（tdp M6、panel.1），記下之後才回來。灰幕落完的那一刻先照建議值 ANON 記下，再問名字：問名字只是把名字放上去，Enter 把那一筆的名字換成打的字，沒打或清空就留 ANON；Esc 不改名（tdp input.1：值不變），hint 照 input.2 是 Enter:keep Esc:cancel。玩家看到的結果跟原本一樣：每一局都記，沒填或按 Esc 就是 ANON（使用者 2026-11-11）。[x] End game、[n]ew game 時，問名字就是那個動作的確認（標題 END GAME、NEW GAME，Enter:end、start），Esc 取消那個動作、回到遊戲（tdp K4）；離開 app 不問名字，還在玩的一局存起來下次接著玩（task 10、16）'
       - '標題寫這個 popup 做什麼（tdp popup.1、input.1）：堆到頂時是 KEEP SCORE（Enter:keep），內容 Game over, 12,340 points: who played?；原本寫 GAME OVER，那是發生了什麼、不是 popup 做什麼（2026-11-12 review）。名字有錯時錯誤訊息叫它 Name（標題寫的是動作，不是值的名字，tdp input）'
       - '一局還在玩時離開（q、Ctrl-C、關掉終端機）不問名字：這一局存起來下次接著玩，還不記分數（task 16）；存不起來時才記成 ANON（使用者 2026-11-11：不填預設就是 ANON）'
@@ -169,12 +169,12 @@ tasks:
       - 'tdp v1.2.6：怎麼結束、結束前顯示什麼是 app 的事，tdp 不要求跳 popup；tetru 照使用者的，灰幕落完在 Gaming 裡開 KEEP SCORE 或 PLAY（K11-21）。不管怎麼離開，模式名與外框顏色恢復，模式的 Space menu 與 ? 一起關掉（tgo v1.2.6 的 Panel.LeaveMode 會關）；離開時最多一個 popup（K11-16）；遊戲玩到哪裡不算要先問的東西（K11-23）'
 
   - id: 10
-    spec: 47
-    request: '玩家可以中途結束、重新開始或離開，結束或離開時記下當下的分數；有一局在玩時按 q 先跳 confirm，記下分數，名字直接用 ANON（使用者 2026-11-11）。後來（使用者 2026-11-12）：要 quit 的時候正在遊戲，app 自動存檔，也不用問，下次進來使用者不想繼續直接 restart 就好'
+    spec: 59
+    request: '玩家可以中途結束、重新開始或離開，結束或離開時記下當下的分數；有一局在玩時按 q 先跳 confirm，記下分數，名字直接用 ANON（使用者 2026-11-11）。後來（使用者 2026-11-12）：要 quit 的時候正在遊戲，app 自動存檔，也不用問，下次進來使用者不想繼續直接 restart 就好。再後來（使用者 2026-11-13）：玩到一半不小心按到 r，就 restart 了，這不行'
     tdp: [tdp M2, tdp M3, tdp M5, tdp M6, tdp F6, tdp text, tdp K9, tdp confirm, tdp popup.1, tdp K4, tdp input.1, tdp note.6, tdp F5, tdp M4, tdp P5, tdp K12, tdp T1, tdp note.7, tdp panel.16]
     remark:
       - '[x] End game（keep this score and stop）與 [n]ew game（start over from level 1）是 PLAYGROUND 的 panel operation（tdp M2、M3）；n、x 是領域熱鍵（tdp P5），不佔移動的字母'
-      - '有一局值得記時（task 7），兩個都先問誰玩的（task 6），那就是確認（tdp F6：哪些要確認 app 可以自行決定）：說出分數，Esc 取消；不值得記的局沒有東西會丟，不問，直接結束（有分數的跳 task 6 的 Info toast）或重開（什麼都不說，task 6）；沒有一局在玩時 [x] End game 停用（tdp M6）'
+      - '有一局值得記時（task 7），兩個都先問誰玩的（task 6），那就是確認（tdp F6：哪些要確認 app 可以自行決定）：說出分數，Esc 取消。不值得記的局：[x] End game 不問，直接結束（有分數的跳 task 6 的 Info toast）；重新開始（Gaming 的 r、Space menu 的 Restart、暫停時的 [n]ew game）先開 confirm（使用者 2026-11-13：玩到一半不小心按到 r 就 restart 了，這不行；tdp F6：決定要確認的每次都確認，所以重新開始不管值不值得記，每次都先開一個 popup）：標題 NEW GAME（跟問名字的一樣），內容一句 Peach 的警告 This game ends, not kept: no points.（或 150 points, not in the best 20），問句 Start a new game?，Enter:start 重開、之後什麼都不說（task 6），Esc 回到遊戲；開著時遊戲停著（popup 蓋住，task 5）。沒有一局在玩時 [x] End game 停用（tdp M6）'
       - '離開流程（tdp K9：離開流程與問什麼，app 可以自行決定，可以直接離開）：不問。有一局在玩（玩著或暫停中）時先把這一局存起來（task 16），再離開；沒有一局在玩時直接離開（使用者 2026-11-12：要 quit 的時候正在遊戲，app 自動存檔，也不用問，下次進來不想繼續直接 restart）。有 popup 開著時（RESUME、Space menu、?）照 tdp K9 先開 Quit tetru?，答 Enter 才存、才離開，Esc 回到 popup，什麼都沒存。存不起來：開 error popup Can''t save the game，路徑與原因，說連按兩次 [Ctrl-C] 一樣可以離開、分數記成 ANON（tdp M5：句子裡的鍵加方括號），不離開。原本是開 QUIT confirm、把分數記成 ANON（使用者 2026-11-11）'
   - id: 11
     spec: 40

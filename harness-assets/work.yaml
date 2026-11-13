@@ -50,7 +50,7 @@ tasks:
       Enter 在 PLAYGROUND 上（Gaming 外）：沒有一局在暫停時開新的一局（task 6），有就繼續（task 5）；hint Enter:play，暫停時 Enter:resume
     test: [TestPlay, TestTheGamingFooterHasTheTurnsAndTheDrop, TestSpaceMenuRunsRestartAndTheKeysAreInHelp, TestTheGameFalls, TestSettingsSetAKey, TestArrowsKeepTheirDefault, TestEnterAndTheMovesAreThePlayers]
   - id: 5
-    spec: 53
+    spec: 59
     implementation: |
       Gaming 裡按 Space：tgo 開 Gaming 的 Space menu，標題 [1] PLAYGROUND，只有 GAMING MODE 的 [r]estart（start over from level 1）、
       [q]uit（leave tetru; a game going goes on next time），選了 [r]estart 就等於按 r，選了 [q]uit 就是 task 10 的離開流程；玩的六個鍵標 tgo ModeKey.NoMenu、模式標 Mode.NoLeaveRow
@@ -67,7 +67,7 @@ tasks:
       Settings 沒有 Pause 那一列（task 13）；INFO 寫 Space menu、Esc pause（task 14）
     test: [TestTheGameStopsUnderAPopup, TestEscPausesEnterResumes, TestTabInPlayDoesNothing, TestSpaceMenuRunsRestartAndTheKeysAreInHelp, TestSettingsHaveNoPauseRow, TestRestartFromThePlayModesSpaceMenu, TestPlay]
   - id: 6
-    spec: 47
+    spec: 59
     implementation: |
       PLAYGROUND 上按 Enter（沒有暫停中的一局時）直接開一局、進 Gaming，不問名字
       一局值得記（有分數、擠得進前二十名：scores.Makes，task 7）時，結束的時候開 tgo 的 text input 問誰玩的：Prompt 是 12,340 points: who played?，建議值（tgo TextInput.Suggest）ANON，
@@ -76,7 +76,7 @@ tasks:
       Enter 把剛記下的那一筆換成打的名字、寫回 scores.yaml（App Log：Kept 12,340 points for amy, not ANON），沒打、清空就留 ANON；Esc 不改名，那一筆照樣是 ANON；
       灰幕落下到記下之前，PLAYGROUND 的 Enter 與 [n]ew game 停用（tgo Action.Disabled），Enter:play 的 hint 拿掉，記下之後回來
       [x] End game、[n]ew game、離開流程：見 task 10
-      不值得記的局不問、不記；[x] End game 時有分數的跳 tgo Info toast：150 points, not in the best 20, so nothing is kept.；重新開始（Gaming 的 r、[n]ew game）時什麼都不說，直接重開
+      不值得記的局不問、不記；[x] End game 時有分數的跳 tgo Info toast：150 points, not in the best 20, so nothing is kept.；重新開始（Gaming 的 r、[n]ew game）先開 task 10 的 confirm，Enter 重開之後什麼都不說
     test: [TestNameIsAskedAsTheGameEnds, TestNameTypedIsKept, TestEscOnTheNameKeepsAnon, TestNameWithTrickyCharacters, TestNoPointsNotKept, TestRankKeepsTheBestTwentyWithTheirPlaces]
   - id: 7
     spec: 47
@@ -119,17 +119,18 @@ tasks:
       兩段動畫都由 tgo App.Tick 推：消行時每 16 ms 一格，灰幕每 40 ms 一格；消 1 行 0.32 秒、2 行 0.37、3 行 0.42、4 行 0.47 秒（game.ClearTime）；灰幕不管有沒有 popup 都照走
     test: [TestOneRowFlashesFadesThenTheStackComesDown, TestClearsByHowManyRows, TestFourBurstThenTheStackComesDownAtOnce, TestClearSlidesThenTheStackComesDown, TestClearScoresAtTheLevelAndGoesUp, TestTopOutKeepsTheScore, TestTheStackAtTheTopEnds, TestTopOutWithNoPoints, TestNoPointsNotKept, TestNameIsAskedAsTheGameEnds, TestEscOnTheNameKeepsAnon]
   - id: 10
-    spec: 47
+    spec: 59
     implementation: |
       PLAYGROUND 的 panel operation（Gaming 外的 Space menu 與熱鍵）：
       [n]ew game（start over from level 1）：有一局值得記時先開 task 6 的 text input，標題 NEW GAME、Enter:start；Enter 記下那一局，接著開新的一局、進 Gaming；
-      Esc 回到遊戲；不值得記或沒有一局時直接開新的一局
+      Esc 回到遊戲；沒有一局時直接開新的一局；不值得記時先開 tgo App.Confirm：標題 NEW GAME、Details 一句 This game ends, not kept: <notKept>.（Warn，Peach）、
+      問句 Start a new game?、Enter:start，Enter 開新的一局、Esc 回到遊戲；Gaming 的 r 與 Space menu 的 Restart 也是 newGame，同一套
       [x] End game（keep this score and stop）：有一局值得記時先開同樣的 text input，標題 END GAME、Enter:end；Enter 記下、結束、灰幕開始，
       灰幕落完不再問；Esc 回到遊戲；不值得記時直接結束；沒有一局時停用
       離開流程（tgo App.QuitFlow、QuitDesc leave tetru; a game going goes on next time）：不問。有一局在玩（玩著或暫停中）時回一個訊息（quitKeep），
       收到時把這一局存起來（task 16）、回 tea.Quit；沒有一局在玩時直接回 tea.Quit。有 popup 開著時 tgo 先開 Quit tetru?，Enter 才送出那個訊息，Esc 什麼都沒存
       存不起來：tgo App.Error 開 CAN'T SAVE THE GAME，路徑與原因、[Ctrl-C] twice quits all the same, the score so far kept for ANON.，不離開；離開流程中再按一次 Ctrl-C 由 tgo 立刻離開（main 的 Finish 存起來）
-    test: [TestEndGameAsksAndKeeps, TestNewGameAsksWhoPlayed, TestQuitKeepsTheGameGoing, TestQuitUnderAPopupAsksFirst, TestQuitFromTheGamingMenu, TestQuitThatCantSaveSaysSo, TestQuitWithNoGameLeaves, TestNoPointsNotKept, TestRestartNotInTheRankSaysNothing]
+    test: [TestEndGameAsksAndKeeps, TestNewGameAsksWhoPlayed, TestQuitKeepsTheGameGoing, TestQuitUnderAPopupAsksFirst, TestQuitFromTheGamingMenu, TestQuitThatCantSaveSaysSo, TestQuitWithNoGameLeaves, TestNoPointsNotKept, TestRestartNotInTheRankAsksFirstSaysNothingAfter, TestRestartFromThePlayModesSpaceMenu, TestRByMistakeStopsTheGame]
   - id: 11
     spec: 40
     implementation: |
