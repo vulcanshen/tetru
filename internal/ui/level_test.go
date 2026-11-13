@@ -168,14 +168,15 @@ func TestTheLevelFillsFromItsFoot(t *testing.T) {
 		}
 		return 5*f.sy - top
 	}
-	for _, c := range []struct{ lines, lit int }{{0, 0}, {3, 6}, {9, 18}} {
+	// Twenty rows a level (user, 2026-11-13): a row lights a line of 20.
+	for _, c := range []struct{ lines, lit int }{{0, 0}, {3, 3}, {19, 19}} {
 		g.Lines = c.lines
 		if got := lines(); got != c.lit {
 			t.Fatalf("%d of the level's rows lit %d lines of 20, not %d", c.lines, got, c.lit)
 		}
 	}
-	// The tenth row: the level up, its clear not over, the 1 is full.
-	g.Lines, g.Level = 10, 2
+	// The twentieth row: the level up, its clear not over, the 1 is full.
+	g.Lines, g.Level = game.LinesPerLevel, 2
 	if got := lines(); got != 5*f.sy {
 		t.Fatalf("the level up lit %d lines of 20, not all", got)
 	}
@@ -233,21 +234,21 @@ func TestTheLevelUpSweepsTheNextIn(t *testing.T) {
 	}
 }
 
-func TestTheLastLevelIsTenBeating(t *testing.T) {
-	// 10 where it has room (user, 2026-11-13), its 1 narrow so that it has
-	// room from 78 columns; A where not.
-	for _, c := range []struct {
-		w, h, sx int
-		rows     [5]string
-	}{{120, 40, 2, ten}, {80, 32, 1, ten}, {78, 32, 1, ten}, {76, 32, 1, letterA}, {70, 32, 1, letterA}} {
-		if f := roomAt(c.w, c.h).place(game.MaxLevel); f.rows != c.rows || f.sx != c.sx {
-			t.Fatalf("%d×%d: the last level is %v, %d a pixel", c.w, c.h, f.rows, f.sx)
-		}
+func TestTheLastLevelIsFBreathing(t *testing.T) {
+	// Fifteen levels, 1 to F, one character wide and narrow (user,
+	// 2026-11-13).
+	if game.MaxLevel != 15 || font[9] != [5]string{".#.", "#.#", "###", "#.#", "#.#"} || font[14] != [5]string{"###", "#..", "##.", "#..", "#.."} {
+		t.Fatal("the levels are not 1 to F")
 	}
+	if f := roomAt(70, 32).place(game.MaxLevel); f.sx != 1 || f.sy != 4 {
+		t.Fatalf("70×32: F is %d × %d a pixel", f.sx, f.sy)
+	}
+	// Lavender, half way to the ground, the ground: no white (user,
+	// 2026-11-13: white too much).
 	for _, c := range []struct {
 		at  time.Duration
 		lit uint8
-	}{{0, 0}, {rise, 3}, {dub + rise, 2}, {dub + rise + fall, 0}, {beatTime - frame, 0}} {
+	}{{0, 0}, {rise, 2}, {dub + rise, 1}, {dub + rise + fall, 0}, {beatTime - frame, 0}} {
 		if got := heartbeat(c.at); got != c.lit {
 			t.Fatalf("the heartbeat at %v: %d, not %d", c.at, got, c.lit)
 		}
@@ -255,26 +256,29 @@ func TestTheLastLevelIsTenBeating(t *testing.T) {
 	tt, d := open(t, 120, 40)
 	play(d)
 	g := tt.g
-	g.Level, g.Lines = game.MaxLevel, 90
+	g.Level, g.Lines = game.MaxLevel, (game.MaxLevel-1)*game.LinesPerLevel
 	d.Advance(frame + sweepTime)
 	f := roomAt(120, 40).place(game.MaxLevel)
 	if tt.lv.lv != game.MaxLevel {
 		t.Fatal("the last level did not sweep in")
 	}
-	tt.lv.beat = rise
-	sd := sidesAt(tt, 120, 40)
-	if lineInk(sd, f, 0) != inkLevel+3 || lineInk(sd, f, 5*f.sy-1) != inkLevel+3 {
-		t.Fatal("the 10 is not all white at the top of its heartbeat")
+	seen := map[uint8]bool{}
+	for at := time.Duration(0); at < beatTime; at += frame {
+		tt.lv.beat = at
+		sd := sidesAt(tt, 120, 40)
+		top, foot := lineInk(sd, f, 0), lineInk(sd, f, 5*f.sy-1)
+		if top != foot {
+			t.Fatalf("the F is not all one ink %v into its heartbeat", at)
+		}
+		seen[top] = true
 	}
-	tt.lv.beat = beatTime - frame
-	sd = sidesAt(tt, 120, 40)
-	if lineInk(sd, f, 0) != inkLevel || lineInk(sd, f, 5*f.sy-1) != inkLevel {
-		t.Fatal("the 10 at no rows of its own is not all lit")
+	if len(seen) != 3 || !seen[inkLevel] || !seen[inkLevel+1] || !seen[inkGround] || inks[inkLevel+1] != terminu.Hex("#7378a1") {
+		t.Fatalf("the F beats through %v, not Lavender, half way and the ground", seen)
 	}
 	d.Press("Esc")
 	tt.lv.beat = rise
 	if lineInk(sidesAt(tt, 120, 40), f, 0) != inkLevel {
-		t.Fatal("the 10 beats paused")
+		t.Fatal("the F beats paused")
 	}
 }
 

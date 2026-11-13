@@ -20,13 +20,15 @@ const (
 	// 2026-11-11: Next 1 and Next 2).
 	Queue = 2
 	// MaxLevel is the last level: the speed goes no higher after it (user,
-	// 2026-11-11: the ten levels are speeds).
-	MaxLevel = 10
+	// 2026-11-11: the levels are speeds; 2026-11-13: fifteen, 1 to F, not
+	// ten).
+	MaxLevel = 15
 	// HintLevels are the levels the hint shows at, where a drop would set
 	// the piece (Landing): 1 to 5; from 6 there is none (user, 2026-11-12).
 	HintLevels = 5
-	// LinesPerLevel are the rows to clear for the next level.
-	LinesPerLevel = 10
+	// LinesPerLevel are the rows to clear for the next level (user,
+	// 2026-11-13: twenty, not ten).
+	LinesPerLevel = 20
 	// LockDelay is how long a piece lies on the stack before it is set;
 	// moving or turning it starts the wait again, LockResets times at most.
 	LockDelay  = 500 * time.Millisecond
@@ -107,8 +109,10 @@ func sameBlocks(a, b [][2]int) bool {
 // Shape is piece p's blocks as it comes in, for a box of the queue.
 func Shape(p int) [][2]int { return turns[p][0] }
 
-// intervals are the time a piece takes to fall a row at each level.
-var intervals = [MaxLevel]time.Duration{1000, 800, 650, 520, 420, 330, 260, 200, 150, 100}
+// intervals are the time a piece takes to fall a row at each level: the
+// first ten as they were, the five after them going on faster (2026-11-13),
+// to 25 rows a second.
+var intervals = [MaxLevel]time.Duration{1000, 800, 650, 520, 420, 330, 260, 200, 150, 100, 85, 70, 58, 48, 40}
 
 // Interval is the time a piece takes to fall a row at level; the last
 // level's past it.

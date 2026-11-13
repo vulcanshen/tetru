@@ -186,7 +186,7 @@ func TestLockResetsRunOut(t *testing.T) {
 
 func TestClearScoresAtTheLevelAndGoesUp(t *testing.T) {
 	g := with(I)
-	g.Level, g.Lines = 3, 29
+	g.Level, g.Lines = 3, 2*LinesPerLevel+17
 	for y := Rows - 4; y < Rows; y++ {
 		g.fill(y, Cols-1)
 	}
@@ -202,8 +202,8 @@ func TestClearScoresAtTheLevelAndGoesUp(t *testing.T) {
 	if got := g.Score - score; got != 800*3+2*fell {
 		t.Fatalf("four rows at level 3 scored %d", got)
 	}
-	if g.Lines != 33 || g.Level != 4 {
-		t.Fatalf("lines %d level %d after 33 rows", g.Lines, g.Level)
+	if g.Lines != 3*LinesPerLevel+1 || g.Level != 4 {
+		t.Fatalf("lines %d level %d after %d rows", g.Lines, g.Level, 3*LinesPerLevel+1)
 	}
 	for x := 0; x < Cols; x++ {
 		if g.Cell(x, Rows-1) != 0 {
@@ -298,7 +298,7 @@ func TestTheSpeedStopsAtTheLastLevel(t *testing.T) {
 	g.fill(Rows-1, 0, 1, 2, 3)
 	g.Drop() // flat, in columns 3–6: the row is not full, nothing goes
 	g.Level = MaxLevel
-	g.Lines = 199
+	g.Lines = (MaxLevel+5)*LinesPerLevel - 1 // well past the last
 	g.fill(Rows-2, Cols-1)
 	g.Next[0] = I
 	g.come()

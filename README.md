@@ -8,7 +8,7 @@
 **A falling-block game for the terminal.**
 
 Pieces of four blocks fall into a well twelve blocks wide and twenty-four deep; move and turn them as they fall, and
-fill rows from wall to wall to clear them. Every ten rows is a level, and every level falls faster, up to the tenth. tetru keeps the best twenty scores
+fill rows from wall to wall to clear them. Every twenty rows is a level, and every level falls faster, up to the fifteenth. tetru keeps the best twenty scores
 with the player's name and the time, and ranks them, the best first.
 
 ![tetru: a game played, the Space menu pausing it, and the score kept](docs/demo.gif)
@@ -20,10 +20,11 @@ with the player's name and the time, and ranks them, the best first.
   play with.
 - **Your keys**: every key you play with can be changed on the Settings screen; `Esc` (pause) and `Space` (the menu)
   stay as they are.
-- **Ten levels of speed**: a level every ten rows, from a row a second to ten a second; past the tenth the speed stays.
+- **Fifteen levels of speed**: a level every twenty rows, from a row a second to 25 a second; past the fifteenth the
+  speed stays.
 - **The level beside the field**: from 66 columns wide, the level stands big at both sides of the field, as tall as
-  the field, and lights up from the foot as you clear its ten rows; a band of white sweeps up both sides to bring in
-  the next. The tenth is 10 (an A below 78 columns), and it beats like a heart.
+  the field, and lights up from the foot as you clear its twenty rows; a band of white sweeps up both sides to bring
+  in the next. Past 9 the levels are A to F, and the last, F, beats like a heart.
 - **A hint up to level five**: a lighter grey on the ground shows where the piece lands if you drop it now; from the
   sixth level on, there is no hint.
 - **The best twenty kept**: the place, the name, the score and the time, the best first on the Rank screen, the first

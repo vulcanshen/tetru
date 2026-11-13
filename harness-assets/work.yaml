@@ -28,11 +28,11 @@ tasks:
       顏色用 tgo 的 Fg 上色；被 popup 蓋住時由 tgo 淡化（PLAYGROUND 是唯一的 panel，一直有 focus）
     test: [TestPictureIsLockus, TestTetruScreen, TestNarrowDrawsTheBoxesWithNoFrames, TestPictureGrowsTwiceOnALargeTerminal, TestPopupsOverTheGameAtEveryWidth]
   - id: 3
-    spec: 9
+    spec: 58
     implementation: |
       遊戲在 internal/game，不碰終端機：場地 12 格寬、24 格高（game.Cols、game.Rows）
       七種方塊（locku 的 art 與轉法），七個一袋、袋裡打亂；新方塊的最上面一列在場地第一列、左右置中（3 格寬的偏左半格）；放不進去就結束
-      每一格往下的時間照關卡：1000、800、650、520、420、330、260、200、150、100 ms；每消 10 行升一關，到第 10 關為止
+      每一格往下的時間照關卡（game.Interval）：1000、800、650、520、420、330、260、200、150、100、85、70、58、48、40 ms；每消 20 行（game.LinesPerLevel）升一關，到第 15 關（game.MaxLevel）為止
       碰到底後 500 ms 固定；這段時間裡移動、旋轉成功就重算，最多 15 次
       旋轉在方塊自己的框裡轉；轉不過去依序試左 1、右 1、上 1，長條再試左 2、右 2
       分數：一次消 1–4 行 100、300、500、800 乘當時的關卡；往下一格 1 分，落到底每一格 2 分
@@ -184,7 +184,7 @@ tasks:
       窄寬（42–59 欄）時不畫框與 INFO（task 2）
     test: [TestTheBoxesAreNeverFocused, TestTetruScreen]
   - id: 16
-    spec: 47
+    spec: 58
     implementation: |
       存檔：TETRU__DATA 或 ~/.tetru 底下的 game.yaml（internal/saved），level、lines、score 與 stack（24 列，一列 12 個字，# 有方塊、. 沒有，由上往下）；
       整個檔寫（先寫暫存檔再改名），目錄 0755、檔 0644
@@ -194,7 +194,7 @@ tasks:
       寫不進去：離開流程開 tgo App.Error CAN'T SAVE THE GAME（task 10）；Finish 改成把分數記成 ANON
       啟動時讀到 game.yaml：game.Resume 接著那一局（關卡、行數、分數照存的；地上的格子是 game.Kept，畫成 #ffffff；方塊從新的一袋來），
       停在暫停（PLAYGROUND 的 hint Enter:resume，INFO 寫存的分數）；讀進來就刪掉 game.yaml；App Log 記一筆 Info：Took up the game saved: level 1, 134 points
-      game.yaml 讀不了（YAML 錯、不是 24 列、一列不是 12 個 # 或 .、關卡不在 1–10、行數或分數是負的）：tgo App.MoveAside 問要不要移成 game.yaml.bak，
+      game.yaml 讀不了（YAML 錯、不是 24 列、一列不是 12 個 # 或 .、關卡不在 1–15（game.MaxLevel）、行數或分數是負的）：tgo App.MoveAside 問要不要移成 game.yaml.bak，
       排在設定、排行的檔後面問；Enter 移開、沒有存檔，Esc 離開；讀進來之後刪不掉：tgo App.Error 開 CAN'T REMOVE THE GAME SAVED，說下次啟動還會再接一次
     test: [TestPathIsBesideTheScores, TestSaveLoadRemove, TestLoadBroken, TestStackIsWhatASaveKeepsAndResumeTakesUp, TestQuitKeepsTheGameAndTheNextStartGoesOn, TestNoSaveToPress, TestFinishKeepsTheGameGoing, TestBrokenSaveAsksToMoveAside]
   - id: 17
@@ -204,11 +204,11 @@ tasks:
       ui picture 先把這四格畫成 inkHint（#6c7086，同一個 nf-fa-square），再畫正在掉的方塊蓋在上面；寬窄兩種排法畫的是同一張圖
     test: [TestLandingIsWhereADropSetsToLevelFive, TestTheHintIsALighterGreyToLevelFive]
   - id: 18
-    spec: 57
+    spec: 58
     implementation: |
       ui level.go：banner 記兩邊畫的關卡（lv）、被掃走的那一關（from）、掃了多久（at，sweepTime 800 ms）與心跳（beat，beatTime 1000 ms）；begin 開局與 restart 都 sweepTo(1)，啟動時接著存檔那一局 show(它的關卡)；step 跟著遊戲每一格走（Esc、popup 蓋住時遊戲不走，它也不走），消行做完、g.Level 跟 lv 不一樣就 sweepTo 新的關卡
-      room 是場地兩邊的空間（左右各幾個 icon、場地寬與高），side 是兩邊除了緊鄰場地那一格以外的地方；room.place 給每一關的 figure：digits 是 0–9 的 3×5，第十關先試 ten（1 兩格寬、隔一格接 0，6 格寬），放不下用 letterA；sy 是場地高的五分之一，sx 是窄的那一邊放得下的最大、最多 sy；sx 是 0 就不畫
-      face：字上的格子從腳往上亮到 Lines%10 的比例，Lavender（inkLevel #b4befe），其餘 Surface0；關卡升了、消行還沒做完時亮滿；第十關全亮，玩的時候照 heartbeat（0 ms 撲通一下到白、280 ms 第二下到六成，各 80 ms 升、160 ms 降）分四段 inkLevel 到 inkLevel+3（#ffffff），暫停、結束時停在 inkLevel
+      room 是場地兩邊的空間（左右各幾個 icon、場地寬與高），side 是兩邊除了緊鄰場地那一格以外的地方；room.place 給每一關的 figure：font 是 1–9、A–F 的 3×5，一關一個；sy 是場地高的五分之一，sx 是窄的那一邊放得下的最大、最多 sy；sx 是 0 就不畫
+      face：字上的格子從腳往上亮到 Lines%20 的比例，Lavender（inkLevel #b4befe），其餘 Surface0；關卡升了、消行還沒做完時亮滿；最後一關 F 全亮，玩的時候照 heartbeat（0 ms 撲通一下、280 ms 第二下到六成，各 80 ms 變、160 ms 回）分三段：inkLevel、inkLevel+1（#7378a1，Lavender 與底色正中間）、inkGround，暫停、結束時停在 inkLevel
       banner.ink：掃的時候，room.band 給的白色（sy 列、至少 2 列）與三段漸暗的尾巴（inkFade 到 inkFade+2，每段 sy/2 列）蓋滿兩邊的 side，從場地的底往上走；下面是新的一關的字，上面是舊的字亮滿
       field Draw：寬的排法有兩邊時，場地的每一列用 glyphs 一個 icon 一個 icon 畫（場地與兩邊在同一條格線上）；clearRows 每一列也經過 sides.lay，消行的特效蓋在兩邊上，沒蓋到的地方照畫
-    test: [TestTheLevelIsBigAtTheSides, TestTheLevelFillsFromItsFoot, TestTheLevelUpSweepsTheNextIn, TestTheLastLevelIsTenBeating, TestAGameTakenUpShowsItsLevelAtOnce, TestRestartSweepsOneIn, TestWhatGoesOutIsOverTheFigures]
+    test: [TestTheLevelIsBigAtTheSides, TestTheLevelFillsFromItsFoot, TestTheLevelUpSweepsTheNextIn, TestTheLastLevelIsFBreathing, TestAGameTakenUpShowsItsLevelAtOnce, TestRestartSweepsOneIn, TestWhatGoesOutIsOverTheFigures]

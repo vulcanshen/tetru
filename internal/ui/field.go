@@ -45,7 +45,7 @@ const (
 	inkFrame = inkWhite + 1
 	inkFade  = inkFrame + 1 // inkFade + f, f 0 to 2: white a quarter, a half, three quarters to the ground
 	inkHint  = inkFade + 3
-	inkLevel = inkHint + 1 // inkLevel + b, b 0 to 3: the level's figures lit, Lavender to white (heartbeat)
+	inkLevel = inkHint + 1 // the level's figures lit, Lavender; inkLevel + 1 half way to the ground (heartbeat)
 )
 
 // inks are the colours of the inks, locku's: the ground surface0, the
@@ -57,8 +57,8 @@ const (
 // fading to the ground, and the hint overlay0, a grey lighter than the
 // ground and a little darker than the curtain (user, 2026-11-12: a lighter
 // grey; surface2 first, then overlay0, lighter still); the level's figures
-// lit, lavender, as INFO's values, and three steps up to white as the last
-// level's heartbeats (user, 2026-11-13).
+// lit, lavender, as INFO's values, and half way from it to the ground, as
+// the last level's heartbeats (user, 2026-11-13: not white, too much).
 var inks = []terminu.Color{
 	{},
 	terminu.Hex("#313244"),
@@ -68,7 +68,7 @@ var inks = []terminu.Color{
 	terminu.Hex("#7f849c"),
 	terminu.Hex("#ccccd0"), terminu.Hex("#9899a2"), terminu.Hex("#656573"),
 	terminu.Hex("#6c7086"),
-	terminu.Hex("#b4befe"), terminu.Hex("#cdd4fe"), terminu.Hex("#e6e9fe"), terminu.Hex("#ffffff"),
+	terminu.Hex("#b4befe"), terminu.Hex("#7378a1"),
 }
 
 // field is the PLAYGROUND panel's body: the field of t's game and, at its right,
@@ -441,7 +441,7 @@ func (t *Tetru) stats() []string {
 }
 
 // statsRows are the stats on two lines, narrow, over the field: the level,
-// a fixed width (it is at most 10), and the rows two columns apart (tdp
+// a fixed width (it is at most 15), and the rows two columns apart (tdp
 // components.2); the score under them. The rows and the score have no most,
 // so each is last on its line (tdp L2: only the last may change width).
 func (t *Tetru) statsRows() []string {

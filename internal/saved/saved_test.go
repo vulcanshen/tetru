@@ -62,7 +62,7 @@ func TestLoadBroken(t *testing.T) {
 		"rows":      "level: 1\nstack:\n" + rows("............", 3),
 		"width":     "level: 1\nstack:\n" + rows("....", game.Rows),
 		"character": "level: 1\nstack:\n" + rows("....x.......", game.Rows),
-		"level":     "level: 11\nstack:\n" + rows("............", game.Rows),
+		"level":     "level: 16\nstack:\n" + rows("............", game.Rows),
 		"score":     "level: 1\nscore: -1\nstack:\n" + rows("............", game.Rows),
 	} {
 		path := filepath.Join(t.TempDir(), "game.yaml")

@@ -12,44 +12,45 @@ import (
 // the blank there is for), in the field's square glyph: a 3 × 5 font, a
 // pixel of it sx glyphs across and sy lines down, as high as the field
 // lets it be and as wide as the sides let it be (user, 2026-11-13: bigger
-// where the terminal is narrow). It lights up from its foot as the level's
-// rows are cleared, Lavender over the ground; as the level goes up, a white
-// band with a fading trail goes up over the whole of both sides, the next
+// where the terminal is narrow). One character, 1 to 9 then A to F (user,
+// 2026-11-13: fifteen levels, so that one character does wide and narrow;
+// 10 tried before). It lights up from its foot as the level's rows are
+// cleared, Lavender over the ground; as the level goes up, a white band
+// with a fading trail goes up over the whole of both sides, the next
 // level's figure under it (user, 2026-11-13: the effect bigger). The last
-// level is 10, lit and beating like a heart (user, 2026-11-13: there is room
-// for 10; A at first); A where 10 has no room.
+// level, F, is lit and beats like a heart, Lavender going to the ground and
+// back through the colour half way (user, 2026-11-13: not white, too much).
 const (
 	// sweepTime is how long the band takes from the field's foot to past
 	// its top.
 	sweepTime = 800 * time.Millisecond
-	// beatTime is a heartbeat of the last level: a beat to white, then dub
-	// after it a beat a little over half as bright, each up in rise and down
-	// in fall.
+	// beatTime is a heartbeat of the last level: a beat to the ground, then
+	// dub after it a beat a little over half as deep, each down in rise and
+	// back in fall.
 	beatTime = 1000 * time.Millisecond
 	dub      = 280 * time.Millisecond
 	rise     = 80 * time.Millisecond
 	fall     = 160 * time.Millisecond
 )
 
-// digits are the font's figures, 3 × 5, # on; ten is 10, its 1 two pixels
-// wide so that 10 has room from 78 columns, a pixel from the 0; letterA
-// the last level where 10 has no room.
-var (
-	digits = [10][5]string{
-		{"###", "#.#", "#.#", "#.#", "###"},
-		{".#.", "##.", ".#.", ".#.", "###"},
-		{"##.", "..#", ".#.", "#..", "###"},
-		{"##.", "..#", ".#.", "..#", "##."},
-		{"#.#", "#.#", "###", "..#", "..#"},
-		{"###", "#..", "##.", "..#", "##."},
-		{".##", "#..", "###", "#.#", "###"},
-		{"###", "..#", ".#.", ".#.", ".#."},
-		{"###", "#.#", "###", "#.#", "###"},
-		{"###", "#.#", "###", "..#", "##."},
-	}
-	ten     = [5]string{".#.###", "##.#.#", ".#.#.#", ".#.#.#", ".#.###"}
-	letterA = [5]string{".#.", "#.#", "###", "#.#", "#.#"}
-)
+// font are the levels' figures, 3 × 5, # on: 1 to 9, then A to F.
+var font = [game.MaxLevel][5]string{
+	{".#.", "##.", ".#.", ".#.", "###"},
+	{"##.", "..#", ".#.", "#..", "###"},
+	{"##.", "..#", ".#.", "..#", "##."},
+	{"#.#", "#.#", "###", "..#", "..#"},
+	{"###", "#..", "##.", "..#", "##."},
+	{".##", "#..", "###", "#.#", "###"},
+	{"###", "..#", ".#.", ".#.", ".#."},
+	{"###", "#.#", "###", "#.#", "###"},
+	{"###", "#.#", "###", "..#", "##."},
+	{".#.", "#.#", "###", "#.#", "#.#"},
+	{"##.", "#.#", "##.", "#.#", "##."},
+	{".##", "#..", "#..", "#..", ".##"},
+	{"##.", "#.#", "#.#", "#.#", "##."},
+	{"###", "#..", "##.", "#..", "###"},
+	{"###", "#..", "##.", "#..", "#.."},
+}
 
 // room is the room by the field: whole glyphs L left of it and R right of
 // it, the field strip glyphs wide and H lines high. The glyph next to the
@@ -71,19 +72,10 @@ type figure struct {
 // place places level's figure in r: sy as many lines as five fit in the
 // field's height, sx as many glyphs as fit at the narrower side with a
 // glyph to spare, at most sy; a glyph or more from the field, the same on
-// both sides, in the middle of the field's height. The last level is 10,
-// or A where 10 has no room.
+// both sides, in the middle of the field's height.
 func (r room) place(level int) figure {
-	shapes := [][5]string{digits[level%10]}
-	if level == game.MaxLevel {
-		shapes = [][5]string{ten, letterA}
-	}
-	f := figure{sy: r.H / 5}
-	for _, rows := range shapes {
-		if f.rows, f.sx = rows, min(f.sy, (min(r.L, r.R)-1)/len(rows[0])); f.sx > 0 {
-			break
-		}
-	}
+	f := figure{rows: font[level-1], sy: r.H / 5}
+	f.sx = min(f.sy, (min(r.L, r.R)-1)/len(f.rows[0]))
 	if f.sx <= 0 || f.sy <= 0 {
 		return figure{}
 	}
@@ -171,7 +163,8 @@ func (b *banner) ink(g *game.Game, r room, u, l int, beating bool) uint8 {
 
 // face is the ink of glyph u of line l of level's figures in r: off them,
 // none; on them, Lavender from their foot to fill (0 to 1), the ground
-// over that; the last level's all lit, lit up to white.
+// over that; the last level's all lit, or as deep in its heartbeat as lit
+// says: half way to the ground, or the ground.
 func face(r room, level, u, l int, fill float64, lit uint8) uint8 {
 	if level == 0 {
 		return inkNone
@@ -182,15 +175,15 @@ func face(r room, level, u, l int, fill float64, lit uint8) uint8 {
 	case !on:
 		return inkNone
 	case level == game.MaxLevel:
-		return inkLevel + lit
+		return [...]uint8{inkLevel, inkLevel + 1, inkGround}[lit]
 	case 5*f.sy-y <= int(math.Round(fill*float64(5*f.sy))):
 		return inkLevel
 	}
 	return inkGround
 }
 
-// heartbeat is how lit the last level is at t into a heartbeat, 0
-// (Lavender) to 3 (white).
+// heartbeat is how deep the last level is at t into a heartbeat: 0
+// Lavender, 1 half way to the ground, 2 the ground.
 func heartbeat(t time.Duration) uint8 {
 	pulse := func(at time.Duration, top float64) float64 {
 		switch d := t - at; {
@@ -202,7 +195,7 @@ func heartbeat(t time.Duration) uint8 {
 			return top * float64(rise+fall-d) / float64(fall)
 		}
 	}
-	return uint8(math.Round(3 * max(pulse(0, 1), pulse(dub, 0.6))))
+	return uint8(math.Round(2 * max(pulse(0, 1), pulse(dub, 0.6))))
 }
 
 // sides are the level at the field's sides, once a game has started and
