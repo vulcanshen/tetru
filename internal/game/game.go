@@ -23,9 +23,6 @@ const (
 	// 2026-11-11: the levels are speeds; 2026-11-13: fifteen, 1 to F, not
 	// ten).
 	MaxLevel = 15
-	// HintLevels are the levels the hint shows at, where a drop would set
-	// the piece (Landing): 1 to 5; from 6 there is none (user, 2026-11-12).
-	HintLevels = 5
 	// LinesPerLevel are the rows to clear for the next level (user,
 	// 2026-11-13: twenty, not ten).
 	LinesPerLevel = 20
@@ -279,10 +276,11 @@ func (g *Game) Blocks() [][2]int {
 }
 
 // Landing is the hint: the falling piece's blocks where a drop would set
-// it, at the levels to HintLevels; nil after them, and while the piece is
-// not falling (user, 2026-11-12: where Enter would set it).
+// it, at every level; nil while the piece is not falling (user,
+// 2026-11-12: where Enter would set it; 2026-11-13: a switch in Settings,
+// not the first five levels).
 func (g *Game) Landing() [][2]int {
-	if !g.Live() || g.Level > HintLevels {
+	if !g.Live() {
 		return nil
 	}
 	s := g.At

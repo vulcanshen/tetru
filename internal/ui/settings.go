@@ -27,6 +27,48 @@ func (t *Tetru) keyFields() []*terminu.Field {
 	return fs
 }
 
+// hintField is PLAY's row: the hint's switch, one checkbox flipped in
+// place with Enter (tdp checkbox: a switch drawn on the panel), in effect
+// and saved as it is flipped (tdp panel.12). On at first, and on, the hint
+// shows at every level (user, 2026-11-13: a switch in Settings, not the
+// first five levels by themselves). A switch that can't be saved flips
+// back, an error popup saying why (tdp E3).
+func (t *Tetru) hintField() *terminu.Field {
+	f := &terminu.Field{
+		Label:   "Hint",
+		Desc:    "a lighter grey where a drop would set the piece",
+		Options: []string{"where a drop lands"},
+		Multi:   true,
+		Checked: []bool{t.hint},
+	}
+	f.OnChange = func() tea.Cmd {
+		on := f.Checked[0]
+		if err := keys.SaveHint(t.cfg, on); err != nil {
+			t.setHint(t.hint)
+			return t.App.Error("Can't save the hint", t.cfg, err.Error())
+		}
+		t.setHint(on)
+		t.App.Log(terminu.Success, "The hint is now "+map[bool]string{true: "on", false: "off"}[on])
+		return nil
+	}
+	return f
+}
+
+// setHint sets the hint's switch, and PLAY's row with it.
+func (t *Tetru) setHint(on bool) {
+	t.hint = on
+	if t.hintF != nil {
+		t.hintF.Checked = []bool{on}
+	}
+}
+
+// settingsLayout lays the Settings screen out (tdp L1: the app's): KEYS the
+// whole width, as high as its rows, PLAY under it, the rest.
+func settingsLayout(w, h int) []terminu.Rect {
+	top := min(h-3, 3+len(keys.Actions)) // the frame, the header, a row an action
+	return []terminu.Rect{{W: w, H: top}, {Y: top, W: w, H: h - top}}
+}
+
 // chooseKey opens a select of the keys offered (tdp select; tdp K11: which
 // keys and how are the app's): the small letters and Enter, not the keys
 // the Gaming mode keeps (Space, q, r), the key now chosen. A key another

@@ -230,7 +230,7 @@ func TestPictureIsLockus(t *testing.T) {
 	if boxW != 6 || boxH != 4 {
 		t.Fatalf("a box is %d wide and %d high, not 6 and 4 (user, 2026-11-11)", boxW, boxH)
 	}
-	s := picture(nil)
+	s := picture(nil, true)
 	if s.px[0][0] != inkGround || s.px[sceneH-1][fieldW-1] != inkGround || s.px[0][fieldW] != inkNone {
 		t.Fatal("the field is not the ground alone, unframed")
 	}
@@ -244,7 +244,7 @@ func TestPictureIsLockus(t *testing.T) {
 		t.Fatal("no pixel between the boxes")
 	}
 	g := game.New(1)
-	s = picture(g)
+	s = picture(g, true)
 	for i, p := range g.Next {
 		found := false
 		for y := i * (boxH + 1); y < i*(boxH+1)+boxH; y++ {
@@ -562,7 +562,7 @@ func TestTopOutKeepsTheScore(t *testing.T) {
 	if !tt.g.Ended() || !d.Has("KEEP SCORE") {
 		t.Fatal("no popup once the curtain is down")
 	}
-	s := picture(tt.g)
+	s := picture(tt.g, tt.hint)
 	for y := range sceneH {
 		for x := range fieldW {
 			if p := s.px[y][x]; p != inkGround && p != inkFrame {
@@ -972,7 +972,7 @@ func TestQuitKeepsTheGameAndTheNextStartGoesOn(t *testing.T) {
 	if g.Cell(0, game.Rows-1) != game.Kept || g.Cell(1, game.Rows-1) != game.Kept || g.Cell(2, game.Rows-1) != 0 {
 		t.Fatal("the stack saved is not back, its blocks Kept")
 	}
-	if p := picture(g); p.px[game.Rows-1][0] != inkWhite || p.px[game.Rows-1][1] != inkWhite {
+	if p := picture(g, true); p.px[game.Rows-1][0] != inkWhite || p.px[game.Rows-1][1] != inkWhite {
 		t.Fatal("the blocks of the game saved are not white")
 	}
 	if _, err := os.Stat(path); !os.IsNotExist(err) {
@@ -1305,7 +1305,7 @@ func TestClearsByHowManyRows(t *testing.T) {
 	}
 }
 
-func TestTheHintIsALighterGreyToLevelFive(t *testing.T) {
+func TestTheHintIsALighterGreyAtEveryLevelWhileOn(t *testing.T) {
 	tt, d := open(t, 80, 32)
 	play(d)
 	tok := regexp.MustCompile("\x1b\\[[0-9;]*m|.")
@@ -1332,10 +1332,16 @@ func TestTheHintIsALighterGreyToLevelFive(t *testing.T) {
 	if !hinted(game.Rows-1) || hinted(0) {
 		t.Fatal("at level 1 the bottom has no hint, or the top has one")
 	}
-	tt.g.Level = game.HintLevels + 1
+	// Every level, not the first five (user, 2026-11-13: a switch in
+	// Settings, on at first).
+	tt.g.Level = game.MaxLevel
+	if !hinted(game.Rows - 1) {
+		t.Fatal("no hint at the last level")
+	}
+	tt.setHint(false)
 	for y := range game.Rows {
 		if hinted(y) {
-			t.Fatalf("a hint at level 6, row %d", y)
+			t.Fatalf("a hint switched off, row %d", y)
 		}
 	}
 }

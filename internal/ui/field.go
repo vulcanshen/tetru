@@ -45,7 +45,7 @@ const (
 	inkFrame = inkWhite + 1
 	inkFade  = inkFrame + 1 // inkFade + f, f 0 to 2: white a quarter, a half, three quarters to the ground
 	inkHint  = inkFade + 3
-	inkLevel = inkHint + 1  // the level's figures lit, Lavender; inkLevel + 1 half way to the ground (breath)
+	inkLevel = inkHint + 1  // the level's figures lit, Lavender; inkLevel + 1 half way to the ground (the waves)
 	inkGold  = inkLevel + 2 // the last level's figures, gold; inkGold + 1 half way to the ground
 	inkTrail = inkGold + 2  // inkTrail + 3p + f, f 0 to 2: piece p's a quarter, a half, three quarters to the ground
 )
@@ -60,7 +60,7 @@ const (
 // ground and a little darker than the curtain (user, 2026-11-12: a lighter
 // grey; surface2 first, then overlay0, lighter still); the level's figures
 // lit, lavender, as INFO's values, and half way from it to the ground, as
-// they breathe (user, 2026-11-13: not white, too much); the last level's,
+// their waves (user, 2026-11-13: not white, too much); the last level's,
 // gold, the family's icons' (user, 2026-11-13: gold at the fifteenth), and
 // half way from it to the ground; then (level.go) the pieces' fading to the
 // ground, the level up's band.
@@ -92,14 +92,14 @@ func (s *scene) put(x, y int, ink uint8) {
 }
 
 // picture is the scene of g, nil before the first game: the ground and the
-// boxes, the stack, the hint under the piece to level 5 (where a drop would
+// boxes, the stack, the hint under the piece where hint (where a drop would
 // set it), the piece falling (or waiting at the top while rows
 // go), the pieces to come; the rows going are not in it, they go out
 // over it (clearRows);
 // at the end the pieces grey as far as the curtain is down. A pause and the
 // end are said by popups, not drawn here (user, 2026-11-11: locku draws
 // them as it has no popups; tetru does).
-func picture(g *game.Game) scene {
+func picture(g *game.Game, hint bool) scene {
 	var s scene
 	for y := range sceneH {
 		for x := range fieldW {
@@ -128,10 +128,13 @@ func picture(g *game.Game) scene {
 		}
 	}
 	if !g.Over {
-		// The hint, under the piece: where a drop would set it, to level
-		// 5 (user, 2026-11-12).
-		for _, b := range g.Landing() {
-			s.put(b[0], b[1], inkHint)
+		// The hint, under the piece: where a drop would set it, at every
+		// level while its switch is on (user, 2026-11-12; 2026-11-13: a
+		// switch in Settings, on at first).
+		if hint {
+			for _, b := range g.Landing() {
+				s.put(b[0], b[1], inkHint)
+			}
 		}
 		for _, b := range g.Blocks() {
 			if b[1] >= 0 {
@@ -175,7 +178,7 @@ func preview(s *scene, p, x, y int) {
 // the rows and the score over the field and the boxes beside it.
 func (f *field) Draw(w, h int, focused bool) []string {
 	t := f.t
-	sc := picture(t.g)
+	sc := picture(t.g, t.hint)
 	if t.narrow() {
 		head := append(t.statsRows(), "")
 		cols := 2 * sceneW

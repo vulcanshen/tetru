@@ -134,3 +134,31 @@ func TestLoadBadKeys(t *testing.T) {
 		}
 	}
 }
+
+func TestTheHintIsOnTillSwitchedOff(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "tetru", "config.yaml")
+	if on, err := Hint(path); err != nil || !on {
+		t.Fatalf("no file: the hint %v %v", on, err)
+	}
+	if err := Save(path, Default()); err != nil {
+		t.Fatal(err)
+	}
+	if on, err := Hint(path); err != nil || !on {
+		t.Fatalf("a file with no hint: %v %v", on, err)
+	}
+	if err := SaveHint(path, false); err != nil {
+		t.Fatal(err)
+	}
+	if on, err := Hint(path); err != nil || on {
+		t.Fatalf("switched off, read %v %v", on, err)
+	}
+	if s, err := Load(path); err != nil || s != Default() {
+		t.Fatalf("the keys went with the hint: %v %v", s, err)
+	}
+	if err := os.WriteFile(path, []byte("hint: maybe\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if on, err := Hint(path); err == nil || !on {
+		t.Fatalf("a hint neither true nor false: %v %v", on, err)
+	}
+}

@@ -153,9 +153,9 @@ tasks:
     test:
       - check: repo
   - id: 13
-    spec: 55
+    spec: 62
     implementation: |
-      Settings 畫面只有 [1] KEYS，tgo Values（一列一個值）：表頭 ACTION、KEY；MOVE LEFT h、MOVE RIGHT l、DOWN A ROW j、ROTATE LEFT d、ROTATE RIGHT k、
+      Settings 畫面的 [1] KEYS（下面是 task 17 的 [2] PLAY；settingsLayout：KEYS 整個寬、高是框加表頭加六列，PLAY 其餘），tgo Values（一列一個值）：表頭 ACTION、KEY；MOVE LEFT h、MOVE RIGHT l、DOWN A ROW j、ROTATE LEFT d、ROTATE RIGHT k、
       DROP Enter，沒有 PAUSE 那一列；每一列有說明（tgo Field.Desc，? 的「每一列」）；hint Enter:edit
       Enter 在一列上開 tgo Select：標題 KEY: Rotate left，選項是 a 到 z（沒有 q、r）與 Enter（keys.Choices），現在的鍵選著
       Enter 與移動也能改：落到底改成 s、左移改成 a 之後，Enter、h 可以給別的動作；單獨的 g 也能選（Gaming 沒有 g 開頭的組合，tgo v1.2.8 把它交給模式的鍵）；方向鍵不能選，照預設（task 4）
@@ -199,17 +199,22 @@ tasks:
       排在設定、排行的檔後面問；Enter 移開、沒有存檔，Esc 離開；讀進來之後刪不掉：tgo App.Error 開 CAN'T REMOVE THE GAME SAVED，說下次啟動還會再接一次
     test: [TestPathIsBesideTheScores, TestSaveLoadRemove, TestLoadBroken, TestStackIsWhatASaveKeepsAndResumeTakesUp, TestQuitKeepsTheGameAndTheNextStartGoesOn, TestNoSaveToPress, TestFinishKeepsTheGameGoing, TestBrokenSaveAsksToMoveAside]
   - id: 17
-    spec: 39
+    spec: 62
     implementation: |
-      提示：game.Landing 是正在掉的方塊快速落下會落定的四格（從現在的位置一格一格往下試到放不下為止）；關卡大於 game.HintLevels（5）、消行動畫中、結束後是 nil
-      ui picture 先把這四格畫成 inkHint（#6c7086，同一個 nf-fa-square），再畫正在掉的方塊蓋在上面；寬窄兩種排法畫的是同一張圖
-    test: [TestLandingIsWhereADropSetsToLevelFive, TestTheHintIsALighterGreyToLevelFive]
+      提示：game.Landing 是正在掉的方塊快速落下會落定的四格（從現在的位置一格一格往下試到放不下為止），每一關都有；消行動畫中、結束後是 nil
+      ui picture(g, hint)：t.hint 打開時先把這四格畫成 inkHint（#6c7086，同一個 nf-fa-square），再畫正在掉的方塊蓋在上面；關掉就不畫；寬窄兩種排法畫的是同一張圖
+      開關：Settings 的 [2] PLAY（settingsLayout 放在 KEYS 下面），tgo Values 沒有表頭，一個 Field：HINT，Options [where a drop lands]、Multi（一個開關，tgo 不畫 Select all）、
+      Checked [t.hint]，Desc a lighter grey where a drop would set the piece；Enter 在原地翻（tgo 的 hint Enter:toggle），OnChange 用 keys.SaveHint 寫進設定檔：
+      寫進去 t.hint 跟著換、App Log 記 Success：The hint is now off；寫不進去 setHint 翻回原本的、tgo App.Error 開 CAN'T SAVE THE HINT（路徑與原因）
+      設定檔（task 13 的 config.yaml）：hint: true|false，keys.Hint 讀，沒寫是 true；不是 true 或 false 是錯，跟鍵讀不了一樣 tgo App.MoveAside，移開之後 setHint(true)；
+      keys.SaveHint 與 keys.Save 都經過 write（讀進整個檔、改自己那一個 key、先寫暫存檔再改名），彼此不動對方
+    test: [TestLandingIsWhereADropSetsAtEveryLevel, TestTheHintIsALighterGreyAtEveryLevelWhileOn, TestSettingsSwitchTheHint, TestTheHintIsOnTillSwitchedOff, TestSettingsThatCantBeKept, TestBrokenSettingsAskToMoveAside]
   - id: 18
-    spec: 61
+    spec: 62
     implementation: |
-      ui level.go：banner 記兩邊畫的關卡（lv）、被掃走的那一關（from）、掃了多久（at，sweepTime 800 ms）與呼吸（breath，breathTime 4 s）；begin 開局與 restart 都 sweepTo(1, 第一個方塊)，啟動時接著存檔那一局 show(它的關卡)；step 跟著遊戲每一格走（Esc、popup 蓋住時遊戲不走，它也不走），消行做完、g.Level 跟 lv 不一樣就 sweepTo(新的關卡, g.Last)，by 記下轉場用哪個方塊的顏色
+      ui level.go：banner 記兩邊畫的關卡（lv）、被掃走的那一關（from）、掃了多久（at，sweepTime 800 ms）與波浪（wave，waveTime 2 s）；begin 開局與 restart 都 sweepTo(1, 第一個方塊)，啟動時接著存檔那一局 show(它的關卡)；step 跟著遊戲每一格走（Esc、popup 蓋住時遊戲不走，它也不走），消行做完、g.Level 跟 lv 不一樣就 sweepTo(新的關卡, g.Last)，by 記下轉場用哪個方塊的顏色
       room 是場地兩邊的空間（左右各幾個 icon、場地寬與高），side 是兩邊除了緊鄰場地那一格以外的地方；room.place 給每一關的 figure：font 是 1–9、A–F 的 3×5，一關一個；sy 是場地高扣掉上下各 4 格（4*H/sceneH 列）之後的五分之一，sx 是窄的那一邊放得下的最大、最多 sy；sx 是 0 就不畫
-      face：字上的格子從腳往上亮到 Lines%20 的比例，其餘 Surface0；關卡升了、消行還沒做完時亮滿；最後一關 F 全亮。亮的顏色 Lavender（inkLevel #b4befe），最後一關金色（inkGold #f2b753）；每一關玩的時候照 breath（4 s 一次，round(1 - cos(2πt/4s))，各段至少 2/3 秒）分三段：那個顏色、它的 +1（#7378a1、#92754c，與底色正中間）、inkGround，暫停、結束時停在那個顏色
+      face：字上的格子從腳往上亮到 Lines%20 的比例，其餘 Surface0；關卡升了、消行還沒做完時亮滿；最後一關 F 全亮。亮的顏色 Lavender（inkLevel #b4befe），最後一關金色（inkGold #f2b753）；每一關玩的時候，亮的部分上面有一段那個顏色的 +1（#7378a1、#92754c，與底色正中間），高 sy 列，照 wave（2 s 一個，從腳底下往上走到過了頂，接著下一個）往上走；沒亮的部分不經過；暫停、結束時沒有波浪
       banner.ink：掃的時候，room.band 給的方塊色（inkPiece+by，場地高的五分之一、至少 2 列）與三段漸暗的尾巴（inkTrail+3*by 到 +2，每段場地高的十分之一）蓋滿兩邊的 side，從場地的底往上走；下面是新的一關的字，上面是舊的字亮滿；inkTrail 的 21 個顏色在 init 由 toGround 算：每個方塊色往底色走 1/4、2/4、3/4（跟消行的白色淡出 inkFade 同一個算法）
       field Draw：寬的排法有兩邊時，場地的每一列用 glyphs 一個 icon 一個 icon 畫（場地與兩邊在同一條格線上）；clearRows 每一列也經過 sides.lay，消行的特效蓋在兩邊上，沒蓋到的地方照畫
-    test: [TestTheLevelIsBigAtTheSides, TestTheLevelFillsFromItsFoot, TestTheLevelUpSweepsTheNextIn, TestEveryLevelBreathes, TestTheLastLevelIsFInGold, TestAGameTakenUpShowsItsLevelAtOnce, TestRestartSweepsOneIn, TestWhatGoesOutIsOverTheFigures, TestClearScoresAtTheLevelAndGoesUp]
+    test: [TestTheLevelIsBigAtTheSides, TestTheLevelFillsFromItsFoot, TestTheLevelUpSweepsTheNextIn, TestWavesGoUpEveryLevel, TestTheLastLevelIsFInGold, TestAGameTakenUpShowsItsLevelAtOnce, TestRestartSweepsOneIn, TestWhatGoesOutIsOverTheFigures, TestClearScoresAtTheLevelAndGoesUp]

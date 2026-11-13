@@ -1,6 +1,7 @@
 // Package keys is the keys tetru is played with: the player chooses them
 // (user, 2026-11-11: all but Space, which pauses and opens the Space
-// menu), and they are kept in tetru's settings (tdp E3).
+// menu), and they are kept in tetru's settings (tdp E3), with the one
+// other setting, the hint's switch (user, 2026-11-13).
 package keys
 
 import (
@@ -203,9 +204,39 @@ func read(path string) (map[string]any, error) {
 	return m, nil
 }
 
+// Hint says whether the hint shows, from the settings file at path (hint:
+// true or false): on when the file does not say (user, 2026-11-13: on at
+// first). A file that can't be read, or a hint neither true nor false, is
+// an error (tdp E3), the hint on.
+func Hint(path string) (bool, error) {
+	m, err := read(path)
+	if err != nil {
+		return true, err
+	}
+	v, ok := m["hint"]
+	if !ok {
+		return true, nil
+	}
+	on, ok := v.(bool)
+	if !ok {
+		return true, fmt.Errorf("hint: %v is neither true nor false", v)
+	}
+	return on, nil
+}
+
+// SaveHint writes on as the hint's switch into the settings file at path,
+// the rest as it is.
+func SaveHint(path string, on bool) error {
+	m, err := read(path)
+	if err != nil {
+		return err
+	}
+	m["hint"] = on
+	return write(path, m)
+}
+
 // Save writes s into the settings file at path, leaving whatever else it
-// holds as it is (tdp E3: a key tetru does not read stays): to a file
-// beside it first, then in its place, so that a failure leaves the old one.
+// holds as it is (tdp E3: a key tetru does not read stays).
 func Save(path string, s Set) error {
 	m, err := read(path)
 	if err != nil {
@@ -216,6 +247,12 @@ func Save(path string, s Set) error {
 		set[a.ID()] = s[a]
 	}
 	m["keys"] = set
+	return write(path, m)
+}
+
+// write writes m as the settings file at path: to a file beside it first,
+// then in its place, so that a failure leaves the old one.
+func write(path string, m map[string]any) error {
 	b, err := yaml.Marshal(m)
 	if err != nil {
 		return err

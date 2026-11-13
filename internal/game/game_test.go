@@ -356,7 +356,7 @@ func TestEndStopsThePiece(t *testing.T) {
 	}
 }
 
-func TestLandingIsWhereADropSetsToLevelFive(t *testing.T) {
+func TestLandingIsWhereADropSetsAtEveryLevel(t *testing.T) {
 	g := with(I)
 	g.fill(Rows-1, 0) // the piece lands on it, no row full
 	hint := g.Landing()
@@ -376,15 +376,10 @@ func TestLandingIsWhereADropSetsToLevelFive(t *testing.T) {
 	}
 
 	g = with(I)
-	g.Level = HintLevels
+	g.Level = MaxLevel // every level (user, 2026-11-13), not to the fifth
 	if g.Landing() == nil {
-		t.Fatal("no hint at level 5")
+		t.Fatal("no hint at the last level")
 	}
-	g.Level = HintLevels + 1
-	if g.Landing() != nil {
-		t.Fatal("a hint at level 6")
-	}
-	g.Level = 1
 	g.End()
 	if g.Landing() != nil {
 		t.Fatal("a hint after the end")

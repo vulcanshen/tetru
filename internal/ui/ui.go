@@ -62,6 +62,8 @@ type Tetru struct {
 	loadErr  error          // why the file could not be read, at start
 	cfg      string         // the settings file
 	keys     keys.Set       // the keys to play with
+	hint     bool           // the hint shows (Settings)
+	hintF    *terminu.Field // PLAY's row, the hint's switch
 	cfgErr   error          // why the settings could not be read, at start
 	stash    string         // the game saved to go on with
 	stashErr error          // why it could not be read, at start
@@ -102,8 +104,11 @@ func NewTetru() *Tetru {
 		t.rmErr = saved.Remove(t.stash)
 		t.App.Log(terminu.Info, "Took up the game saved: level "+strconv.Itoa(sg.Level)+", "+comma(sg.Score)+" points")
 	}
+	t.hint = true
 	if t.keys, t.cfgErr = keys.Load(t.cfg); t.cfgErr != nil {
 		t.keys = keys.Default()
+	} else {
+		t.hint, t.cfgErr = keys.Hint(t.cfg)
 	}
 	a := t.App
 	a.MinWidth, a.MinHeight = minW, minH
@@ -124,6 +129,8 @@ func NewTetru() *Tetru {
 	t.rankP = &terminu.Panel{Label: "Rank", Body: t.list}
 	t.gameP = &terminu.Panel{Label: "Playground", Body: &field{t}, OnEsc: func() tea.Cmd { return nil }}
 	keysP := &terminu.Panel{Label: "Keys", Body: &terminu.Values{Header: [2]string{"Action", "Key"}, Fields: t.keyFields()}}
+	t.hintF = t.hintField()
+	playP := &terminu.Panel{Label: "Play", Body: &terminu.Values{Fields: []*terminu.Field{t.hintF}}}
 	// The mode's Space menu lists Restart and Quit alone (user, 2026-11-12;
 	// tdp K11: what an app's own mode lists there is the app's): not the
 	// keys to play, nor [Esc] Pause, which the footer has. Tab and the
@@ -144,7 +151,7 @@ func NewTetru() *Tetru {
 		NarrowBelow: narrowBelow,
 	})
 	a.AddScreen(&terminu.Screen{Name: "Rank", Key: "R", Desc: "the scores, best first", Panels: []*terminu.Panel{t.rankP}})
-	a.AddScreen(&terminu.Screen{Name: "Settings", Key: "S", Desc: "the keys to play with", Panels: []*terminu.Panel{keysP}})
+	a.AddScreen(&terminu.Screen{Name: "Settings", Key: "S", Desc: "the keys to play with, and the hint", Panels: []*terminu.Panel{keysP, playP}, Layout: settingsLayout})
 	var err error
 	if a.Splash, err = terminu.NewSplash(icon, "tetru", version.Display(), "A falling-block game for the terminal"); err != nil {
 		panic(err) // the embedded icon is broken: a mistake in the program
@@ -168,6 +175,7 @@ func (t *Tetru) moveAside() tea.Cmd {
 		t.cfgErr = nil
 		return t.App.MoveAside(t.cfg, err, func() tea.Cmd {
 			t.keys = keys.Default()
+			t.setHint(true)
 			t.setModeKeys()
 			return t.moveAside()
 		})

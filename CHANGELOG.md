@@ -4,14 +4,16 @@ Each release names the version of terminu design (tdp) it follows.
 
 ## Unreleased
 
+- The hint, where a drop would set the piece, is a switch in Settings, under the keys: on at first, and on, it shows at
+  every level, not the first five alone.
 - Restarting a game that would not be kept (no points, or not in the best twenty) asks first: `r` pressed by mistake
   no longer throws the game away. `Esc` goes back to it.
 - Twenty rows to a level, and fifteen levels: the speeds of the ten levels, a row a second to ten, are spread over the
   fifteen, so each level is a smaller step faster than the one before.
 - The level stands big at both sides of the field, from 66 columns wide, with four rows clear above and below it and as
   wide as the sides allow, one character, 1 to 9 then A to F: it lights up from the foot as you clear the level's
-  twenty rows, and what is lit breathes slowly, dimming to the ground and back every four seconds. When the level goes
-  up, a band in the colour of the piece that cleared the last rows sweeps up over both sides with a fading trail and
+  twenty rows, and over what is lit waves go up, one after another, in the colour half way to the ground. When the
+  level goes up, a band in the colour of the piece that cleared the last rows sweeps up over both sides with a fading trail and
   brings in the next one while you play on. The last level, F, is all lit, in gold.
 
 ## v0.1.0 — tdp v1.2.8

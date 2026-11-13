@@ -13,6 +13,9 @@ import (
 	"github.com/vulcanshen/tetru/internal/keys"
 )
 
+// checkOn and checkOff are a checkbox ticked and not (tdp checkbox).
+const checkOn, checkOff = "\U000f0132", "\U000f0131"
+
 func TestScreensSwitchOnTRS(t *testing.T) {
 	_, d := open(t, 60, 32)
 	d.Press("R")
@@ -189,6 +192,43 @@ func TestEnterAndTheMovesAreThePlayers(t *testing.T) {
 	}
 }
 
+func TestSettingsSwitchTheHint(t *testing.T) {
+	tt, d := open(t, 60, 32)
+	if !tt.hint {
+		t.Fatal("the hint is off at first")
+	}
+	d.Press("S")
+	if !d.Has("[2] PLAY") || !d.Has("HINT") || !d.Has("where a drop lands") || !d.Has(checkOn) {
+		t.Fatal("the settings have no hint switched on under the keys")
+	}
+	d.Press("2")
+	if !d.Has("Enter:toggle") {
+		t.Fatal("the hint's switch has no Enter:toggle")
+	}
+	d.Press("Enter")
+	if tt.hint || !d.Has(checkOff) {
+		t.Fatal("Enter did not switch the hint off")
+	}
+	if on, err := keys.Hint(tt.cfg); err != nil || on {
+		t.Fatalf("the hint off is not kept in the settings: %v %v", on, err)
+	}
+	if again := NewTetru(); again.hint || again.hintF.Checked[0] {
+		t.Fatal("the next start has the hint on")
+	}
+	d.Press("!")
+	if !d.Has("The hint is now off") {
+		t.Fatal("no App Log entry")
+	}
+	d.Press("Esc")
+	d.Press("Enter")
+	if on, err := keys.Hint(tt.cfg); !tt.hint || err != nil || !on {
+		t.Fatal("Enter did not switch the hint back on")
+	}
+	if s, err := keys.Load(tt.cfg); err != nil || s != keys.Default() {
+		t.Fatalf("the keys are not as they were: %v %v", s, err)
+	}
+}
+
 func TestSettingsHaveNoPauseRow(t *testing.T) {
 	_, d := open(t, 60, 32)
 	d.Press("S")
@@ -221,6 +261,13 @@ func TestSettingsThatCantBeKept(t *testing.T) {
 	if !d.Has("FAILED") || tt.keys[keys.Left] != "h" {
 		t.Fatalf("a key that could not be kept: %q, no error", tt.keys[keys.Left])
 	}
+	d.Press("Esc")
+	d.Press("Esc")
+	d.Press("2")
+	d.Press("Enter")
+	if !d.Has("SAVE THE HINT") || !tt.hint || !tt.hintF.Checked[0] {
+		t.Fatal("a hint that could not be kept: switched off, or no error")
+	}
 }
 
 func TestBrokenSettingsAskToMoveAside(t *testing.T) {
@@ -240,6 +287,13 @@ func TestBrokenSettingsAskToMoveAside(t *testing.T) {
 	}
 	if tt.keys != keys.Default() {
 		t.Fatal("not the default keys after starting fresh")
+	}
+	// A hint neither true nor false: the same.
+	os.WriteFile(path, []byte("hint: maybe\n"), 0o644)
+	tt = NewTetru()
+	d = tdptest.Start(t, tt.App, 60, 32)
+	if !d.Has("MOVE ASIDE") || !tt.hint {
+		t.Fatal("a broken hint did not ask to move the settings aside")
 	}
 }
 

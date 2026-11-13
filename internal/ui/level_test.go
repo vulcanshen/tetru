@@ -1,6 +1,7 @@
 package ui
 
 import (
+	"math"
 	"strings"
 	"testing"
 	"time"
@@ -202,7 +203,7 @@ func TestTheLevelUpSweepsTheNextIn(t *testing.T) {
 	if g.Level != 2 || len(g.Going) != 1 || tt.lv.lv != 1 {
 		t.Fatalf("the twentieth row: level %d, %d rows going, the sides at %d", g.Level, len(g.Going), tt.lv.lv)
 	}
-	tt.lv.breath = 0 // the breath at rest
+	tt.lv.wave = 0 // no wave over the figures yet
 	if lineInk(sidesAt(tt, 120, 40), one, 0) != inkLevel {
 		t.Fatal("the 1 is not full as the twentieth row goes")
 	}
@@ -215,7 +216,7 @@ func TestTheLevelUpSweepsTheNextIn(t *testing.T) {
 	// bigger) in the colour of the piece that cleared the row (user,
 	// 2026-11-13), fading under it, the 2 under that empty, the 1 over it
 	// full.
-	tt.lv.breath = 0
+	tt.lv.wave = 0
 	sd := sidesAt(tt, 120, 40)
 	band, fading := 0, 0
 	for l := range r.H {
@@ -253,30 +254,78 @@ func TestTheLevelUpSweepsTheNextIn(t *testing.T) {
 	}
 }
 
-func TestEveryLevelBreathes(t *testing.T) {
-	// Every level, what is lit of it (user, 2026-11-13): Lavender, half way
-	// to the ground, the ground; what is not lit stays the ground.
+// waveOver walks a wave over f as sd draws it, a frame at a time, and says
+// what it saw: when each line, from the foot, first turned the colour half
+// way to the ground (-1 never), and how many times; what is lit is in c or
+// c + 1, the wave a font pixel's lines high or less, and the rest the
+// ground, or it fails.
+func waveOver(t *testing.T, tt *Tetru, f figure, lit int, c uint8) (first []time.Duration, times []int) {
+	t.Helper()
+	h := 5 * f.sy
+	first, times = make([]time.Duration, h), make([]int, h)
+	was := make([]bool, h)
+	for i := range first {
+		first[i] = -1
+	}
+	for at := time.Duration(0); at < 2*waveTime; at += frame / 4 {
+		tt.lv.wave = at % waveTime
+		sd := sidesAt(tt, 120, 40)
+		on := 0
+		for up := range h {
+			ink := lineInk(sd, f, h-1-up)
+			switch {
+			case up >= lit && ink != inkGround:
+				t.Fatalf("line %d from the foot, not lit, is %d %v into the wave", up, ink, at)
+			case up < lit && ink != c && ink != c+1:
+				t.Fatalf("line %d from the foot, lit, is %d %v into the wave", up, ink, at)
+			}
+			now := up < lit && ink == c+1
+			if now {
+				on++
+				if !was[up] {
+					times[up]++
+					if first[up] < 0 {
+						first[up] = at
+					}
+				}
+			}
+			was[up] = now
+		}
+		if on > f.sy {
+			t.Fatalf("a wave %d lines high %v in", on, at)
+		}
+	}
+	return first, times
+}
+
+func TestWavesGoUpEveryLevel(t *testing.T) {
+	// Every level, over what is lit of it, waves go up from its foot, one
+	// after another, in the colour half way to the ground (user,
+	// 2026-11-13: waves, not a breath); what is not lit stays the ground.
 	tt, d := open(t, 120, 40)
 	play(d)
 	tt.g.Lines = game.LinesPerLevel / 2
 	d.Advance(sweepTime)
 	f := roomAt(120, 40).place(1)
-	seen := map[uint8]bool{}
-	for at := time.Duration(0); at < breathTime; at += frame {
-		tt.lv.breath = at
-		sd := sidesAt(tt, 120, 40)
-		if top := lineInk(sd, f, 0); top != inkGround {
-			t.Fatalf("the 1's top, not lit, is %d %v into the breath", top, at)
+	lit := int(math.Round(float64(5*f.sy) / 2))
+	first, times := waveOver(t, tt, f, lit, inkLevel)
+	for up := range lit {
+		if times[up] != 2 {
+			t.Fatalf("line %d from the foot went half way %d times in two waves", up, times[up])
 		}
-		seen[lineInk(sd, f, 5*f.sy-1)] = true
+		if up > 0 && first[up] <= first[up-1] {
+			t.Fatalf("the wave reached line %d from the foot at %v, no later than the one under it (%v)", up, first[up], first[up-1])
+		}
 	}
-	if len(seen) != 3 || !seen[inkLevel] || !seen[inkLevel+1] || !seen[inkGround] || inks[inkLevel+1] != terminu.Hex("#7378a1") {
-		t.Fatalf("the 1 breathes through %v, not Lavender, half way and the ground", seen)
+	if inks[inkLevel+1] != terminu.Hex("#7378a1") {
+		t.Fatal("the wave is not half way from Lavender to the ground")
 	}
 	d.Press("Esc")
-	tt.lv.breath = breathTime / 2
-	if lineInk(sidesAt(tt, 120, 40), f, 5*f.sy-1) != inkLevel {
-		t.Fatal("the 1 breathes paused")
+	tt.lv.wave = waveTime / 4
+	for y := range lit {
+		if lineInk(sidesAt(tt, 120, 40), f, 5*f.sy-1-y) != inkLevel {
+			t.Fatal("a wave paused")
+		}
 	}
 }
 
@@ -289,30 +338,6 @@ func TestTheLastLevelIsFInGold(t *testing.T) {
 	if f := roomAt(70, 32).place(game.MaxLevel); f.sx != 1 || f.sy != 3 {
 		t.Fatalf("70×32: F is %d × %d a pixel", f.sx, f.sy)
 	}
-	// Its colour, half way to the ground, the ground: no white (user,
-	// 2026-11-13: white too much). Slowly: a breath of 4 s, each a sixth
-	// of it or more, not a heartbeat a second (user, 2026-11-13: too often,
-	// a blinking).
-	for _, c := range []struct {
-		at  time.Duration
-		lit uint8
-	}{{0, 0}, {breathTime / 8, 0}, {breathTime / 4, 1}, {breathTime / 2, 2}, {3 * breathTime / 4, 1}, {breathTime - frame, 0}} {
-		if got := breath(c.at); got != c.lit {
-			t.Fatalf("the breath at %v: %d, not %d", c.at, got, c.lit)
-		}
-	}
-	changes, held, shortest := 0, time.Duration(0), breathTime
-	for at := frame; at <= breathTime+breathTime/6; at += frame {
-		if held += frame; breath(at) != breath(at-frame) {
-			if changes++; changes > 1 {
-				shortest = min(shortest, held)
-			}
-			held = 0
-		}
-	}
-	if breathTime < 4*time.Second || changes > 5 || shortest < breathTime/6-frame {
-		t.Fatalf("a breath of %v changes %d times, a colour held %v at least", breathTime, changes, shortest)
-	}
 	tt, d := open(t, 120, 40)
 	play(d)
 	g := tt.g
@@ -322,24 +347,16 @@ func TestTheLastLevelIsFInGold(t *testing.T) {
 	if tt.lv.lv != game.MaxLevel {
 		t.Fatal("the last level did not sweep in")
 	}
-	seen := map[uint8]bool{}
-	for at := time.Duration(0); at < breathTime; at += frame {
-		tt.lv.breath = at
-		sd := sidesAt(tt, 120, 40)
-		top, foot := lineInk(sd, f, 0), lineInk(sd, f, 5*f.sy-1)
-		if top != foot {
-			t.Fatalf("the F is not all one ink %v into its breath", at)
-		}
-		seen[top] = true
-	}
-	// Gold, the family's icons' (user, 2026-11-13: gold at the fifteenth).
-	if len(seen) != 3 || !seen[inkGold] || !seen[inkGold+1] || !seen[inkGround] || inks[inkGold] != terminu.Hex("#f2b753") || inks[inkGold+1] != terminu.Hex("#92754c") {
-		t.Fatalf("the F breathes through %v, not gold, half way and the ground", seen)
+	// All lit, gold, the family's icons' (user, 2026-11-13: gold at the
+	// fifteenth), the waves going up it the same, half way to the ground.
+	first, _ := waveOver(t, tt, f, 5*f.sy, inkGold)
+	if first[0] < 0 || first[5*f.sy-1] <= first[0] || inks[inkGold] != terminu.Hex("#f2b753") || inks[inkGold+1] != terminu.Hex("#92754c") {
+		t.Fatal("no wave up the F, or not gold and half way from it")
 	}
 	d.Press("Esc")
-	tt.lv.breath = breathTime / 2
-	if lineInk(sidesAt(tt, 120, 40), f, 0) != inkGold {
-		t.Fatal("the F breathes paused")
+	tt.lv.wave = waveTime / 2
+	if lineInk(sidesAt(tt, 120, 40), f, 5*f.sy/2) != inkGold {
+		t.Fatal("a wave up the F paused")
 	}
 }
 

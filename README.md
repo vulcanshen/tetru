@@ -23,11 +23,11 @@ with the player's name and the time, and ranks them, the best first.
 - **Fifteen levels of speed**: a level every twenty rows, from a row a second to ten a second; past the fifteenth the
   speed stays.
 - **The level beside the field**: from 66 columns wide, the level stands big at both sides of the field, four rows
-  clear of its top and its foot, and lights up from the foot as you clear its twenty rows, breathing slowly; a
+  clear of its top and its foot, and lights up from the foot as you clear its twenty rows, waves going up it; a
   band in the colour of the piece that cleared the last rows sweeps up both sides to bring in the next. Past 9 the
   levels are A to F, and the last, F, is gold.
-- **A hint up to level five**: a lighter grey on the ground shows where the piece lands if you drop it now; from the
-  sixth level on, there is no hint.
+- **A hint, if you like**: a lighter grey on the ground shows where the piece lands if you drop it now, at every
+  level; switch it off on the Settings screen.
 - **The best twenty kept**: the place, the name, the score and the time, the best first on the Rank screen, the first
   three in yellow, green and sky blue. You play first and say who played as the game ends; with no name it is ANON. A
   game whose score is not in the best twenty is not kept, and nobody is asked.
@@ -145,7 +145,7 @@ tetru has three screens; switch with their keys, or from Global operation in the
 |---|---|
 | `T` | Tetru: the game |
 | `R` | Rank: the best twenty scores, each with its place |
-| `S` | Settings: the keys to play with |
+| `S` | Settings: the keys to play with, and the hint |
 
 Playing (the game in the `Gaming` mode), with the keys as they first are:
 
@@ -165,7 +165,8 @@ On the Settings screen, `Enter` on an action lists the keys: the small letters a
 which quit and restart. The one chosen is the key from then on, and KEYS beside the well shows it; another
 action's key is refused with a warning saying whose it is. `Enter` and the moves can go to other keys too, and a
 letter so freed to another action. The arrows are no one's to choose and keep what they do at first: set left to `a`
-and `←` still moves left. `Esc` always pauses and `Space` always opens the menu.
+and `←` still moves left. `Esc` always pauses and `Space` always opens the menu. Under the keys, PLAY has the hint's
+switch: `Enter` there switches it off or on, kept from then on.
 
 Clearing 1, 2, 3 or 4 rows at once scores 100, 300, 500 or 800 times the level. A piece that lies on the stack is set half
 a second later; moving or turning it gives it the half second again, a few times.
@@ -195,7 +196,7 @@ The keys every family app shares:
 |---|---|---|
 | The scores | `~/.tetru/scores.yaml` | `TETRU__DATA` |
 | A game kept going as tetru quit, till the next start takes it up | `~/.tetru/game.yaml` | `TETRU__DATA` |
-| The keys to play with | `~/.config/tetru/config.yaml` (`$XDG_CONFIG_HOME/tetru`) | `TETRU__CONFIG` |
+| The keys to play with, and the hint | `~/.config/tetru/config.yaml` (`$XDG_CONFIG_HOME/tetru`) | `TETRU__CONFIG` |
 
 The best twenty scores are kept; a game with no points, or too few for them, is not. A game kept going is kept in the rank once it ends, after it is taken up again. tetru uses none of the family's shared setting keys.
 
