@@ -93,7 +93,7 @@ tasks:
   - id: 5
     spec: 67
     request: 'Space 暫停，並打開 Space menu；Space 不能改；暫停用 popup 顯示，不畫在遊戲裡（那是 locku 的限制，tetru 是獨立的 app）；玩的時候的 Space menu 不用列 h、l、j、k、Enter，連 d、k 都不用，應該是給 restart、save（使用者 2026-11-11）；後來使用者一度說列的確實是這個模式的鍵，再問為什麼 h、l、j、Enter 出現在裡面，選了重新打開 tdp #7（2026-11-11）；save 不給使用者操作，Gaming 中的 Space menu 只有 restart 和 quit（使用者 2026-11-12：save 存完直接 quit，玩到一半不小心按到 s 就慘了）'
-    tdp: [tdp K5, tdp K11, tdp K4, tdp menu.4, tdp M2, tdp M7, tdp L1, tdp screen.7, tdp F1, tdp F6, tdp confirm, tdp K12, tdp K6, tdp screen.2, tdp M5, tdp toast, tdp K9, tdp K1, tdp K2, tdp P5, tdp M3, tdp panel.16, tdp note.5]
+    tdp: [tdp K5, tdp K11, tdp K4, tdp menu.4, tdp M2, tdp M7, tdp L1, tdp screen.7, tdp F1, tdp F6, tdp confirm, tdp K12, tdp K6, tdp screen.2, tdp M5, tdp toast, tdp K9, tdp K1, tdp K2, tdp P5, tdp M3, tdp panel.16, tdp note.5, tdp F4, tdp T1]
     remark:
       - 'Gaming 裡按 Space 開 Gaming 模式的 Space menu（tdp K11：app 自己的模式，Space menu 列什麼 app 可以自行決定；標題與樣子照 menu.4）：只有 GAMING MODE 的 [r]estart、[q]uit（使用者 2026-11-12：Gaming 中的 Space menu 應該只有 restart 和 quit；原本是 restart、save），選了等於按 r、q。玩的鍵不列，都在 ? 與 INFO；[Esc] Pause 那一列也不列（K11：留不留 app 決定；使用者要的只有這兩列，Esc:pause 在 footer）。menu 開著遊戲就停，Esc 或 Space 關掉就接著玩'
       - 'tdp #7：原本 tdp menu.4、K11 要模式的 Space menu 列模式本身的鍵，tetru 暫時照列（TODO(tdp #7)）。使用者 2026-11-11 把 #7 改成問 app 自己的模式，選 A：tdp v1.2.4 定案（K11 的 app 自己的模式的 Space menu、K11-15），列什麼 app 可以自行決定；要守的：Space 照樣打開、至少一列，標題與樣子照 menu.4，模式的每個鍵照樣在 ?，footer 照舊。tgo v1.2.4 的 ModeKey.NoMenu、Mode.NoLeaveRow 做到（v1.2.4-beta.1 起，2026-11-12）'
@@ -113,7 +113,7 @@ tasks:
       - 'Gaming 是 app 自己的模式（tdp v1.2.6：P5 的開口，K11 的「app 自己的模式」）：玩遊戲是 tdp 的元件和規則都沒有的事（K11-17）；只由使用者的動作進入，PLAYGROUND 的 Enter（Play、Resume）、[n]ew game、PLAY 的 Enter、模式裡的 r，啟動時有存檔也只停在暫停（K11-18）；模式的鍵與 Space menu 只作用在遊戲上，最多離開模式，[q]uit 與 q:quit 是 core key q（K11-19）；除了 core key 與移動鍵，每個鍵都在 Space menu 或 60 欄時的 footer：60 欄時 footer 放得下 d|k:rotate、Enter:drop、r:restart，旋轉與落到底改到哪個鍵都放得下（task 4），r 也在 Space menu（K11-20）；一次只有這一個模式（K11-22）'
 
   - id: 6
-    spec: 59
+    spec: 67
     request: '每一筆分數記姓名；不用先填名字，直接進遊戲，結束時再問，不填預設就是 ANON'
     tdp: [tdp text, tdp input.6, tdp K3, tdp K4, tdp K9, tdp M6, tdp panel.1, tdp toast, tdp popup.1, tdp input.1, tdp input.2, tdp note.7]
     remark:
@@ -170,7 +170,7 @@ tasks:
   - id: 10
     spec: 67
     request: '玩家可以中途結束、重新開始或離開，結束或離開時記下當下的分數；有一局在玩時按 q 先跳 confirm，記下分數，名字直接用 ANON（使用者 2026-11-11）。後來（使用者 2026-11-12）：要 quit 的時候正在遊戲，app 自動存檔，也不用問，下次進來使用者不想繼續直接 restart 就好。再後來（使用者 2026-11-13）：玩到一半不小心按到 r，就 restart 了，這不行'
-    tdp: [tdp M2, tdp M3, tdp M5, tdp M6, tdp F6, tdp text, tdp K9, tdp confirm, tdp popup.1, tdp K4, tdp input.1, tdp note.6, tdp F5, tdp M4, tdp P5, tdp K12, tdp T1, tdp note.7, tdp panel.16, tdp F4]
+    tdp: [tdp M2, tdp M3, tdp M5, tdp M6, tdp F6, tdp text, tdp K9, tdp confirm, tdp popup.1, tdp K4, tdp input.1, tdp note.6, tdp F5, tdp M4, tdp P5, tdp K12, tdp T1, tdp note.7, tdp panel.16, tdp F4, tdp menu.4]
     remark:
       - '[x] End game（keep this score and stop）與 [n]ew game（start over from level 1）是 PLAYGROUND 的 panel operation（tdp M2、M3）；n、x 是領域熱鍵（tdp P5），不佔移動的字母'
       - '有一局值得記時（task 7），兩個都先問誰玩的（task 6），那就是確認（tdp F6：哪些要確認 app 可以自行決定）：說出分數，Esc 取消。不值得記的局：[x] End game 與重新開始（Gaming 的 r、Space menu 的 Restart、暫停時的 [n]ew game）都先開 confirm（[x] End game 原本直接結束、事後跳 Info toast，review 2026-11-13 判違反 tdp F6：決定要確認的每次都確認，值得記的局問名字就是確認，不值得記的也要問）（使用者 2026-11-13：玩到一半不小心按到 r 就 restart 了，這不行；tdp F6：決定要確認的每次都確認，所以重新開始不管值不值得記，每次都先開一個 popup）：標題跟問名字的一樣（NEW GAME、END GAME），內容一句 Peach 的警告 This game ends, not kept: no points.（或 150 points, not in the best 20），問句 Start a new game? 或 End this game?，Enter:start 重開、Enter:end 結束，之後什麼都不說（task 6），Esc 回到遊戲，從暫停時的 Space menu 選的回到那個 menu（tdp F4、confirm.3）；從 menu 選的，答完（Enter 開新局、結束，或問名字記下）menu 跟著關掉（tdp T1：做完的事結束整疊 popup；使用者 2026-11-13：Enter 之後 popup 沒關、還卡著，要選 Enter 去 resume，不合理）。Gaming 的 Space menu 選 Restart 時 menu 先關掉才開 confirm，Esc 回到遊戲（使用者 2026-11-13：這反而很正常；tdp F4 寫的是回到 menu，terminu-go 的模式 menu 也做不到，還沒回報）；開著時遊戲停著（popup 蓋住，task 5）。沒有一局在玩時 [x] End game 停用（tdp M6）'

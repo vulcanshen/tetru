@@ -67,7 +67,7 @@ tasks:
       Settings 沒有 Pause 那一列（task 13）；INFO 寫 Space menu、Esc pause（task 14）
     test: [TestTheGameStopsUnderAPopup, TestEscPausesEnterResumes, TestTabInPlayDoesNothing, TestSpaceMenuRunsRestartAndTheKeysAreInHelp, TestSettingsHaveNoPauseRow, TestRestartFromThePlayModesSpaceMenu, TestPlay]
   - id: 6
-    spec: 59
+    spec: 67
     implementation: |
       PLAYGROUND 上按 Enter（沒有暫停中的一局時）直接開一局、進 Gaming，不問名字
       一局值得記（有分數、擠得進前二十名：scores.Makes，task 7）時，結束的時候開 tgo 的 text input 問誰玩的：Prompt 是 12,340 points: who played?，建議值（tgo TextInput.Suggest）ANON，
@@ -114,7 +114,7 @@ tasks:
       全部走完 20 ms 後（game.Settle），上面的整片一次降下補滿空行（game.ClearTime）；最上面補空的格子；等著的方塊不跟著降
       這段期間 Gaming 玩的六個鍵停用（tgo ModeKey.Disabled：still，沒有方塊可動，footer 與 ? 是停用色），方塊也不往下掉；降完方塊才開始掉，放不進去就結束（堆到頂）；有 popup 蓋著時動畫停著
       結束：方塊由上往下一列像素一列像素變成框的灰，5 秒蓋滿整張圖（場地與兩格），灰的留著，場地上不寫字（第一版的紅色 END 拿掉了）
-      堆到頂結束的，還在 Gaming 裡（不 LeaveMode）落灰幕：玩的六個鍵停用（still），r 停用到記下為止（waiting）；灰幕中 Esc 照樣離開 Gaming（OnExit 的 pause 看到沒有一局可接著玩，不開 RESUME），灰幕落完的 popup 就開在 PLAYGROUND 上；灰幕落完才開 popup：值得記的問誰玩的（task 6）；不值得記的開 tgo App.Confirm：標題 PLAY，內容 Game over: no points, so nothing is kept.（擠不進前二十名：Game over: 150 points, not in the best 20, so nothing is kept.），
+      堆到頂結束的，還在 Gaming 裡（不 LeaveMode）落灰幕：玩的六個鍵停用（still），r 停用到記下為止（waiting）；灰幕中 Esc 照樣離開 Gaming（OnExit 的 pause 只換 PLAYGROUND 的動作），灰幕落完的 popup 就開在 PLAYGROUND 上；灰幕落完才開 popup：值得記的問誰玩的（task 6）；不值得記的開 tgo App.Confirm：標題 PLAY，內容 Game over: no points, so nothing is kept.（擠不進前二十名：Game over: 150 points, not in the best 20, so nothing is kept.），
       問句 Play again?，Enter:play 開下一局（還在 Gaming），Esc:cancel 只關掉 popup、還在 Gaming；KEEP SCORE 上 Enter 記下之後離開 Gaming（leaveOver，回到 PLAYGROUND，Enter:play），Esc 只關掉 popup；還在 Gaming 時再按 Esc 才離開，r 開下一局；[x] End game、[n]ew game 結束的不開
       兩段動畫都由 tgo App.Tick 推：消行時每 16 ms 一格，灰幕每 40 ms 一格；消 1 行 0.32 秒、2 行 0.37、3 行 0.42、4 行 0.47 秒（game.ClearTime）；灰幕不管有沒有 popup 都照走
     test: [TestOneRowFlashesFadesThenTheStackComesDown, TestClearsByHowManyRows, TestFourBurstThenTheStackComesDownAtOnce, TestClearSlidesThenTheStackComesDown, TestClearScoresAtTheLevelAndGoesUp, TestTopOutKeepsTheScore, TestTheStackAtTheTopEnds, TestTopOutWithNoPoints, TestNoPointsNotKept, TestNameIsAskedAsTheGameEnds, TestEscOnTheNameKeepsAnon]

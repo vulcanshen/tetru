@@ -1,4 +1,4 @@
-spec: 55
+spec: 67
 tasks:
   - id: 1
     accepted: true
@@ -9,7 +9,8 @@ tasks:
   - id: 4
     accepted: true
   - id: 5
-    accepted: true
+    accepted: false
+    reason: 違反：Gaming 的 Space menu 選 [r]estart 時，tgo 先關掉 menu 才跑 ModeKey.Do，開出的 NEW GAME（confirm 或問名字的 text input）上按 Esc 回到遊戲，不是回到 menu（tdp confirm.3「從 menu 打開的：Esc 取消，一律回到 menu」、T1、F4、menu.4：模式的 Space menu 的列照一般的列執行）。使用者 2026-11-13 覺得回到遊戲正常：要合得回報 tdp，或等 terminu-go 讓模式的 Space menu 留在 popup 底下
   - id: 6
     accepted: true
   - id: 7
@@ -19,7 +20,8 @@ tasks:
   - id: 9
     accepted: true
   - id: 10
-    accepted: true
+    accepted: false
+    reason: 違反：Gaming 的 Space menu 選 [r]estart 時，tgo 先關掉 menu 才跑 ModeKey.Do，開出的 NEW GAME（confirm 或問名字的 text input）上按 Esc 回到遊戲，不是回到 menu（tdp confirm.3「從 menu 打開的：Esc 取消，一律回到 menu」、T1、F4、menu.4：模式的 Space menu 的列照一般的列執行）。使用者 2026-11-13 覺得回到遊戲正常：要合得回報 tdp，或等 terminu-go 讓模式的 Space menu 留在 popup 底下
   - id: 11
     accepted: true
   - id: 12
@@ -33,4 +35,6 @@ tasks:
   - id: 16
     accepted: true
   - id: 17
+    accepted: true
+  - id: 18
     accepted: true
