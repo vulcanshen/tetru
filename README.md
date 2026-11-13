@@ -23,7 +23,7 @@ with the player's name and the time, and ranks them, the best first.
 - **Fifteen levels of speed**: a level every twenty rows, from a row a second to ten a second; past the fifteenth the
   speed stays.
 - **The level beside the field**: from 66 columns wide, the level stands big at both sides of the field, four rows
-  clear of its top and its foot, and lights up from the foot as you clear its twenty rows, beating like a heart; a
+  clear of its top and its foot, and lights up from the foot as you clear its twenty rows, breathing slowly; a
   band in the colour of the piece that cleared the last rows sweeps up both sides to bring in the next. Past 9 the
   levels are A to F, and the last, F, is gold.
 - **A hint up to level five**: a lighter grey on the ground shows where the piece lands if you drop it now; from the

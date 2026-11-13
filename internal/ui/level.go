@@ -19,8 +19,9 @@ import (
 // 10 tried before), four of the field's rows clear of its top and its foot
 // (user, 2026-11-13: too high, two rows clear). It lights up from its foot
 // as the level's rows are cleared, Lavender over the ground, and what is
-// lit beats like a heart, going to the ground and back through the colour
-// half way (user, 2026-11-13: every level breathes; not white, too much);
+// lit breathes, slowly, going to the ground and back through the colour
+// half way (user, 2026-11-13: every level breathes; not white, too much;
+// a heartbeat a second too often, a blinking);
 // the last level, F, is all lit, gold (user, 2026-11-13). As the level
 // goes up, a band with a fading trail goes up over the whole of both sides
 // in the colour of the piece that cleared the level's last rows (user,
@@ -30,13 +31,9 @@ const (
 	// sweepTime is how long the band takes from the field's foot to past
 	// its top.
 	sweepTime = 800 * time.Millisecond
-	// beatTime is a heartbeat of the last level: a beat to the ground, then
-	// dub after it a beat a little over half as deep, each down in rise and
-	// back in fall.
-	beatTime = 1000 * time.Millisecond
-	dub      = 280 * time.Millisecond
-	rise     = 80 * time.Millisecond
-	fall     = 160 * time.Millisecond
+	// breathTime is a breath of the figures: from their colour to the
+	// ground and back, evenly.
+	breathTime = 4 * time.Second
 )
 
 // font are the levels' figures, 3 × 5, # on: 1 to 9, then A to F.
@@ -114,7 +111,7 @@ type banner struct {
 	lv, from int           // the level drawn, the one the sweep takes away (0 none)
 	by       int           // the piece whose colour the sweep's band is in
 	at       time.Duration // time into the sweep: sweepTime, none going
-	beat     time.Duration // time into the figures' heartbeat
+	breath   time.Duration // time into the figures' breath
 }
 
 // sweepTo sweeps level in over the one drawn, the band in piece by's
@@ -124,12 +121,12 @@ func (b *banner) sweepTo(level, by int) { b.from, b.lv, b.by, b.at = b.lv, level
 // show draws level at once: a game saved, taken up again.
 func (b *banner) show(level int) { b.from, b.lv, b.at = 0, level, sweepTime }
 
-// step steps the banner on dt with g: the sweep and the heartbeat go on,
+// step steps the banner on dt with g: the sweep and the breath go on,
 // and a level gone up sweeps in once the clear that took it there is over
 // (the user's choice: the game goes on under it).
 func (b *banner) step(g *game.Game, dt time.Duration) {
 	b.at = min(b.at+dt, sweepTime)
-	b.beat = (b.beat + dt) % beatTime
+	b.breath = (b.breath + dt) % breathTime
 	if len(g.Going) == 0 && g.Level != b.lv {
 		b.sweepTo(g.Level, g.Last)
 	}
@@ -162,9 +159,9 @@ func toGround(c terminu.Color, f int) terminu.Color {
 // sides: while the sweep goes, the band over the whole of both sides, the
 // level drawn under it, the one going over it, full; else the level drawn,
 // filled from its foot as its rows are cleared (full while the level is
-// up and the clear not over), the last level all lit, what is lit beating
-// while beating.
-func (b *banner) ink(g *game.Game, r room, u, l int, beating bool) uint8 {
+// up and the clear not over), the last level all lit, what is lit
+// breathing while breathing.
+func (b *banner) ink(g *game.Game, r room, u, l int, breathing bool) uint8 {
 	if !r.side(u) {
 		return inkNone
 	}
@@ -185,8 +182,8 @@ func (b *banner) ink(g *game.Game, r room, u, l int, beating bool) uint8 {
 		fill = float64(g.Lines%game.LinesPerLevel) / game.LinesPerLevel
 	}
 	var lit uint8
-	if beating {
-		lit = heartbeat(b.beat)
+	if breathing {
+		lit = breath(b.breath)
 	}
 	return face(r, b.lv, u, l, fill, lit)
 }
@@ -194,7 +191,7 @@ func (b *banner) ink(g *game.Game, r room, u, l int, beating bool) uint8 {
 // face is the ink of glyph u of line l of level's figures in r: off them,
 // none; on them, lit from their foot to fill (0 to 1), the ground over
 // that; the last level's all lit. Lit is Lavender, the last level's gold,
-// or as deep in its heartbeat as lit says: half way to the ground, or the
+// or as deep in its breath as lit says: half way to the ground, or the
 // ground.
 func face(r room, level, u, l int, fill float64, lit uint8) uint8 {
 	if level == 0 {
@@ -215,20 +212,11 @@ func face(r room, level, u, l int, fill float64, lit uint8) uint8 {
 	return [...]uint8{c, c + 1, inkGround}[lit]
 }
 
-// heartbeat is how deep what is lit of a figure is at t into a heartbeat:
-// 0 its colour, 1 half way to the ground, 2 the ground.
-func heartbeat(t time.Duration) uint8 {
-	pulse := func(at time.Duration, top float64) float64 {
-		switch d := t - at; {
-		case d < 0, d >= rise+fall:
-			return 0
-		case d < rise:
-			return top * float64(d) / float64(rise)
-		default:
-			return top * float64(rise+fall-d) / float64(fall)
-		}
-	}
-	return uint8(math.Round(2 * max(pulse(0, 1), pulse(dub, 0.6))))
+// breath is how deep what is lit of a figure is at t into a breath, going
+// down and up as a cosine does: 0 its colour, 1 half way to the ground, 2
+// the ground; each a sixth of a breath or more.
+func breath(t time.Duration) uint8 {
+	return uint8(math.Round(1 - math.Cos(2*math.Pi*float64(t)/float64(breathTime))))
 }
 
 // sides are the level at the field's sides, once a game has started and
@@ -240,14 +228,14 @@ type sides struct {
 
 // sides are the level by the field, every field pixel k × k glyphs, with
 // left columns left of it and right glyphs right of it: the figures
-// beating while the game is played and nothing is over it.
+// breathing while the game is played and nothing is over it.
 func (t *Tetru) sides(k, left, right int) sides {
 	r := room{L: left / 2, R: right, strip: fieldW * k, H: sceneH * k}
 	if t.g == nil || t.lv.lv == 0 || r.place(1).sx == 0 {
 		return sides{}
 	}
-	beating := t.playing() && !t.App.Covered()
-	return sides{on: true, ink: func(u, l int) uint8 { return t.lv.ink(t.g, r, u, l, beating) }}
+	breathing := t.playing() && !t.App.Covered()
+	return sides{on: true, ink: func(u, l int) uint8 { return t.lv.ink(t.g, r, u, l, breathing) }}
 }
 
 // lay is at, the glyphs of the field's line l, glyph u at u+lead, with the

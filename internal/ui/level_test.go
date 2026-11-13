@@ -202,7 +202,7 @@ func TestTheLevelUpSweepsTheNextIn(t *testing.T) {
 	if g.Level != 2 || len(g.Going) != 1 || tt.lv.lv != 1 {
 		t.Fatalf("the twentieth row: level %d, %d rows going, the sides at %d", g.Level, len(g.Going), tt.lv.lv)
 	}
-	tt.lv.beat = 0 // the heartbeat at rest
+	tt.lv.breath = 0 // the breath at rest
 	if lineInk(sidesAt(tt, 120, 40), one, 0) != inkLevel {
 		t.Fatal("the 1 is not full as the twentieth row goes")
 	}
@@ -215,7 +215,7 @@ func TestTheLevelUpSweepsTheNextIn(t *testing.T) {
 	// bigger) in the colour of the piece that cleared the row (user,
 	// 2026-11-13), fading under it, the 2 under that empty, the 1 over it
 	// full.
-	tt.lv.beat = 0
+	tt.lv.breath = 0
 	sd := sidesAt(tt, 120, 40)
 	band, fading := 0, 0
 	for l := range r.H {
@@ -262,21 +262,21 @@ func TestEveryLevelBreathes(t *testing.T) {
 	d.Advance(sweepTime)
 	f := roomAt(120, 40).place(1)
 	seen := map[uint8]bool{}
-	for at := time.Duration(0); at < beatTime; at += frame {
-		tt.lv.beat = at
+	for at := time.Duration(0); at < breathTime; at += frame {
+		tt.lv.breath = at
 		sd := sidesAt(tt, 120, 40)
 		if top := lineInk(sd, f, 0); top != inkGround {
-			t.Fatalf("the 1's top, not lit, is %d %v into the heartbeat", top, at)
+			t.Fatalf("the 1's top, not lit, is %d %v into the breath", top, at)
 		}
 		seen[lineInk(sd, f, 5*f.sy-1)] = true
 	}
 	if len(seen) != 3 || !seen[inkLevel] || !seen[inkLevel+1] || !seen[inkGround] || inks[inkLevel+1] != terminu.Hex("#7378a1") {
-		t.Fatalf("the 1 beats through %v, not Lavender, half way and the ground", seen)
+		t.Fatalf("the 1 breathes through %v, not Lavender, half way and the ground", seen)
 	}
 	d.Press("Esc")
-	tt.lv.beat = rise
+	tt.lv.breath = breathTime / 2
 	if lineInk(sidesAt(tt, 120, 40), f, 5*f.sy-1) != inkLevel {
-		t.Fatal("the 1 beats paused")
+		t.Fatal("the 1 breathes paused")
 	}
 }
 
@@ -290,14 +290,28 @@ func TestTheLastLevelIsFInGold(t *testing.T) {
 		t.Fatalf("70×32: F is %d × %d a pixel", f.sx, f.sy)
 	}
 	// Its colour, half way to the ground, the ground: no white (user,
-	// 2026-11-13: white too much).
+	// 2026-11-13: white too much). Slowly: a breath of 4 s, each a sixth
+	// of it or more, not a heartbeat a second (user, 2026-11-13: too often,
+	// a blinking).
 	for _, c := range []struct {
 		at  time.Duration
 		lit uint8
-	}{{0, 0}, {rise, 2}, {dub + rise, 1}, {dub + rise + fall, 0}, {beatTime - frame, 0}} {
-		if got := heartbeat(c.at); got != c.lit {
-			t.Fatalf("the heartbeat at %v: %d, not %d", c.at, got, c.lit)
+	}{{0, 0}, {breathTime / 8, 0}, {breathTime / 4, 1}, {breathTime / 2, 2}, {3 * breathTime / 4, 1}, {breathTime - frame, 0}} {
+		if got := breath(c.at); got != c.lit {
+			t.Fatalf("the breath at %v: %d, not %d", c.at, got, c.lit)
 		}
+	}
+	changes, held, shortest := 0, time.Duration(0), breathTime
+	for at := frame; at <= breathTime+breathTime/6; at += frame {
+		if held += frame; breath(at) != breath(at-frame) {
+			if changes++; changes > 1 {
+				shortest = min(shortest, held)
+			}
+			held = 0
+		}
+	}
+	if breathTime < 4*time.Second || changes > 5 || shortest < breathTime/6-frame {
+		t.Fatalf("a breath of %v changes %d times, a colour held %v at least", breathTime, changes, shortest)
 	}
 	tt, d := open(t, 120, 40)
 	play(d)
@@ -309,23 +323,23 @@ func TestTheLastLevelIsFInGold(t *testing.T) {
 		t.Fatal("the last level did not sweep in")
 	}
 	seen := map[uint8]bool{}
-	for at := time.Duration(0); at < beatTime; at += frame {
-		tt.lv.beat = at
+	for at := time.Duration(0); at < breathTime; at += frame {
+		tt.lv.breath = at
 		sd := sidesAt(tt, 120, 40)
 		top, foot := lineInk(sd, f, 0), lineInk(sd, f, 5*f.sy-1)
 		if top != foot {
-			t.Fatalf("the F is not all one ink %v into its heartbeat", at)
+			t.Fatalf("the F is not all one ink %v into its breath", at)
 		}
 		seen[top] = true
 	}
 	// Gold, the family's icons' (user, 2026-11-13: gold at the fifteenth).
 	if len(seen) != 3 || !seen[inkGold] || !seen[inkGold+1] || !seen[inkGround] || inks[inkGold] != terminu.Hex("#f2b753") || inks[inkGold+1] != terminu.Hex("#92754c") {
-		t.Fatalf("the F beats through %v, not gold, half way and the ground", seen)
+		t.Fatalf("the F breathes through %v, not gold, half way and the ground", seen)
 	}
 	d.Press("Esc")
-	tt.lv.beat = rise
+	tt.lv.breath = breathTime / 2
 	if lineInk(sidesAt(tt, 120, 40), f, 0) != inkGold {
-		t.Fatal("the F beats paused")
+		t.Fatal("the F breathes paused")
 	}
 }
 
