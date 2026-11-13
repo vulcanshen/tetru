@@ -185,19 +185,19 @@ tasks:
       窄寬（42–59 欄）時不畫框與 INFO（task 2）
     test: [TestTheBoxesAreNeverFocused, TestTetruScreen]
   - id: 16
-    spec: 58
+    spec: 63
     implementation: |
-      存檔：TETRU__DATA 或 ~/.tetru 底下的 game.yaml（internal/saved），level、lines、score 與 stack（24 列，一列 12 個字，# 有方塊、. 沒有，由上往下）；
+      存檔：TETRU__DATA 或 ~/.tetru 底下的 game.yaml（internal/saved），level、lines、score 與 stack（24 列，一列 12 個字，由上往下：方塊的字母 I O T S Z J L（game.Letters）、# 不知道哪個方塊（game.Kept，v0.1.0 存的）、. 沒有）；
       整個檔寫（先寫暫存檔再改名），目錄 0755、檔 0644
-      存的 stack 是 game.Stack()：落地的格子，消行還沒做完時是做完之後的樣子；正在掉的方塊、接下來的方塊不存
+      存的 stack 是 game.Stack()：落地的格子，每一格是 game.Cell 的值（1+方塊、Kept、0），消行還沒做完時是做完之後的樣子；正在掉的方塊、接下來的方塊不存
       存：task 10 的離開流程（有一局在玩時，keepGame）與 main 的 Finish（連按兩次 Ctrl-C、關掉終端機）；沒有給使用者按的 Save（Gaming 沒有 s，PLAYGROUND 沒有 [s]ave）；
       存了的一局標成不用記（Finish 不再存、不記成 ANON）；App Log 記一筆 Success：Saved the game: level 1, 134 points；
       寫不進去：離開流程開 tgo App.Error CAN'T SAVE THE GAME（task 10）；Finish 改成把分數記成 ANON
-      啟動時讀到 game.yaml：game.Resume 接著那一局（關卡、行數、分數照存的；地上的格子是 game.Kept，畫成 #ffffff；方塊從新的一袋來），
+      啟動時讀到 game.yaml：game.Resume 接著那一局（關卡、行數、分數照存的；地上的格子照存的方塊，畫成那個方塊的顏色，# 的是 game.Kept、畫成 #ffffff；方塊從新的一袋來），
       停在暫停（PLAYGROUND 的 hint Enter:resume，INFO 寫存的分數）；讀進來就刪掉 game.yaml；App Log 記一筆 Info：Took up the game saved: level 1, 134 points
-      game.yaml 讀不了（YAML 錯、不是 24 列、一列不是 12 個 # 或 .、關卡不在 1–15（game.MaxLevel）、行數或分數是負的）：tgo App.MoveAside 問要不要移成 game.yaml.bak，
+      game.yaml 讀不了（YAML 錯、不是 24 列、一列不是 12 個 . I O T S Z J L #、關卡不在 1–15（game.MaxLevel）、行數或分數是負的）：tgo App.MoveAside 問要不要移成 game.yaml.bak，
       排在設定、排行的檔後面問；Enter 移開、沒有存檔，Esc 離開；讀進來之後刪不掉：tgo App.Error 開 CAN'T REMOVE THE GAME SAVED，說下次啟動還會再接一次
-    test: [TestPathIsBesideTheScores, TestSaveLoadRemove, TestLoadBroken, TestStackIsWhatASaveKeepsAndResumeTakesUp, TestQuitKeepsTheGameAndTheNextStartGoesOn, TestNoSaveToPress, TestFinishKeepsTheGameGoing, TestBrokenSaveAsksToMoveAside]
+    test: [TestPathIsBesideTheScores, TestSaveLoadRemove, TestLoadAGameOfV010, TestLoadBroken, TestStackIsWhatASaveKeepsAndResumeTakesUp, TestQuitKeepsTheGameAndTheNextStartGoesOn, TestNoSaveToPress, TestFinishKeepsTheGameGoing, TestBrokenSaveAsksToMoveAside]
   - id: 17
     spec: 62
     implementation: |

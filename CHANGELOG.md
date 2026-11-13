@@ -4,6 +4,8 @@ Each release names the version of terminu design (tdp) it follows.
 
 ## Unreleased
 
+- A game kept going as tetru quits keeps each block's colour, and comes back as it was: no more white blocks on the
+  ground. A game kept by v0.1.0 still comes back, its blocks white.
 - The hint, where a drop would set the piece, is a switch in Settings, under the keys: on at first, and on, it shows at
   every level, not the first five alone.
 - Restarting a game that would not be kept (no points, or not in the best twenty) asks first: `r` pressed by mistake

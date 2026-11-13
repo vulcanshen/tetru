@@ -25,14 +25,18 @@ func TestSaveLoadRemove(t *testing.T) {
 	}
 	var g Game
 	g.Level, g.Lines, g.Score = 3, 25, 12340
-	g.Stack[game.Rows-1][0] = true
-	g.Stack[game.Rows-2][game.Cols-1] = true
+	// Each block its piece's (user, 2026-11-13: the colours back).
+	for i := range game.Pieces {
+		g.Stack[game.Rows-1][i] = uint8(1 + i)
+	}
+	g.Stack[game.Rows-1][game.Cols-1] = game.Kept
+	g.Stack[game.Rows-2][game.Cols-1] = 1 + game.I
 	if err := Save(path, g); err != nil {
 		t.Fatal(err)
 	}
 	data, _ := os.ReadFile(path)
-	if !strings.Contains(string(data), "#...........") || !strings.Contains(string(data), "...........#") {
-		t.Fatalf("not a row a line of # and .:\n%s", data)
+	if !strings.Contains(string(data), "IOTSZJL....#") || !strings.Contains(string(data), "...........I") {
+		t.Fatalf("not a row a line of the pieces' letters, # and .:\n%s", data)
 	}
 	// Windows has no Unix modes: a file there is always rw-rw-rw-.
 	if fi, _ := os.Stat(path); runtime.GOOS != "windows" && fi.Mode().Perm() != 0o644 {
@@ -50,6 +54,17 @@ func TestSaveLoadRemove(t *testing.T) {
 	}
 	if err := Remove(path); err != nil {
 		t.Fatal("removing none is an error")
+	}
+}
+
+func TestLoadAGameOfV010(t *testing.T) {
+	// v0.1.0 kept where the blocks were, no colours: # each.
+	path := filepath.Join(t.TempDir(), "game.yaml")
+	body := "level: 2\nlines: 25\nscore: 900\nstack:\n" + strings.Repeat("  - \"............\"\n", game.Rows-1) + "  - \"##.........#\"\n"
+	os.WriteFile(path, []byte(body), 0o644)
+	g, err := Load(path)
+	if err != nil || g.Stack[game.Rows-1][0] != game.Kept || g.Stack[game.Rows-1][2] != 0 || g.Stack[game.Rows-1][game.Cols-1] != game.Kept {
+		t.Fatalf("a game of v0.1.0: %+v, %v", g, err)
 	}
 }
 

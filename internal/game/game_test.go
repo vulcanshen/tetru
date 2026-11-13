@@ -283,8 +283,8 @@ func TestStackIsWhatASaveKeepsAndResumeTakesUp(t *testing.T) {
 	g.Drop()
 	g.Advance(Flash) // the clear under way
 	s := g.Stack()
-	if !s[Rows-1][0] || s[Rows-2][0] || !s[Rows-1][Cols-1] || !s[Rows-3][Cols-1] || s[Rows-4][Cols-1] {
-		t.Fatal("the stack saved during a clear is not as it is once the clear is over")
+	if s[Rows-1][0] != 2 || s[Rows-2][0] != 0 || s[Rows-1][Cols-1] != 1+I || s[Rows-3][Cols-1] != 1+I || s[Rows-4][Cols-1] != 0 {
+		t.Fatal("the stack saved during a clear is not as it is once the clear is over, each block its piece's")
 	}
 	if g.Cell(0, Rows-2) == 0 {
 		t.Fatal("Stack moved the stack itself")
@@ -295,12 +295,12 @@ func TestStackIsWhatASaveKeepsAndResumeTakesUp(t *testing.T) {
 	}
 	for y := range Rows {
 		for x := range Cols {
-			if want := map[bool]uint8{true: Kept, false: 0}[s[y][x]]; r.Cell(x, y) != want {
-				t.Fatalf("block %d, %d is %d, not %d", x, y, r.Cell(x, y), want)
+			if r.Cell(x, y) != s[y][x] {
+				t.Fatalf("block %d, %d is %d, not %d", x, y, r.Cell(x, y), s[y][x])
 			}
 		}
 	}
-	if r := Resume(2, 99, 0, 0, [Rows][Cols]bool{}); r.Level != MaxLevel {
+	if r := Resume(2, 99, 0, 0, [Rows][Cols]uint8{}); r.Level != MaxLevel {
 		t.Fatalf("level %d past the last", r.Level)
 	}
 }

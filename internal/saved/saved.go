@@ -1,7 +1,7 @@
 // Package saved keeps the one game saved to go on with later (user,
 // 2026-11-11: Save keeps the score and the blocks on the ground, and
-// quits): its level, rows and score and where its stack has blocks, in the
-// data directory (tdp E3: ~/.tetru/game.yaml, TETRU__DATA to move it). It
+// quits): its level, rows and score and its stack, each block's piece too
+// (user, 2026-11-13: the colours back as they were), in the data directory (tdp E3: ~/.tetru/game.yaml, TETRU__DATA to move it). It
 // is read back as tetru starts, and then removed.
 package saved
 
@@ -19,14 +19,16 @@ import (
 	"github.com/vulcanshen/tetru/internal/scores"
 )
 
-// Game is a game saved.
+// Game is a game saved: its stack's blocks as game.Stack gives them.
 type Game struct {
 	Level, Lines, Score int
-	Stack               [game.Rows][game.Cols]bool
+	Stack               [game.Rows][game.Cols]uint8
 }
 
-// file is a game saved as written: the stack a row a line, top first, #
-// a block and . none.
+// file is a game saved as written: the stack a row a line, top first, a
+// block its piece's letter (game.Letters: I O T S Z J L), # a block whose
+// piece is not known (game.Kept: saved by v0.1.0, which kept no colours),
+// and . none.
 type file struct {
 	Level int      `yaml:"level"`
 	Lines int      `yaml:"lines"`
@@ -58,11 +60,11 @@ func Load(path string) (*Game, error) {
 	}
 	g := &Game{Level: f.Level, Lines: f.Lines, Score: f.Score}
 	for y, row := range f.Stack {
-		if len(row) != game.Cols || strings.Trim(row, "#.") != "" {
-			return nil, fmt.Errorf("stack row %d: %q is not %d of # and .", y+1, row, game.Cols)
+		if len(row) != game.Cols || strings.Trim(row, marks) != "" {
+			return nil, fmt.Errorf("stack row %d: %q is not %d of %s", y+1, row, game.Cols, marks)
 		}
 		for x, c := range row {
-			g.Stack[y][x] = c == '#'
+			g.Stack[y][x] = cell(c)
 		}
 	}
 	return g, nil
@@ -74,12 +76,8 @@ func Save(path string, g Game) error {
 	f := file{Level: g.Level, Lines: g.Lines, Score: g.Score}
 	for _, row := range g.Stack {
 		var b strings.Builder
-		for _, block := range row {
-			if block {
-				b.WriteByte('#')
-			} else {
-				b.WriteByte('.')
-			}
+		for _, c := range row {
+			b.WriteByte(mark(c))
 		}
 		f.Stack = append(f.Stack, b.String())
 	}
@@ -106,6 +104,32 @@ func Save(path string, g Game) error {
 		return err
 	}
 	return os.Rename(tmp.Name(), path)
+}
+
+// marks are what a block of the stack is written as: none, the pieces'
+// letters, a block whose piece is not known.
+const marks = "." + game.Letters + "#"
+
+// mark is how block c (game.Cell's) is written.
+func mark(c uint8) byte {
+	switch {
+	case c == 0:
+		return '.'
+	case int(c) <= game.Pieces:
+		return game.Letters[c-1]
+	}
+	return '#'
+}
+
+// cell is block m as game.Cell has it.
+func cell(m rune) uint8 {
+	switch i := strings.IndexRune(game.Letters, m); {
+	case m == '.':
+		return 0
+	case i >= 0:
+		return uint8(1 + i)
+	}
+	return game.Kept
 }
 
 // Remove removes the game saved, once taken up again; none there is no

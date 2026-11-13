@@ -47,6 +47,9 @@ const (
 	Curtain = 5 * time.Second
 )
 
+// Letters are the pieces' names, in art's order.
+const Letters = "IOTSZJL"
+
 // The pieces in their boxes as they come in: I, O, T, S, Z, J, L.
 var art = [][]string{
 	{"....", "####", "....", "...."},
@@ -126,8 +129,9 @@ var clearScores = [5]int{0, 100, 300, 500, 800}
 // a y under 0 is over the field.
 type Spot struct{ Turn, X, Y int }
 
-// Kept is Cell's value for a block of a game saved and taken up again: its
-// piece is not kept, only where it is (user, 2026-11-11: white).
+// Kept is Cell's value for a block whose piece is not known: of a game
+// saved before tetru kept the pieces too (user, 2026-11-11: white;
+// 2026-11-13: the colours kept, a game taken up as it was).
 const Kept = 8
 
 // ClearTime is how long a clear of n rows takes, from the flash to the
@@ -177,16 +181,12 @@ func New(seed uint64) *Game {
 }
 
 // Resume is a game saved, taken up again: its level, rows and score, its
-// stack's blocks Kept; the pieces from seed.
-func Resume(seed uint64, level, lines, score int, stack [Rows][Cols]bool) *Game {
+// stack's blocks as Stack gave them; the pieces from seed.
+func Resume(seed uint64, level, lines, score int, stack [Rows][Cols]uint8) *Game {
 	g := &Game{rng: rand.New(rand.NewPCG(seed, seed^0x9e3779b97f4a7c15)), cells: make([]uint8, Cols*Rows)}
 	g.Level, g.Lines, g.Score = min(max(level, 1), MaxLevel), lines, score
 	for y, row := range stack {
-		for x, b := range row {
-			if b {
-				g.cells[y*Cols+x] = Kept
-			}
-		}
+		copy(g.cells[y*Cols:(y+1)*Cols], row[:])
 	}
 	for range Queue {
 		g.Next = append(g.Next, g.deal())
@@ -195,18 +195,16 @@ func Resume(seed uint64, level, lines, score int, stack [Rows][Cols]bool) *Game 
 	return g
 }
 
-// Stack is where the stack has blocks, as it is once a clear under way is
-// over: what a save keeps.
-func (g *Game) Stack() [Rows][Cols]bool {
+// Stack is the stack's blocks, each as Cell says, as it is once a clear
+// under way is over: what a save keeps.
+func (g *Game) Stack() [Rows][Cols]uint8 {
 	cells := slices.Clone(g.cells)
 	for gaps := slices.Clone(g.gaps); len(gaps) > 0; {
 		gaps = closeGap(cells, gaps)
 	}
-	var out [Rows][Cols]bool
+	var out [Rows][Cols]uint8
 	for y := range Rows {
-		for x := range Cols {
-			out[y][x] = cells[y*Cols+x] != 0
-		}
+		copy(out[y][:], cells[y*Cols:(y+1)*Cols])
 	}
 	return out
 }

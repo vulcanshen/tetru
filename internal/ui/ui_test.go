@@ -969,11 +969,12 @@ func TestQuitKeepsTheGameAndTheNextStartGoesOn(t *testing.T) {
 	if g == nil || g.Level != level || g.Lines != lines || g.Score != score || !tt.paused() || !d.Has("Enter:resume") || !d.Has("Score: 1") {
 		t.Fatal("the next start did not take the game saved up, paused")
 	}
-	if g.Cell(0, game.Rows-1) != game.Kept || g.Cell(1, game.Rows-1) != game.Kept || g.Cell(2, game.Rows-1) != 0 {
-		t.Fatal("the stack saved is not back, its blocks Kept")
+	if g.Cell(0, game.Rows-1) != 4 || g.Cell(1, game.Rows-1) != 5 || g.Cell(2, game.Rows-1) != 0 {
+		t.Fatal("the stack saved is not back, each block its piece's")
 	}
-	if p := picture(g, true); p.px[game.Rows-1][0] != inkWhite || p.px[game.Rows-1][1] != inkWhite {
-		t.Fatal("the blocks of the game saved are not white")
+	// The colours back as they were (user, 2026-11-13).
+	if p := picture(g, true); p.px[game.Rows-1][0] != inkPiece+3 || p.px[game.Rows-1][1] != inkPiece+4 {
+		t.Fatal("the blocks of the game saved are not in their pieces' colours")
 	}
 	if _, err := os.Stat(path); !os.IsNotExist(err) {
 		t.Fatal("the game saved was not removed once taken up")
@@ -1185,14 +1186,16 @@ func TestRankColoursTheFirstThree(t *testing.T) {
 // dropped upright in the last column, a block over them.
 func clearOf(t *testing.T, tt *Tetru, n int) *game.Game {
 	t.Helper()
-	var stack [game.Rows][game.Cols]bool
+	var stack [game.Rows][game.Cols]uint8
 	for y := game.Rows - 4; y < game.Rows; y++ {
 		for x := 1; x < game.Cols-1; x++ {
-			stack[y][x] = true
+			stack[y][x] = game.Kept
 		}
-		stack[y][0] = y >= game.Rows-n
+		if y >= game.Rows-n {
+			stack[y][0] = game.Kept
+		}
 	}
-	stack[game.Rows-5][0] = true
+	stack[game.Rows-5][0] = game.Kept
 	var g *game.Game
 	for seed := uint64(1); ; seed++ {
 		if g = game.Resume(seed, 1, 0, 0, stack); g.Cur == 0 {

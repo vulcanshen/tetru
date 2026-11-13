@@ -1,4 +1,4 @@
-id: 62
+id: 63
 from: v1.2.7
 to: v1.2.8
 tasks:
@@ -194,11 +194,13 @@ tasks:
       - 'GitHub 的 social preview：docs/social-preview.png（使用者 2026-11-12：social preview 還沒作），照家族其他成員的樣子（locku 的 social-preview）：640×320 黑底，上面是 docs/icon.svg 直接畫成 260×260，下面是 Tiny5 字型的 tetru（#cdd6f4）。tdp 沒管這張圖，家族成員都有；開 GitHub repo 後在 Settings 的 Social preview 上傳'
       - 'docs/social-preview.png：harness v1.2.2 的 project.3 寫明 docs/ 裡圖上沒寫的檔案由 app 自行決定（原本找不到根據，2026-11-12 review 回報 harness #1，使用者選 B，已關）'
   - id: 13
-    spec: 62
-    request: '除了 Space 是暫停並打開 Space menu，其他的鍵都在 Settings 裡讓使用者自己設定'
+    spec: 63
+    request: '除了 Space 是暫停並打開 Space menu，其他的鍵都在 Settings 裡讓使用者自己設定。後來（使用者 2026-11-13）：Setting 不需要拆兩個 panel 去作設定，同一個 panel 分成兩個 section 就好'
     tdp: [tdp panel.12, tdp select, tdp popup.7, tdp toast, tdp E2, tdp E3, tdp F5, tdp note.7, tdp K1, tdp K11, tdp K12, tdp P5, tdp M5, tdp popup.1, tdp screen.2, tdp K6]
     remark:
       - '讓玩家改 Gaming 的鍵、能選哪些、怎麼設定，app 可以自行決定（tdp K11，K11-14；tdp #5 回報後 v1.2.3 放行）；要守的：選到 Gaming 裡已經有作用的鍵（別的動作的鍵、core key）就跳 Warning、寫出被誰用了、不設定；? 與 footer 寫的是目前的鍵；core key 與 panel 的鍵不給改'
+      - note: '使用者 2026-11-13 要 Settings 是同一個 panel 分成兩段（鍵、提示的開關）。tdp 只有一般清單能分組（panel.11），一列一個值的 panel（panel.12）與 form 都沒寫分組，terminu-go v1.2.9 的 Values 也沒有分組；暫時維持兩個 panel（[1] KEYS、[2] PLAY，PLAY 在 KEYS 下面），程式標 TODO(tdp #15)；tdp 與 terminu-go 有了分組再合成一個 panel'
+        issue: tdp #15
       - 'Settings 畫面的 [1] KEYS（2026-11-13 起下面還有 task 17 的 [2] PLAY，提示的開關）：一列一個值（tdp panel.12）：表頭 ACTION、KEY；Move left、Move right、Down a row、Rotate left、Rotate right、Drop 各一列。沒有 Pause 那一列（使用者 2026-11-12：PAUSE 跟 Space menu 是兩件事；不需要 pause 鍵，使用 Esc 就好）：暫停是 Esc 離開 Gaming（tdp K4），Space 打開 Space menu，menu 開著遊戲停著是因為 Gaming 時開任何 popup 遊戲都停（task 5）'
       - 'Enter 在一列上打開 select（tdp select）：標題 KEY: <動作>，列出 a 到 z 與 Enter，不列 q、r 與 Space（使用者 2026-11-12：不能用的鍵不要出現在選單裡；q 離開、Space 開 Space menu，r 是 Gaming 模式自己的 Restart，task 5；s 原本是 Save，Save 拿掉之後可以選），現在的鍵選著；選到別的動作在用的鍵，跳 Warning toast（tdp toast）：Can''t use [k] for Rotate left: it is Rotate right''s key（句子裡的鍵加方括號，tdp M5），鍵不變、不寫檔；其他的 Enter 確定就寫進設定檔，寫不進去 popup 不關、上面開 error popup（tdp popup.7），值不變'
       - '列出的鍵（tdp K11：能選哪些由 app 決定）：小寫字母與 Enter，不列 q、r 與 Space（上一條）；Enter 與移動也能改，空出來的 h、j、l 可以給別的動作；單獨的 g 也能選，Gaming 沒有 g 開頭的組合（tdp v1.2.7 K11、K12、K11-25，tdp #14 使用者選 A；tgo v1.2.8 把單獨的 g 交給模式的鍵）；方向鍵不能選，照預設（task 4）。Space、?、!、Esc、q、Ctrl-C、Tab、數字鍵不在選項裡，所以 K11-14、K11-25 選到不能用的鍵那一步不會發生（v1.2.7：只在 app 的選項裡有那個鍵時才做）。設定檔裡的鍵不是小寫字母或 Enter、或是 q、Space、r、兩個動作同一個鍵，都算讀不了'
@@ -230,16 +232,16 @@ tasks:
       - 'PLAYGROUND 是 app 自己的內容（tdp v1.2.6 的 panel.16：tdp 的元件和規則裝不下的東西，玩到一半的遊戲）：框、[1] PLAYGROUND、hint、focus 與淡化照一般的 panel；內容怎麼畫是 app 的（場地、NEXT、INFO、KEYS 的框是內容，不是 popup，tdp F1）；模式外的鍵 [Enter] Play/Resume、[n]ew game、[x] End game 是 panel 的熱鍵、列在 Space menu，Enter 開一局或接著玩（panel-159、panel-160）'
 
   - id: 16
-    spec: 58
-    request: '把當前分數和 panel 1 已經落地的格子位置存起來；重新啟動後接著玩，地上的格子直接是白色，不用分色（使用者 2026-11-11）；這一局先不記排行，下次開 tetru 接著玩，讀回來就刪掉存檔（使用者選的）。save 和 quit 要分開：不需要作 save 給使用者操作，save 是 app 的背景行為；要 quit 的時候正在遊戲，app 自動存檔，也不用問，下次進來使用者不想繼續直接 restart 就好（使用者 2026-11-12）'
+    spec: 63
+    request: '把當前分數和 panel 1 已經落地的格子位置存起來；重新啟動後接著玩，地上的格子直接是白色，不用分色（使用者 2026-11-11；後來 2026-11-13：save 同時儲存方塊顏色，重新進來的時候原本方塊顏色要能夠還原）；這一局先不記排行，下次開 tetru 接著玩，讀回來就刪掉存檔（使用者選的）。save 和 quit 要分開：不需要作 save 給使用者操作，save 是 app 的背景行為；要 quit 的時候正在遊戲，app 自動存檔，也不用問，下次進來使用者不想繼續直接 restart 就好（使用者 2026-11-12）'
     tdp: [tdp E3, tdp E2, tdp P5, tdp F6, tdp K9, tdp note, tdp note.7, tdp M4, tdp K11]
     remark:
-      - '存在 app 自己的資料（tdp E3）：TETRU__DATA 或 ~/.tetru 的 game.yaml，跟 scores.yaml 放一起；level、lines、score 與 stack：24 列字串，一列 12 個字，# 有方塊、. 沒有，由上往下。只有一局'
+      - '存在 app 自己的資料（tdp E3）：TETRU__DATA 或 ~/.tetru 的 game.yaml，跟 scores.yaml 放一起；level、lines、score 與 stack：24 列字串，一列 12 個字，由上往下；一格是它那個方塊的字母（I O T S Z J L，使用者 2026-11-13：顏色要能還原），. 沒有。# 是不知道哪個方塊的格子：v0.1.0 存的檔只記了有沒有（那時使用者 2026-11-11：不用分色），讀得回來、畫成白色。只有一局'
       - '存的是落地的格子（使用者 2026-11-11：panel 1 已經落地的格子）：正在掉的方塊、接下來的方塊不存。消行動畫還沒做完時存，存的是做完之後的樣子'
       - '什麼時候存：離開 app 時有一局在玩（玩著或暫停中），就存起來再離開（task 10 的離開流程）；連按兩次 Ctrl-C、關掉終端機時，main 在 Run 結束後存（tgo v1.2.3 起關掉終端機 Run 照常回來）。沒有給使用者按的 Save：原本 Gaming 模式的 s 與暫停時的 [s]ave 是存檔並離開，使用者 2026-11-12 拿掉（玩到一半不小心按到 s 就離開了；save 歸 save、quit 歸 quit）'
       - '不問（tdp F6：哪些要確認 app 可以自行決定；存了這一局，沒有東西會丟）：寫好就離開，這一局不記排行（下次接著玩、結束時才記，同一局只記一筆）；App Log 記一筆 Success。寫不進去：開 error popup（tdp note）Can''t save the game，路徑與原因，不離開（task 10）；連按兩次 Ctrl-C 或關掉終端機時存不起來，就把分數記成 ANON（task 7）'
-      - '啟動時有 game.yaml：接著那一局，停在暫停（PLAYGROUND 的 hint Enter:resume），關卡、行數、分數照存的，地上的格子都畫成白色（#ffffff，使用者 2026-11-11：不用分色），方塊從新的一袋來。讀進來就刪掉 game.yaml（使用者選的），之後跟一般的一局一樣結束、記分；App Log 記一筆 Info（tdp note.7）'
-      - 'game.yaml 讀不了（YAML 錯、列數或寬度不對、有 # 與 . 以外的字、關卡不在 1 到 15、行數或分數是負的）：照 tdp E3 用 tgo App.MoveAside 問要不要移成 game.yaml.bak，Enter 移開、從沒有存檔開始，Esc 離開；設定、排行的檔也讀不了時排在它們後面問。讀進來之後刪不掉：開 error popup Can''t remove the game saved，說下次啟動還會再接一次'
+      - '啟動時有 game.yaml：接著那一局，停在暫停（PLAYGROUND 的 hint Enter:resume），關卡、行數、分數照存的，地上的格子照存的方塊上色，跟離開時一樣（使用者 2026-11-13；v0.1.0 存的 # 畫成白色 #ffffff），方塊從新的一袋來。讀進來就刪掉 game.yaml（使用者選的），之後跟一般的一局一樣結束、記分；App Log 記一筆 Info（tdp note.7）'
+      - 'game.yaml 讀不了（YAML 錯、列數或寬度不對、有 . I O T S Z J L # 以外的字、關卡不在 1 到 15、行數或分數是負的）：照 tdp E3 用 tgo App.MoveAside 問要不要移成 game.yaml.bak，Enter 移開、從沒有存檔開始，Esc 離開；設定、排行的檔也讀不了時排在它們後面問。讀進來之後刪不掉：開 error popup Can''t remove the game saved，說下次啟動還會再接一次'
       - '存了的一局，main 在 Run 結束後不再存一次、也不記成 ANON（task 7）'
       - note: '原本 [s]ave 存好就離開 app、不進 K9 的離開流程，review 判 tdp 不清楚（2026-11-12）。使用者 2026-11-12 把 Save 拿掉、改成離開時自動存：存檔在 K9 的離開流程裡，不再有 panel 或模式的動作直接離開 app，這一點不用 tdp 回答了'
         issue: tdp #11

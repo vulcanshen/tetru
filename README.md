@@ -34,7 +34,7 @@ with the player's name and the time, and ranks them, the best first.
 - **Pause whenever**: `Esc` pauses and leaves the game where it is, a box saying the level, the rows and the score,
   `Enter` to go on. `Space` shows what you can do, the game waiting while it is open.
 - **Quit and go on later**: quitting with a game going keeps it, its score and the blocks on the ground, nobody
-  asked; the next start goes on with it, paused, the blocks on the ground white. Don't want it? Restart.
+  asked; the next start goes on with it, paused, every block in its colour. Don't want it? Restart.
 
 ## Install
 

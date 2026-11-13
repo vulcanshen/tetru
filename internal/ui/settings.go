@@ -64,6 +64,9 @@ func (t *Tetru) setHint(on bool) {
 
 // settingsLayout lays the Settings screen out (tdp L1: the app's): KEYS the
 // whole width, as high as its rows, PLAY under it, the rest.
+// TODO(tdp #15): one panel, the keys and the hint two sections of it (user,
+// 2026-11-13), once tdp and terminu-go have sections in a panel of a value
+// a row.
 func settingsLayout(w, h int) []terminu.Rect {
 	top := min(h-3, 3+len(keys.Actions)) // the frame, the header, a row an action
 	return []terminu.Rect{{W: w, H: top}, {Y: top, W: w, H: h - top}}
