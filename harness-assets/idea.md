@@ -81,6 +81,7 @@
 - （2026-11-12）review 還沒處理完的（tdp 不清楚的那幾點）：回報，但是也先發 beta。
 - （2026-11-12）tdp #10 的回覆（terminu）：照現在的 tdp 用 B，一局結束先照 ANON 記下，KEEP SCORE 只用來改名字，Esc 不改名。
 - （2026-11-13，經 terminu 轉達）tdp #14 選 A：app 自己的模式裡，Enter 和移動鍵也可以讓使用者改；移動改到別的鍵照樣移動，空出來的字母可以給別的動作；方向鍵與 PgUp|PgDn 不能選，照預設（左移改成 a，← 照樣往左）。
+- （2026-11-13，經 terminu 轉達）字母改走以後照預設繼續作用的方向鍵與 PgUp|PgDn 選 B：寫在模式 ? 裡它們所做動作的那一列，用 | 接在使用者選的鍵後面（例：a|←、Enter|PgDn）；不用進 footer 或 Space menu，預設時照舊不列。放在 tdp #14 一起處理。
 - （2026-11-12）tdp #9 使用者選 A：離開 app 自己的模式時要不要跳 popup，app 可以自行決定；tetru 的 RESUME 照現在的做法。
 - （2026-11-12）我們的 save 很有毛病，save 完直接 quit，玩到一半不小心按到 s 就慘了。save 和 quit 應該要分開，save 歸 save，quit 歸 quit：要 quit 的時候正在遊戲，app 自動存檔，也不用問，下次進來使用者不想繼續直接 restart 就好；所以根本不需要作 save 給使用者操作，save 是 app 的背景行為。Gaming 中的 Space menu 應該只有 restart 和 quit。
 - （2026-11-12）footer 的 q:quit：q 雖然是 core key，讓 Gaming 模式中 footer 加入 q:quit 就好。（tdp #13 使用者選 A：app 自己的模式 footer 要不要寫 q:quit，app 可以自行決定）

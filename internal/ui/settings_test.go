@@ -140,6 +140,13 @@ func TestEnterAndTheMovesAreThePlayers(t *testing.T) {
 	if r := row(d, 31); !strings.HasPrefix(r, "Space:menu ?:help Enter|h:rotate s:drop") {
 		t.Fatalf("footer %q", r)
 	}
+	// The arrows of the moves off their letters are written after the keys in
+	// ?; the one on its letter is not (tdp K11, K11-25).
+	d.Press("?")
+	if !d.Has("a|←") || !d.Has("g|↓") || d.Has("l|→") {
+		t.Fatal("? does not write the arrow after a move off its letter, or writes one on it")
+	}
+	d.Press("Esc")
 	at := tt.g.At
 	d.Press("a")
 	d.Press("←")

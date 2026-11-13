@@ -35,6 +35,12 @@ func TestArrowsKeepTheirDefault(t *testing.T) {
 	if err := d.Check(); err != nil {
 		t.Fatal(err)
 	}
+	// Off its default letter the arrow is written after the key; on it, not.
+	for a, want := range map[Action]string{Left: "a|←", Right: "l", RotateRight: "h|↑", Drop: "Enter"} {
+		if got := d.Shown(a); got != want {
+			t.Fatalf("%s shown as %q, not %q", a.ID(), got, want)
+		}
+	}
 }
 
 func TestUsedBySaysWhoHasAKey(t *testing.T) {

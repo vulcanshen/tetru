@@ -74,6 +74,17 @@ func (s Set) Keys(a Action) []string {
 	return []string{s[a]}
 }
 
+// Shown is how a's keys are written in the Gaming mode's ?: its key, and,
+// once a is off its default letter, the arrow that keeps doing it after a
+// | (a|←). On its default letter the arrow goes unwritten, the same key as
+// the letter (tdp K11, K12).
+func (s Set) Shown(a Action) string {
+	if arrow, ok := arrows[Default()[a]]; ok && s[a] != Default()[a] {
+		return s[a] + "|" + arrow
+	}
+	return s[a]
+}
+
 // core are the keys the Gaming mode keeps for itself, and what each does
 // there (tdp K11): the core keys, and Restart (user, 2026-11-11; Save, s,
 // gone 2026-11-12: tetru saves as it quits).

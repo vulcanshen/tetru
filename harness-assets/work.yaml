@@ -44,7 +44,7 @@ tasks:
     implementation: |
       開始或繼續一局時，PLAYGROUND 進入 tgo 的模式 Gaming（tgo Panel.EnterMode）：tgo 把外框換成模式色、上框右邊畫 ┫Gaming┣
       Gaming 的鍵（tgo ModeKey）照 Settings 的鍵（task 13），預設：h、← 左一格；l、→ 右一格；j、↓ 往下一格；d、PgDn 左旋（逆時針）；k、↑ 右旋（順時針）；
-      Enter 落到底並固定；沒有方塊可動時（消行中、結束之後）這六個鍵停用（tgo ModeKey.Disabled，footer 與 ? 是停用色）；方向鍵與 PgUp、PgDn 照預設（keys.Keys：動作預設的字母的方向鍵）：← 左、→ 右、↓ 往下、PgDn 左旋、↑ 右旋，動作改到別的鍵時照樣做這些
+      Enter 落到底並固定；沒有方塊可動時（消行中、結束之後）這六個鍵停用（tgo ModeKey.Disabled，footer 與 ? 是停用色）；方向鍵與 PgUp、PgDn 照預設（keys.Keys：動作預設的字母的方向鍵）：← 左、→ 右、↓ 往下、PgDn 左旋、↑ 右旋，動作改到別的鍵時照樣做這些；移動改離預設的字母時，? 那一列寫成 a|← move left、g|↓ down a row（keys.Shown），在預設的字母上不寫方向鍵；旋轉那一列還沒寫（TODO(tdp #14)）
       footer 由 tgo 寫：Space:menu ?:help d|k:rotate Enter:drop r:restart q:quit Esc:pause；兩個旋轉是一個 tgo ModeKey（Key d|k，Keys d、PgDn、k、↑，按的鍵決定往哪邊轉），60 欄時是 Space:menu ?:help d|k:rotate Enter:drop r:restart Esc:pause，Enter 改給左旋、落到底改成 s 時是 Space:menu ?:help Enter|k:rotate s:drop r:restart Esc:pause；左右、往下標成不進 footer（tgo ModeKey.NoFooter），放不下的由 tgo 省略、Esc:pause 留著；這些鍵都在 ?，不在 Space menu（task 5）
       Gaming 裡 PLAYGROUND 的下框不寫 hint（Enter 的 hint 拿掉；panel 上沒有按得動的鍵）
       Enter 在 PLAYGROUND 上（Gaming 外）：沒有一局在暫停時開新的一局（task 6），有就繼續（task 5）；hint Enter:play，暫停時 Enter:resume
