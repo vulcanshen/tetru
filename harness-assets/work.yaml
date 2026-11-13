@@ -40,23 +40,23 @@ tasks:
       tgo App.Tick 每 40 ms 一格推進遊戲（README 的計時器）；消行時每 16 ms 一格（task 9）
     test: [TestPiecesComeSevenToABag, TestSameSeedSameGame, TestPieceComesInAtTheTopInTheMiddle, TestMoveStopsAtTheWalls, TestRotateTurnsAndComesBack, TestRotateKicksOffTheWall, TestDownScoresARow, TestDropSetsThePieceAndScoresTwoARow, TestGravityAtTheLevelsSpeed, TestLockWaitsAndMovingRestartsIt, TestLockResetsRunOut, TestClearScoresAtTheLevelAndGoesUp, TestTheSpeedStopsAtTheLastLevel, TestTheStackAtTheTopEnds, TestEndStopsThePiece, TestTheGameFalls]
   - id: 4
-    spec: 50
+    spec: 53
     implementation: |
       開始或繼續一局時，PLAYGROUND 進入 tgo 的模式 Gaming（tgo Panel.EnterMode）：tgo 把外框換成模式色、上框右邊畫 ┫Gaming┣
       Gaming 的鍵（tgo ModeKey）照 Settings 的鍵（task 13），預設：h、← 左一格；l、→ 右一格；j、↓ 往下一格；d、PgDn 左旋（逆時針）；k、↑ 右旋（順時針）；
-      Enter 落到底並固定；沒有方塊可動時（消行中、結束之後）這六個鍵停用（tgo ModeKey.Disabled，footer 與 ? 是停用色）；一個動作的鍵是 h、j、k、l、u、d 時，它的方向鍵（←、↓、↑、→）或 PgUp、PgDn 做一樣的事，鍵改成別的字母時就不作用
-      footer 由 tgo 寫：Space:menu ?:help d:rotate left k:rotate right Enter:drop r:restart q:quit Esc:pause；左右、往下標成不進 footer（tgo ModeKey.NoFooter），放不下的由 tgo 省略、Esc:pause 留著；這些鍵都在 ?，不在 Space menu（task 5）
+      Enter 落到底並固定；沒有方塊可動時（消行中、結束之後）這六個鍵停用（tgo ModeKey.Disabled，footer 與 ? 是停用色）；方向鍵與 PgUp、PgDn 照預設（keys.Keys：動作預設的字母的方向鍵）：← 左、→ 右、↓ 往下、PgDn 左旋、↑ 右旋，動作改到別的鍵時照樣做這些
+      footer 由 tgo 寫：Space:menu ?:help d|k:rotate Enter:drop r:restart q:quit Esc:pause；兩個旋轉是一個 tgo ModeKey（Key d|k，Keys d、PgDn、k、↑，按的鍵決定往哪邊轉），60 欄時是 Space:menu ?:help d|k:rotate Enter:drop r:restart Esc:pause，Enter 改給左旋、落到底改成 s 時是 Space:menu ?:help Enter|k:rotate s:drop r:restart Esc:pause；左右、往下標成不進 footer（tgo ModeKey.NoFooter），放不下的由 tgo 省略、Esc:pause 留著；這些鍵都在 ?，不在 Space menu（task 5）
       Gaming 裡 PLAYGROUND 的下框不寫 hint（Enter 的 hint 拿掉；panel 上沒有按得動的鍵）
       Enter 在 PLAYGROUND 上（Gaming 外）：沒有一局在暫停時開新的一局（task 6），有就繼續（task 5）；hint Enter:play，暫停時 Enter:resume
-    test: [TestPlay, TestTheGamingFooterHasTheTurnsAndTheDrop, TestSpaceMenuRunsRestartAndTheKeysAreInHelp, TestTheGameFalls, TestSettingsSetAKey]
+    test: [TestPlay, TestTheGamingFooterHasTheTurnsAndTheDrop, TestSpaceMenuRunsRestartAndTheKeysAreInHelp, TestTheGameFalls, TestSettingsSetAKey, TestArrowsKeepTheirDefault, TestEnterAndTheMovesAreThePlayers]
   - id: 5
-    spec: 52
+    spec: 53
     implementation: |
       Gaming 裡按 Space：tgo 開 Gaming 的 Space menu，標題 [1] PLAYGROUND，只有 GAMING MODE 的 [r]estart（start over from level 1）、
       [q]uit（leave tetru; a game going goes on next time），選了 [r]estart 就等於按 r，選了 [q]uit 就是 task 10 的離開流程；玩的六個鍵標 tgo ModeKey.NoMenu、模式標 Mode.NoLeaveRow
       （tgo v1.2.4 起），都不列，[Esc] Pause 也不列；q 是 core key：沒有 Do 的 tgo ModeKey {Key: q, Desc: quit, Label: Quit}（tgo v1.2.5），按 q 或選 [q]uit 都是 tgo 的離開流程；? 列 Gaming 的每個鍵（照 Settings 裡現在的鍵）、r 與 Esc，q 列在 core key 裡一次
       Gaming 模式的 r：跟 PLAYGROUND 的 n 一樣（值得記的先開 NEW GAME 問誰玩的，不然直接開新的一局）；q：task 10 的離開流程（q 本來就是 core key）；沒有 s（Save 拿掉了，task 16）；footer 是
-      Space:menu ?:help d:rotate left k:rotate right Enter:drop r:restart q:quit Esc:pause（task 4），窄的終端機放不下的由 tgo 收掉，Esc:pause 留著
+      Space:menu ?:help d|k:rotate Enter:drop r:restart q:quit Esc:pause（task 4），窄的終端機放不下的由 tgo 收掉，Esc:pause 留著
       遊戲每 40 ms 一格，有任何 popup 開著（Space menu、?、confirm）或終端機比 42×32 小時不往前走，popup 關掉就接著走；有沒有 popup 是問
       tgo App.Covered()（收起動畫播到一半、splash 開著也算）
       Esc 離開 Gaming（tgo Mode.OnExit）：遊戲停著，開 tgo App.Confirm：標題 RESUME，內容 Paused: level 1, 0 lines, 0 points.，問句 Go on with the game?，
@@ -152,19 +152,20 @@ tasks:
     test:
       - check: repo
   - id: 13
-    spec: 51
+    spec: 53
     implementation: |
       Settings 畫面只有 [1] KEYS，tgo Values（一列一個值）：表頭 ACTION、KEY；MOVE LEFT h、MOVE RIGHT l、DOWN A ROW j、ROTATE LEFT d、ROTATE RIGHT k、
       DROP Enter，沒有 PAUSE 那一列；每一列有說明（tgo Field.Desc，? 的「每一列」）；hint Enter:edit
       Enter 在一列上開 tgo Select：標題 KEY: Rotate left，選項是 a 到 z（沒有 q、r）與 Enter（keys.Choices），現在的鍵選著
-      選到別的動作的鍵（或方向鍵跟著別的動作的字母）：不寫檔、鍵不變，tgo 跳 Warning toast：Can't use [k] for Rotate left: it is Rotate right's key
+      Enter 與移動也能改：落到底改成 s、左移改成 a 之後，Enter、h 可以給別的動作；方向鍵不能選，照預設（task 4）
+      選到別的動作的鍵：不寫檔、鍵不變，tgo 跳 Warning toast：Can't use [k] for Rotate left: it is Rotate right's key
       其他的 Enter 確定時（tgo Select.Commit）寫進設定檔，寫不進去 popup 不關、tgo 開 error popup，鍵不變；寫進去之後 Gaming 的鍵、footer、
       ? 與 KEYS 跟著換（Gaming 的 Space menu 不列玩的鍵，task 5），App Log 記一筆 Success：Rotate left is now [a]（句子裡的鍵加方括號，tdp M5）
       設定檔：TETRU__CONFIG，不然 $XDG_CONFIG_HOME/tetru，不然 ~/.config/tetru 底下的 config.yaml；keys 底下 move_left、move_right、down、
       rotate_left、rotate_right、drop；沒寫的照預設；寫回時檔裡其他的 key 照留；先寫暫存檔再改名，目錄 0755、檔 0644
       啟動時設定檔讀不了（YAML 錯、鍵不是小寫字母或 Enter、是 q、Space 或 r、兩個動作同一個鍵）：tgo App.MoveAside 問要不要移成 config.yaml.bak，Enter 移開、用預設的鍵，
       Esc 離開；排行的檔也讀不了時接著問它
-    test: [TestDefaultIsTheUsersKeys, TestArrowsGoWithTheirLetters, TestUsedBySaysWhoHasAKey, TestPathIsInTheConfigDirectory, TestSaveThenLoadKeepsOtherKeys, TestLoadBadKeys, TestSettingsSetAKey, TestSettingsThatCantBeKept, TestBrokenSettingsAskToMoveAside, TestSettingsHaveNoPauseRow, TestAKeyInUseIsRefused]
+    test: [TestDefaultIsTheUsersKeys, TestArrowsKeepTheirDefault, TestUsedBySaysWhoHasAKey, TestPathIsInTheConfigDirectory, TestSaveThenLoadKeepsOtherKeys, TestLoadBadKeys, TestSettingsSetAKey, TestSettingsThatCantBeKept, TestBrokenSettingsAskToMoveAside, TestSettingsHaveNoPauseRow, TestAKeyInUseIsRefused, TestEnterAndTheMovesAreThePlayers]
   - id: 14
     spec: 20
     implementation: |

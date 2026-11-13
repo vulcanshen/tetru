@@ -77,16 +77,87 @@ func TestSettingsSetAKey(t *testing.T) {
 	play(d)
 	turnable(tt, d)
 	d.Press("d")
-	d.Press("PgDn")
 	if tt.g.At.Turn != 0 {
-		t.Fatal("d or PgDn still turns")
+		t.Fatal("d still turns")
+	}
+	// No one chooses the arrows: PgDn keeps turning left (tdp #14).
+	d.Press("PgDn")
+	if tt.g.At.Turn != 3 {
+		t.Fatal("PgDn did not turn left")
 	}
 	d.Press("a")
-	if tt.g.At.Turn == 0 {
+	if tt.g.At.Turn != 2 {
 		t.Fatal("a did not turn left")
 	}
-	if !strings.HasPrefix(row(d, 31), "Space:menu ?:help a:rotate left") {
+	if !strings.HasPrefix(row(d, 31), "Space:menu ?:help a|k:rotate Enter:drop") {
 		t.Fatalf("footer %q", row(d, 31))
+	}
+}
+
+// TestEnterAndTheMovesAreThePlayers: in an app's own mode Enter and the
+// moves are the player's to set too (tdp #14, the user chose A, 2026-11-13).
+// Moved off, a move still moves and ← with it; a letter so freed and Enter
+// can go to another action; the turns and the drop stay in the footer at 60
+// columns (tdp K11-20).
+func TestEnterAndTheMovesAreThePlayers(t *testing.T) {
+	tt, d := open(t, 60, 32)
+	d.Press("S")
+	set := func(row int, key string) {
+		t.Helper()
+		d.Press("g")
+		d.Press("g")
+		for range row {
+			d.Press("j")
+		}
+		d.Press("Enter")
+		d.Press("g")
+		d.Press("g")
+		for _, c := range keys.Choices() {
+			if c == key {
+				break
+			}
+			d.Press("j")
+		}
+		d.Press("Enter")
+	}
+	set(5, "s") // Drop off Enter
+	set(0, "a") // Move left off h
+	set(4, "h") // Rotate right on the h so freed
+	set(3, "Enter")
+	want := keys.Set{"a", "l", "j", "Enter", "h", "s"}
+	if tt.keys != want {
+		t.Fatalf("keys %v, not %v", tt.keys, want)
+	}
+	if s, err := keys.Load(tt.cfg); err != nil || s != want {
+		t.Fatalf("not kept in the settings: %v %v", s, err)
+	}
+	d.Press("T")
+	play(d)
+	for tt.g.Cur == 1 { // an O does not turn
+		d.Press("s")
+	}
+	if r := row(d, 31); !strings.HasPrefix(r, "Space:menu ?:help Enter|h:rotate s:drop") {
+		t.Fatalf("footer %q", r)
+	}
+	at := tt.g.At
+	d.Press("a")
+	d.Press("←")
+	if tt.g.At.X != at.X-2 {
+		t.Fatal("a and ← do not move left")
+	}
+	d.Press("Enter")
+	if tt.g.At.Turn != 3 {
+		t.Fatal("Enter did not turn left")
+	}
+	d.Press("h")
+	d.Press("↑")
+	if tt.g.At.Turn != 1 {
+		t.Fatal("h and ↑ did not turn right")
+	}
+	before := tt.g.Score
+	d.Press("s")
+	if tt.g.Score <= before {
+		t.Fatal("s did not drop")
 	}
 }
 

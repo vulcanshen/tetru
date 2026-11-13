@@ -8,6 +8,7 @@ import (
 	_ "embed"
 	"fmt"
 	"math/rand/v2"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -530,17 +531,19 @@ var podium = []terminu.Color{terminu.Yellow, terminu.Green, terminu.Hex("#89dceb
 // j|k are not (tdp screen.2); the turns and the drop are things done to the
 // falling piece, in the footer as Drag's Enter:drop is. None of these is in
 // the mode's Space menu (user, 2026-11-11: it has Restart and Save; tdp K11,
-// an app's own mode), all of them in its ? and in KEYS. A key that is h, j,
-// k or l takes its arrow too (tdp K12): by default ↑ turns left with k,
-// which has no moving to do in the mode, a piece never going up.
+// an app's own mode), all of them in its ? and in KEYS. The two turns are
+// one pair, d|k:rotate, a pair of opposite ways told with one verb (tdp
+// M5): so the turns and the drop fit the footer at 60 columns whatever keys
+// they are on, Enter too (tdp K11-20; tdp #14). Each action takes the arrow
+// of its default key too (keys.Keys; tdp K12): ↑ turns right as k does, k
+// having no moving to do in the mode, a piece never going up.
 func (t *Tetru) setModeKeys() {
 	k := t.keys
 	t.play.Keys = []terminu.ModeKey{
 		{Key: k[keys.Left], Keys: k.Keys(keys.Left), Desc: "move left", NoFooter: true, NoMenu: true, Disabled: t.still, Do: t.do(keys.Left)},
 		{Key: k[keys.Right], Keys: k.Keys(keys.Right), Desc: "move right", NoFooter: true, NoMenu: true, Disabled: t.still, Do: t.do(keys.Right)},
 		{Key: k[keys.Down], Keys: k.Keys(keys.Down), Desc: "down a row", NoFooter: true, NoMenu: true, Disabled: t.still, Do: t.do(keys.Down)},
-		{Key: k[keys.RotateLeft], Keys: k.Keys(keys.RotateLeft), Desc: "rotate left", Item: true, NoMenu: true, Label: keys.RotateLeft.Label(), MenuDesc: keys.RotateLeft.Desc(), Disabled: t.still, Do: t.do(keys.RotateLeft)},
-		{Key: k[keys.RotateRight], Keys: k.Keys(keys.RotateRight), Desc: "rotate right", Item: true, NoMenu: true, Label: keys.RotateRight.Label(), MenuDesc: keys.RotateRight.Desc(), Disabled: t.still, Do: t.do(keys.RotateRight)},
+		{Key: k[keys.RotateLeft] + "|" + k[keys.RotateRight], Keys: append(k.Keys(keys.RotateLeft), k.Keys(keys.RotateRight)...), Desc: "rotate", NoMenu: true, Disabled: t.still, Do: t.turn},
 		{Key: k[keys.Drop], Keys: k.Keys(keys.Drop), Desc: "drop", NoMenu: true, Disabled: t.still, Do: t.do(keys.Drop)},
 		{Key: "r", Desc: "restart", Label: "Restart", MenuDesc: "start over from level 1", Disabled: t.waiting, Do: func(string) tea.Cmd { return t.newGame() }},
 		// q, a core key, the quit flow in any mode (tdp K11, K9), written in the
@@ -548,6 +551,14 @@ func (t *Tetru) setModeKeys() {
 		// there; tdp v1.2.5 screen.2): no Do, the key does what it does.
 		{Key: "q", Desc: "quit", Label: "Quit", MenuDesc: quitDesc},
 	}
+}
+
+// turn is the pair of turns: the key pressed says which way.
+func (t *Tetru) turn(key string) tea.Cmd {
+	if slices.Contains(t.keys.Keys(keys.RotateLeft), key) {
+		return t.do(keys.RotateLeft)(key)
+	}
+	return t.do(keys.RotateRight)(key)
 }
 
 // do is a Gaming mode key: action a on the falling piece.

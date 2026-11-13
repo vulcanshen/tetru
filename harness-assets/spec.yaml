@@ -1,5 +1,5 @@
-id: 52
-from: v1.2.5
+id: 53
+from: v1.2.6
 to: v1.2.6
 tasks:
   - id: 1
@@ -75,22 +75,22 @@ tasks:
       - '新的方塊放不進場地，或固定時有一格還在場地上方，遊戲結束（照 locku）'
       - '名字是 tetru；不用別的遊戲的名稱、商標與音樂'
   - id: 4
-    spec: 50
+    spec: 53
     request: '遊戲的按鍵：h 左、l 右、j 下一格、d 左旋、k 右旋、Enter 快速向下；這是遊戲，要讓使用者好玩，跟 tdp 衝突就請 tdp 調整'
     tdp: [tdp K11, tdp K12, tdp K3, tdp P5, tdp M5, tdp panel.3, tdp screen.2, tdp menu.4, tdp K6, tdp panel.1, tdp M6, tdp K9, tdp panel.16, tdp M3]
     remark:
       - '遊戲進行中是 PLAYGROUND 的模式 Gaming（tdp K11：進入之後一部分鍵換成模式自己的意思，Esc 離開）：外框換成模式色、上框右邊 ┫Gaming┣（tdp panel.3）；只有 Gaming 的鍵與 core key 作用，亂按的其他鍵不出聲'
       - 'Gaming 的鍵是使用者在 Settings 設的（task 13），預設照使用者 2026-11-11 說的：h 左、l 右、j 往下一格、d 左旋、k 右旋、Enter 落到底（原本是 k 左旋、i 右旋，使用者玩過之後改的）'
       - 'd 左旋、k 右旋：Gaming 裡方塊不會往上，也沒有半頁可翻，k、d 沒有移動可做，模式可以拿它們做自己的動作（tdp K12，K12-19；tdp #4 回報後 v1.2.3 放行），↑ 跟 k、PgDn 跟 d 做一樣的事；照模式其他的鍵一樣寫在 ? 與 footer；模式的 Space menu 照 K11，tetru 不列（task 5；tdp v1.2.4 的 K12 寫明）'
-      - 'footer（tdp screen.2：Space:menu ?:help、模式自己的鍵、最後 Esc:<離開的動詞>）：d、k（旋轉）與 Enter（落到底）是對方塊做的事，寫成 d:rotate left k:rotate right Enter:drop；h、l、j 是移動，不寫，照 screen.2 的例子（Drag 寫 Enter:drop、不寫 j|k）。終端機窄、放不下的由 tgo 省略，Esc:pause 一定在'
-      - '方向鍵跟著字母：h|j|k|l 就是 ←|↓|↑|→，u|d 就是 PgUp|PgDn（tdp K12），哪個動作的鍵是這幾個字母，它的方向鍵或 PgUp|PgDn 就做那個動作；預設 ← 左、→ 右、↓ 往下、PgDn 左旋、↑ 右旋。動作設成別的字母時，原本那個字母與它的方向鍵就不作用'
+      - 'footer（tdp screen.2：Space:menu ?:help、模式自己的鍵、最後 Esc:<離開的動詞>）：d、k（旋轉）與 Enter（落到底）是對方塊做的事，寫成 d|k:rotate Enter:drop：兩個旋轉是一對方向相反、用一個動詞講的鍵（tdp M5），合成一項，使用者把它們與落到底改到哪個鍵（Enter 也算），60 欄時都放得下（tdp K11-20；tdp #14 之前寫成 d:rotate left k:rotate right，落到底改成字母時 60 欄放不下）；h、l、j 是移動，不寫，照 screen.2 的例子（Drag 寫 Enter:drop、不寫 j|k）。終端機窄、放不下的由 tgo 省略，Esc:pause 一定在'
+      - '方向鍵照預設：h|j|k|l 就是 ←|↓|↑|→，u|d 就是 PgUp|PgDn（tdp K12），預設 ← 左、→ 右、↓ 往下、PgDn 左旋（跟 d）、↑ 右旋（跟 k）。使用者不能選方向鍵與 PgUp|PgDn，動作改到別的鍵時它們照樣做預設的事（tdp #14 使用者選 A，2026-11-13：左移改成 a，← 照樣往左）；原本「方向鍵跟著字母、字母改掉就不作用」'
       - 'Enter 在 Gaming 裡是落到底並固定：K11 的表沒有 Enter，照 tdp K3「對 focus 的東西做最直觀的動作」，Gaming 裡 focus 的是落下中的方塊，把它放到底就是最直觀的（跟 Drag mode 的 Enter 放下一樣）。Gaming 外 Enter 在 PLAYGROUND 上是開始一局或繼續（tdp K3：panel 沒有項目時，對整個 panel 做最直觀的動作）'
       - '旋轉與落到底是對落下中的方塊做的事，在 footer；左右與往下一格是移動，不在 footer（見下面的 footer 那一條）。這些鍵都在 ?（tdp K6），不列在 Space menu（task 5）'
       - note: 'footer 寫 q:quit（使用者 2026-11-12：Gaming 模式中 footer 加入 q:quit）。q 是 core key，在任何模式裡都是進入 K9 的離開流程，不是 Gaming 自己的鍵；這裡只是把它寫在 footer 上。v1.2.4 的 screen.2 只准寫模式自己的鍵（2026-11-12 review），回報 tdp #13，使用者選 A，tdp v1.2.5 定案：app 自己的模式，footer 在 Space:menu ?:help 與最後的 Esc:<離開的動詞> 中間寫哪些鍵由 app 自行決定，模式裡能按的鍵都可以，core key 也可以（例：q:quit），每個鍵做的事照它在模式裡的作用（K11、screen.2、screen-36）。tgo v1.2.5：沒有 Do 的 ModeKey {Key: q, Desc: quit}'
         issue: tdp #13
 
   - id: 5
-    spec: 52
+    spec: 53
     request: 'Space 暫停，並打開 Space menu；Space 不能改；暫停用 popup 顯示，不畫在遊戲裡（那是 locku 的限制，tetru 是獨立的 app）；玩的時候的 Space menu 不用列 h、l、j、k、Enter，連 d、k 都不用，應該是給 restart、save（使用者 2026-11-11）；後來使用者一度說列的確實是這個模式的鍵，再問為什麼 h、l、j、Enter 出現在裡面，選了重新打開 tdp #7（2026-11-11）；save 不給使用者操作，Gaming 中的 Space menu 只有 restart 和 quit（使用者 2026-11-12：save 存完直接 quit，玩到一半不小心按到 s 就慘了）'
     tdp: [tdp K5, tdp K11, tdp K4, tdp menu.4, tdp M2, tdp M7, tdp L1, tdp screen.7, tdp F1, tdp F6, tdp confirm, tdp K12, tdp K6, tdp screen.2, tdp M5, tdp toast, tdp K9, tdp K1, tdp K2, tdp P5, tdp M3, tdp panel.16]
     remark:
@@ -110,7 +110,7 @@ tasks:
         issue: tdp #12
       - note: 'footer 寫 q:quit（使用者 2026-11-12：Gaming 模式中 footer 加入 q:quit）。q 是 core key，在任何模式裡都是進入 K9 的離開流程，不是 Gaming 自己的鍵；這裡只是把它寫在 footer 上。v1.2.4 的 screen.2 只准寫模式自己的鍵（2026-11-12 review），回報 tdp #13，使用者選 A，tdp v1.2.5 定案：app 自己的模式，footer 在 Space:menu ?:help 與最後的 Esc:<離開的動詞> 中間寫哪些鍵由 app 自行決定，模式裡能按的鍵都可以，core key 也可以（例：q:quit），每個鍵做的事照它在模式裡的作用（K11、screen.2、screen-36）。tgo v1.2.5：沒有 Do 的 ModeKey {Key: q, Desc: quit}'
         issue: tdp #13
-      - 'Gaming 是 app 自己的模式（tdp v1.2.6：P5 的開口，K11 的「app 自己的模式」）：玩遊戲是 tdp 的元件和規則都沒有的事（K11-17）；只由使用者的動作進入，PLAYGROUND 的 Enter（Play、Resume）、[n]ew game、RESUME 與 PLAY 的 Enter、模式裡的 r，啟動時有存檔也只停在暫停（K11-18）；模式的鍵與 Space menu 只作用在遊戲上，最多離開模式，[q]uit 與 q:quit 是 core key q（K11-19）；除了 core key 與移動鍵，每個鍵都在 Space menu 或 60 欄時的 footer：60 欄時 footer 放得下 d、k，Enter 是 core key（v1.2.6 K11 的表），r 在 Space menu（K11-20）；一次只有這一個模式（K11-22）'
+      - 'Gaming 是 app 自己的模式（tdp v1.2.6：P5 的開口，K11 的「app 自己的模式」）：玩遊戲是 tdp 的元件和規則都沒有的事（K11-17）；只由使用者的動作進入，PLAYGROUND 的 Enter（Play、Resume）、[n]ew game、RESUME 與 PLAY 的 Enter、模式裡的 r，啟動時有存檔也只停在暫停（K11-18）；模式的鍵與 Space menu 只作用在遊戲上，最多離開模式，[q]uit 與 q:quit 是 core key q（K11-19）；除了 core key 與移動鍵，每個鍵都在 Space menu 或 60 欄時的 footer：60 欄時 footer 放得下 d|k:rotate、Enter:drop、r:restart，旋轉與落到底改到哪個鍵都放得下（task 4），r 也在 Space menu（K11-20）；一次只有這一個模式（K11-22）'
 
   - id: 6
     spec: 47
@@ -193,19 +193,19 @@ tasks:
       - 'GitHub 的 social preview：docs/social-preview.png（使用者 2026-11-12：social preview 還沒作），照家族其他成員的樣子（locku 的 social-preview）：640×320 黑底，上面是 docs/icon.svg 直接畫成 260×260，下面是 Tiny5 字型的 tetru（#cdd6f4）。tdp 沒管這張圖，家族成員都有；開 GitHub repo 後在 Settings 的 Social preview 上傳'
       - 'docs/social-preview.png：harness v1.2.2 的 project.3 寫明 docs/ 裡圖上沒寫的檔案由 app 自行決定（原本找不到根據，2026-11-12 review 回報 harness #1，使用者選 B，已關）'
   - id: 13
-    spec: 51
+    spec: 53
     request: '除了 Space 是暫停並打開 Space menu，其他的鍵都在 Settings 裡讓使用者自己設定'
     tdp: [tdp panel.12, tdp select, tdp popup.7, tdp toast, tdp E2, tdp E3, tdp F5, tdp note.7, tdp K1, tdp K11, tdp K12, tdp P5, tdp M5, tdp popup.1, tdp screen.2]
     remark:
-      - '讓玩家改 Gaming 的鍵、能選哪些、怎麼設定，app 可以自行決定（tdp K11，K11-14；tdp #5 回報後 v1.2.3 放行）；要守的：選到 Gaming 裡已經有作用的鍵（別的動作的鍵與它的方向鍵、core key）就跳 Warning、寫出被誰用了、不設定；? 與 footer 寫的是目前的鍵；core key 與 panel 的鍵不給改'
+      - '讓玩家改 Gaming 的鍵、能選哪些、怎麼設定，app 可以自行決定（tdp K11，K11-14；tdp #5 回報後 v1.2.3 放行）；要守的：選到 Gaming 裡已經有作用的鍵（別的動作的鍵、core key）就跳 Warning、寫出被誰用了、不設定；? 與 footer 寫的是目前的鍵；core key 與 panel 的鍵不給改'
       - 'Settings 畫面只有一個 panel：[1] KEYS，一列一個值（tdp panel.12）：表頭 ACTION、KEY；Move left、Move right、Down a row、Rotate left、Rotate right、Drop 各一列。沒有 Pause 那一列（使用者 2026-11-12：PAUSE 跟 Space menu 是兩件事；不需要 pause 鍵，使用 Esc 就好）：暫停是 Esc 離開 Gaming（tdp K4），Space 打開 Space menu，menu 開著遊戲停著是因為 Gaming 時開任何 popup 遊戲都停（task 5）'
-      - 'Enter 在一列上打開 select（tdp select）：標題 KEY: <動作>，列出 a 到 z 與 Enter，不列 q、r 與 Space（使用者 2026-11-12：不能用的鍵不要出現在選單裡；q 離開、Space 開 Space menu，r 是 Gaming 模式自己的 Restart，task 5；s 原本是 Save，Save 拿掉之後可以選），現在的鍵選著；選到別的動作在用的鍵（或方向鍵跟著別的動作的字母），跳 Warning toast（tdp toast）：Can''t use [k] for Rotate left: it is Rotate right''s key（句子裡的鍵加方括號，tdp M5），鍵不變、不寫檔；其他的 Enter 確定就寫進設定檔，寫不進去 popup 不關、上面開 error popup（tdp popup.7），值不變'
-      - '列出的鍵（tdp K11：能選哪些由 app 決定）：小寫字母與 Enter，不列 q、r 與 Space（上一條）；方向鍵跟著字母（task 4），不另外列。設定檔裡的鍵不是小寫字母或 Enter、或是 q、Space、r、兩個動作同一個鍵，都算讀不了'
+      - 'Enter 在一列上打開 select（tdp select）：標題 KEY: <動作>，列出 a 到 z 與 Enter，不列 q、r 與 Space（使用者 2026-11-12：不能用的鍵不要出現在選單裡；q 離開、Space 開 Space menu，r 是 Gaming 模式自己的 Restart，task 5；s 原本是 Save，Save 拿掉之後可以選），現在的鍵選著；選到別的動作在用的鍵，跳 Warning toast（tdp toast）：Can''t use [k] for Rotate left: it is Rotate right''s key（句子裡的鍵加方括號，tdp M5），鍵不變、不寫檔；其他的 Enter 確定就寫進設定檔，寫不進去 popup 不關、上面開 error popup（tdp popup.7），值不變'
+      - '列出的鍵（tdp K11：能選哪些由 app 決定）：小寫字母與 Enter，不列 q、r 與 Space（上一條）；Enter 與移動也能改，空出來的 h、j、l 可以給別的動作（tdp #14 使用者選 A）；方向鍵不能選，照預設（task 4）。設定檔裡的鍵不是小寫字母或 Enter、或是 q、Space、r、兩個動作同一個鍵，都算讀不了'
       - '設定是 app 自己的選項（tdp E3）：~/.config/tetru/config.yaml（$XDG_CONFIG_HOME/tetru），TETRU__CONFIG 覆寫（tdp E2）；keys 底下 move_left、move_right、down、rotate_left、rotate_right、drop。沒寫的照預設；設定檔裡其他的 key 寫回時留著（tdp E3）。改了在 App Log 記一筆（tdp note.7）'
       - '設定檔讀不了（格式錯、鍵不能用、兩個動作同一個鍵）時照 tdp E3 問要不要移開（tgo MoveAside），移開就用預設的鍵；排行的檔也讀不了時接著問它'
       - '改了馬上生效：Gaming 的鍵、footer、? 與 INFO 寫的都是現在的鍵'
       - 'Gaming 的 Space menu 不列玩的鍵（task 5；tdp v1.2.4 K11：app 自己的模式的 Space menu 列什麼由 app 決定）；改了鍵之後，? 與提示（footer、KEYS）寫現在的鍵（tdp K11-14）'
-      - note: 'tdp v1.2.6 的 K11 表加了 Enter 這一列（Enter 是 core key，使用者選的鍵不能是 core key、core key 不給使用者改）：Settings 可以選 Enter、Drop 能離開 Enter 不合 v1.2.6；Drop 改成字母後 60 欄的 footer 放不下它（K11-20）；Move left、Move right、Down a row 能不能改到 h、l、j 以外的字母，tdp 沒寫（K11 的移動照 K12、K11-20 的移動鍵）。2026-11-12 review 判不合，回報 tdp #14（使用者 2026-11-11：有衝突就發 terminu issue 吧）。暫時照現在的做法，等回覆；合 v1.2.6 的暫時做法是 Drop 固定 Enter、移動固定 h、l、j，會拿掉使用者要的改鍵，先不做'
+      - note: 'tdp v1.2.6 的 K11 表加了 Enter 這一列（Enter 是 core key，使用者選的鍵不能是 core key、core key 不給使用者改）：Settings 可以選 Enter、Drop 能離開 Enter 不合 v1.2.6；Drop 改成字母後 60 欄的 footer 放不下它（K11-20）；Move left、Move right、Down a row 能不能改到 h、l、j 以外的字母，tdp 沒寫（K11 的移動照 K12、K11-20 的移動鍵）。2026-11-12 review 判不合，回報 tdp #14（使用者 2026-11-11：有衝突就發 terminu issue 吧）。暫時照現在的做法，等回覆；合 v1.2.6 的暫時做法是 Drop 固定 Enter、移動固定 h、l、j，會拿掉使用者要的改鍵，先不做。回覆（2026-11-13，terminu 轉達）：使用者選 A，tdp 本機 0c785d0 改了 K11、K12（新增 K11-25，改 K11-20、K12-19），還沒發版：app 自己的模式裡 Enter 與移動鍵也可以讓使用者改，移動改到的鍵還是移動鍵，空出來的字母可以給別的動作，方向鍵與 PgUp|PgDn 照預設。tetru 照它把方向鍵改成照預設（task 4），footer 把兩個旋轉合成 d|k:rotate（task 4）；tdp 發版、升上去之後拿掉 TODO(tdp #14)'
         issue: tdp #14
 
   - id: 14

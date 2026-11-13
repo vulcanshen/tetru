@@ -19,16 +19,21 @@ func TestDefaultIsTheUsersKeys(t *testing.T) {
 	}
 }
 
-func TestArrowsGoWithTheirLetters(t *testing.T) {
+func TestArrowsKeepTheirDefault(t *testing.T) {
 	d := Default()
 	for a, want := range map[Action][]string{Left: {"h", "←"}, Right: {"l", "→"}, Down: {"j", "↓"}, RotateLeft: {"d", "PgDn"}, RotateRight: {"k", "↑"}, Drop: {"Enter"}} {
 		if got := d.Keys(a); !slices.Equal(got, want) {
 			t.Fatalf("%s: %v", a.ID(), got)
 		}
 	}
+	// Move left on a, Rotate right on the h so freed: ← still moves left, ↑
+	// still turns right (tdp #14).
 	d[Left], d[RotateRight] = "a", "h"
-	if !slices.Equal(d.Keys(Left), []string{"a"}) || !slices.Equal(d.Keys(RotateRight), []string{"h", "←"}) {
-		t.Fatal("the arrow does not follow its letter")
+	if !slices.Equal(d.Keys(Left), []string{"a", "←"}) || !slices.Equal(d.Keys(RotateRight), []string{"h", "↑"}) {
+		t.Fatalf("the arrows follow the letters: %v %v", d.Keys(Left), d.Keys(RotateRight))
+	}
+	if err := d.Check(); err != nil {
+		t.Fatal(err)
 	}
 }
 

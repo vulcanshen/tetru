@@ -2,6 +2,17 @@
 
 Each release names the version of terminu design (tdp) it follows.
 
+## Unreleased
+
+- Settings: `Enter` and the moves can go to other keys too, and a letter so freed to another action. The arrows keep
+  what they do at first: move left to `a` and `←` still moves left.
+- While playing, the footer writes the two turns as one pair, `d|k:rotate`, so the turns and the drop fit 60 columns
+  whatever keys they are on; `q:quit` is in it too.
+- A game over stays in the game till its score is kept: `Esc` on the box that asks who played closes only the box, a
+  second `Esc` leaves. The keys to play show greyed while there is nothing to move.
+- `Tab` and the digits do nothing while playing, with no message: there is only one panel to go to.
+- The Settings warning and log write keys in brackets: `Can't use [k] for Rotate left`.
+
 ## v0.1.0-beta.1 — tdp v1.2.4
 
 The first version, a beta: a falling-block game for the terminal, for macOS, Linux and Windows.

@@ -272,8 +272,8 @@ func TestPlay(t *testing.T) {
 		if !tt.playing() || !strings.Contains(row(d, 2), "Gaming") {
 			t.Fatal("not in the Gaming mode")
 		}
-		// 60 columns leave r:restart and s:save out of the footer.
-		if r := row(d, 31); !strings.HasPrefix(r, "Space:menu ?:help d:rotate left k:rotate right Esc:pause") {
+		// 60 columns leave q:quit, a core key, out of the footer.
+		if r := row(d, 31); !strings.HasPrefix(r, "Space:menu ?:help d|k:rotate Enter:drop r:restart Esc:pause") {
 			t.Fatalf("footer %q", r)
 		}
 		if strings.Contains(row(d, 30), "Enter:") {
@@ -374,8 +374,8 @@ func TestTheGamingFooterHasTheTurnsAndTheDrop(t *testing.T) {
 	_, d := open(t, 100, 32)
 	play(d)
 	// The moves are moving, not in it, as Drag's j|k; the drop is in it, as
-	// Drag's Enter:drop (tdp screen.2).
-	if r := row(d, 31); !strings.Contains(r, "d:rotate left k:rotate right Enter:drop") || strings.Contains(r, "move") || !strings.HasSuffix(strings.TrimSpace(r), "Esc:pause") {
+	// Drag's Enter:drop (tdp screen.2); the two turns one pair (tdp M5).
+	if r := row(d, 31); !strings.Contains(r, "d|k:rotate Enter:drop") || strings.Contains(r, "move") || !strings.HasSuffix(strings.TrimSpace(r), "Esc:pause") {
 		t.Fatalf("the Gaming footer: %q", r)
 	}
 }
@@ -384,7 +384,7 @@ func TestSpaceMenuRunsRestartAndTheKeysAreInHelp(t *testing.T) {
 	tt, d := open(t, 60, 32)
 	play(d)
 	d.Press("?")
-	for _, s := range []string{"move left", "move right", "down a row", "rotate left", "rotate right", "drop", "restart", "quit"} {
+	for _, s := range []string{"move left", "move right", "down a row", "d|k", "rotate", "drop", "restart", "quit"} {
 		if !d.Has(s) {
 			t.Fatalf("the Gaming mode's ? has no %q", s)
 		}
@@ -511,7 +511,7 @@ func TestEscOnTheNameKeepsAnon(t *testing.T) {
 	if d.Has("KEEP SCORE") || !strings.Contains(row(d, 2), "Gaming") {
 		t.Fatal("Esc on the name did not just close it, still in the Gaming mode")
 	}
-	for _, k := range tt.play.Keys[:6] {
+	for _, k := range tt.play.Keys[:5] { // the moves, the turns, the drop
 		if k.Disabled == nil || !k.Disabled() {
 			t.Fatalf("%s works with the game over", k.Desc)
 		}

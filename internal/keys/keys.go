@@ -62,10 +62,13 @@ func Default() Set { return Set{"h", "l", "j", "d", "k", "Enter"} }
 // u|d are PgUp|PgDn (tdp K12).
 var arrows = map[string]string{"h": "←", "j": "↓", "k": "↑", "l": "→", "u": "PgUp", "d": "PgDn"}
 
-// Keys are the keys that do a in s: its key, and that key's arrow when it
-// has one (tdp K12: an arrow does what its letter does).
+// Keys are the keys that do a in s: its key, and the arrow of its default
+// key when it has one: ← left, → right, ↓ a row down, ↑ rotate right as k
+// does, PgDn rotate left as d does (tdp K12). The player chooses no arrow,
+// so each keeps its default whatever letter the action is on (tdp #14,
+// user 2026-11-13: Move left on a, ← still moves left).
 func (s Set) Keys(a Action) []string {
-	if arrow, ok := arrows[s[a]]; ok {
+	if arrow, ok := arrows[Default()[a]]; ok {
 		return []string{s[a], arrow}
 	}
 	return []string{s[a]}
@@ -84,7 +87,9 @@ var core = map[string]string{"Space": "it pauses and opens the Space menu", "q":
 //
 // TODO(tdp #14): tdp v1.2.6 makes Enter a core key in the mode, not for the
 // player to choose or move Drop off; and it does not say whether the moves
-// may leave h, l and j. Kept as the user asked till tdp answers.
+// may leave h, l and j. Answered (the user chose A, 2026-11-13): in an app's
+// own mode Enter and the moves are the player's too, a letter so freed has
+// nothing to move; out with the tdp release that has it.
 func Choices() []string {
 	var out []string
 	for c := 'a'; c <= 'z'; c++ {
@@ -96,7 +101,7 @@ func Choices() []string {
 }
 
 // UsedBy says what already has key k in the Gaming mode, other than action a:
-// another action, its arrow, or a core key (tdp K11); "" when nothing has it.
+// another action or a core key (tdp K11); "" when nothing has it.
 func (s Set) UsedBy(a Action, k string) string {
 	if why, ok := core[k]; ok {
 		return why

@@ -158,9 +158,9 @@ Playing (the game in the `Gaming` mode), with the keys as they first are:
 
 On the Settings screen, `Enter` on an action lists the keys: the small letters and `Enter`, but for `q` and `r`,
 which quit and restart. The one chosen is the key from then on, and KEYS beside the well shows it; another
-action's key is refused with a warning saying whose it is. An arrow does what its letter does (`h|j|k|l` are
-`←|↓|↑|→`, `u|d` are `PgUp|PgDn`): set left to another letter and `←` does nothing. `Esc` always pauses and `Space`
-always opens the menu.
+action's key is refused with a warning saying whose it is. `Enter` and the moves can go to other keys too, and a
+letter so freed to another action. The arrows are no one's to choose and keep what they do at first: set left to `a`
+and `←` still moves left. `Esc` always pauses and `Space` always opens the menu.
 
 Clearing 1, 2, 3 or 4 rows at once scores 100, 300, 500 or 800 times the level. A piece that lies on the stack is set half
 a second later; moving or turning it gives it the half second again, a few times.
