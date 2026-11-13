@@ -4,6 +4,10 @@ Each release names the version of terminu design (tdp) it follows.
 
 ## Unreleased
 
+- `Esc` in a game only pauses it: no box over the paused game any more, `Enter` goes on, `Space` lists Resume, New
+  game and End game.
+- New game and End game run from the `Space` menu close it once done; it stayed open over the new game.
+- Ending a game that would not be kept asks first, as restarting does.
 - A game kept going as tetru quits keeps each block's colour, and comes back as it was: no more white blocks on the
   ground. A game kept by v0.1.0 still comes back, its blocks white.
 - The hint, where a drop would set the piece, is a switch in Settings, under the keys: on at first, and on, it shows at

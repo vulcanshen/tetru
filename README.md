@@ -31,8 +31,7 @@ with the player's name and the time, and ranks them, the best first.
 - **The best twenty kept**: the place, the name, the score and the time, the best first on the Rank screen, the first
   three in yellow, green and sky blue. You play first and say who played as the game ends; with no name it is ANON. A
   game whose score is not in the best twenty is not kept, and nobody is asked.
-- **Pause whenever**: `Esc` pauses and leaves the game where it is, a box saying the level, the rows and the score,
-  `Enter` to go on. `Space` shows what you can do, the game waiting while it is open.
+- **Pause whenever**: `Esc` pauses and leaves the game where it is, `Enter` to go on. `Space` shows what you can do, the game waiting while it is open.
 - **Quit and go on later**: quitting with a game going keeps it, its score and the blocks on the ground, nobody
   asked; the next start goes on with it, paused, every block in its colour. Don't want it? Restart.
 
@@ -159,7 +158,7 @@ Playing (the game in the `Gaming` mode), with the keys as they first are:
 | `Enter` | Drop it to the bottom and set it there: two points a row |
 | `r` | Restart: a new game; with points, after asking who played this one, its score kept |
 | `Space` | Show what you can do (restart, quit), the game waiting; close it to go on |
-| `Esc` | Pause, out of the game, where it stands in a box; `Enter` goes on |
+| `Esc` | Pause, out of the game, where it stands; `Enter` goes on |
 
 On the Settings screen, `Enter` on an action lists the keys: the small letters and `Enter`, but for `q` and `r`,
 which quit and restart. The one chosen is the key from then on, and KEYS beside the well shows it; another

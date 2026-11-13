@@ -6,7 +6,6 @@ package ui
 
 import (
 	_ "embed"
-	"fmt"
 	"math/rand/v2"
 	"slices"
 	"strconv"
@@ -241,9 +240,10 @@ func (t *Tetru) setActions() {
 	}
 	t.gameP.Actions = []terminu.Action{
 		enter,
-		{Key: "n", Label: "New game", Desc: "start over from level 1", Scope: terminu.PanelScope, Disabled: t.waiting, Do: t.newGame},
+		{Key: "n", Label: "New game", Desc: "start over from level 1", Scope: terminu.PanelScope, Disabled: t.waiting,
+			AskFor: t.dropAsk("New game", "Start a new game?", "start"), Do: t.startOver},
 		{Key: "x", Label: "End game", Desc: "keep this score and stop", Scope: terminu.PanelScope,
-			Disabled: func() bool { return !t.going() }, Do: t.endGame},
+			Disabled: func() bool { return !t.going() }, AskFor: t.dropAsk("End game", "End this game?", "end"), Do: t.endGame},
 	}
 }
 
@@ -285,26 +285,20 @@ func (t *Tetru) begin() tea.Cmd {
 	return t.resume()
 }
 
-// askName is what ends a game with points the player ends (End game, New
+// askName is what ends a game worth keeping the player ends (End game, New
 // game): a text input (tdp text), titled by what it does (tdp popup.1),
 // saying the points and asking who played, ANON offered (tdp input.6).
 // Enter keeps the score for the name typed, for ANON when there is none
-// (user, 2026-11-11), then runs then; Esc cancels, back to the game. A game
-// not worth keeping (worth) has nothing to keep: then runs at once, an Info
-// toast saying so when it has points.
+// (user, 2026-11-11), then runs then; Esc cancels, back to the game, or to
+// the Space menu it was run from (tgo; tdp F4). Kept, the Space menu under
+// it closes too: the game it was for has ended (tdp T1; user, 2026-11-13:
+// the menu stayed, a new game going under it).
 func (t *Tetru) askName(title, verb string, then func() tea.Cmd) tea.Cmd {
-	if !t.worth() {
-		t.saved = true // nothing to keep, nobody to ask
-		if t.g.Score == 0 {
-			return then()
-		}
-		return tea.Batch(t.App.Toast(terminu.Info, t.notKept()+", so nothing is kept."), then())
-	}
 	keep := func(name string) tea.Cmd {
 		if name = strings.TrimSpace(name); name == "" {
 			name = anon
 		}
-		return tea.Batch(t.save(name), then())
+		return tea.Batch(t.App.CloseAll(), t.save(name), then())
 	}
 	return t.App.Text(terminu.TextInput{
 		Title:     title,
@@ -372,59 +366,73 @@ func (t *Tetru) resume() tea.Cmd {
 	return t.wake()
 }
 
-// pause is Esc leaving the Gaming mode (tdp K4): the game waits, and a
-// confirm says so (user, 2026-11-11: a pause is a popup, not drawn in the
-// game), the level, the rows and the score in it. A confirm is titled by
-// what Enter does (tdp confirm.2): RESUME; Esc leaves the game paused,
-// Enter on PLAYGROUND going on then.
+// pause is Esc leaving the Gaming mode (tdp K4): the game waits, and
+// PLAYGROUND is as it is out of the mode, Enter:resume, its Space menu
+// Resume, New game and End game; no popup (user, 2026-11-13: Esc leaves
+// the mode, that is all; a RESUME confirm said the pause before, and Esc
+// on it left the game paused with nothing over it).
 func (t *Tetru) pause() tea.Cmd {
 	t.setActions()
-	if !t.paused() {
-		return nil
-	}
-	return t.App.Confirm(terminu.Ask{
-		Title:    "Resume",
-		Question: "Go on with the game?",
-		Verb:     "resume",
-		Details:  []string{fmt.Sprintf("Paused: level %d, %d lines, %s points.", t.g.Level, t.g.Lines, comma(t.g.Score))},
-	}, func() tea.Cmd {
-		if t.paused() {
-			return t.resume()
-		}
-		return nil
-	})
+	return nil
 }
 
-// newGame ends the game going, its score kept for the name asked, and
-// starts the next; Esc on the name goes back to the game. A game not worth
-// keeping is asked about first, a confirm titled as the name's is (tdp F6:
-// every time; user, 2026-11-13: r pressed by mistake started over), that
-// it ends not kept and why its warning (Peach); Enter starts over, nothing
-// said after (user, 2026-11-12: restarting, no Info that it is not in the
-// rank), Esc goes back to the game.
+// dropAsk is what asks first before a game not worth keeping ends (End
+// game, New game): a confirm titled as the name's popup is, every time, as
+// the name is asked every time for a game worth keeping (tdp F6; user,
+// 2026-11-13: r pressed by mistake started over), that it ends not kept
+// and why its warning (Peach). Nothing is asked with no game going, nor for
+// one worth keeping: its name is. As an action's AskFor, run from the Space
+// menu, Esc on it goes back to the menu and Enter closes it (tgo; tdp F4,
+// T1; user, 2026-11-13: the menu stayed after Enter).
+func (t *Tetru) dropAsk(title, question, verb string) func() *terminu.Ask {
+	return func() *terminu.Ask {
+		if !t.going() || t.worth() {
+			return nil
+		}
+		return &terminu.Ask{
+			Title:    title,
+			Question: question,
+			Verb:     verb,
+			Details:  []string{"This game ends, not kept: " + t.notKept() + "."},
+			Warn:     []int{0},
+		}
+	}
+}
+
+// newGame is the Gaming mode's r: New game's confirm first, as the panel's
+// action asks it (dropAsk), then startOver.
 func (t *Tetru) newGame() tea.Cmd {
+	if ask := t.dropAsk("New game", "Start a new game?", "start")(); ask != nil {
+		return t.App.Confirm(*ask, t.startOver)
+	}
+	return t.startOver()
+}
+
+// startOver ends the game going and starts the next: a game worth keeping,
+// its score kept for the name asked first; one not worth it at once, its
+// confirm answered (dropAsk), nothing said after (user, 2026-11-12:
+// restarting, no Info that it is not in the rank); none going, at once.
+func (t *Tetru) startOver() tea.Cmd {
 	if !t.going() {
 		return t.begin()
 	}
 	again := func() tea.Cmd { return tea.Batch(t.finish(), t.begin()) }
 	if !t.worth() {
-		return t.App.Confirm(terminu.Ask{
-			Title:    "New game",
-			Question: "Start a new game?",
-			Verb:     "start",
-			Details:  []string{"This game ends, not kept: " + t.notKept() + "."},
-			Warn:     []int{0},
-		}, func() tea.Cmd {
-			t.saved = true
-			return again()
-		})
+		t.saved = true // nothing to keep
+		return again()
 	}
 	return t.askName("New game", "start", again)
 }
 
-// endGame ends the game going, its score kept for the name asked; Esc on
-// the name goes back to the game.
+// endGame ends the game going: a game worth keeping, its score kept for the
+// name asked first; one not worth it at once, its confirm answered
+// (dropAsk; review 2026-11-13, tdp F6: it ended unasked, an Info toast
+// after), nothing said after.
 func (t *Tetru) endGame() tea.Cmd {
+	if !t.worth() {
+		t.saved = true // nothing to keep
+		return t.finish()
+	}
 	return t.askName("End game", "end", t.finish)
 }
 

@@ -393,36 +393,95 @@ func TestSpaceMenuRunsRestartAndTheKeysAreInHelp(t *testing.T) {
 	g := tt.g
 	d.Press("Space")
 	d.Press("Enter") // the first row: Restart
+	if !d.Has("NEW GAME") {
+		t.Fatal("the menu's Restart with no points did not ask first")
+	}
+	// Esc on it goes back to the game (user, 2026-11-13: that is as it
+	// should be), the mode's menu closed as it ran Restart (tgo ModeKey).
+	d.Press("Esc")
+	if d.Has("NEW GAME") || d.Has("GAMING MODE") || tt.g != g || !tt.playing() {
+		t.Fatal("Esc on Restart's confirm did not go back to the game")
+	}
+	d.Press("Space")
+	d.Press("Enter")
 	d.Press("Enter") // with no points, the confirm
 	if tt.g == g || !tt.playing() {
 		t.Fatal("the menu's Restart did not start over")
 	}
 }
 
+func TestNewAndEndGameFromTheMenuCloseIt(t *testing.T) {
+	// Run from the Space menu paused, New game and End game leave no menu
+	// over what they did (user, 2026-11-13: it stayed, Resume in it, a new
+	// game going under); Esc on what they ask goes back to the menu (tdp F4).
+	tt, d := open(t, 60, 32)
+	play(d)
+	d.Press("Esc")
+	d.Press("Space")
+	d.Press("n") // no points: the confirm
+	if !d.Has("NEW GAME") || !d.Has("Start a new game?") {
+		t.Fatal("the menu's New game with no points did not ask first")
+	}
+	d.Press("Esc")
+	if d.Has("NEW GAME") || !d.Has("PANEL OPERATION") || !tt.paused() {
+		t.Fatal("Esc on New game's confirm did not go back to the menu")
+	}
+	g := tt.g
+	d.Press("n")
+	d.Press("Enter")
+	if tt.g == g || !tt.playing() || d.Has("PANEL OPERATION") || tt.App.Covered() {
+		t.Fatal("the menu's New game, its confirm taken, left the menu open, or no new game")
+	}
+
+	d.Press("j") // a point: worth keeping, its name asked
+	d.Press("Esc")
+	d.Press("Space")
+	d.Press("n")
+	if !d.Has("who played?") {
+		t.Fatal("the menu's New game with points did not ask who played")
+	}
+	d.Press("Esc")
+	if !d.Has("PANEL OPERATION") {
+		t.Fatal("Esc on the name did not go back to the menu")
+	}
+	g = tt.g
+	d.Press("n")
+	d.Press("Enter")
+	if tt.g == g || !tt.playing() || d.Has("PANEL OPERATION") || tt.App.Covered() || len(kept(t)) != 1 {
+		t.Fatal("the menu's New game, the name kept, left the menu open, or no new game")
+	}
+
+	d.Press("Esc")
+	d.Press("Space")
+	d.Press("x") // no points
+	d.Press("Enter")
+	if !tt.g.Over || d.Has("PANEL OPERATION") || tt.App.Covered() {
+		t.Fatal("the menu's End game, its confirm taken, left the menu open, or did not end")
+	}
+}
+
 func TestEscPausesEnterResumes(t *testing.T) {
 	tt, d := open(t, 60, 32)
 	play(d)
+	// Esc leaves the Gaming mode, that is all: paused, PLAYGROUND as it is
+	// out of the mode, no popup (user, 2026-11-13).
 	d.Press("Esc")
 	if tt.playing() || !tt.paused() || strings.Contains(row(d, 2), "Gaming") {
 		t.Fatal("Esc did not pause")
 	}
-	if !d.Has("RESUME") || !d.Has("Go on with the game?") || !d.Has("Paused: level 1, 0 lines, 0 points.") || !d.Has("Enter:resume") {
-		t.Fatal("no popup says the game is paused")
+	if tt.App.Covered() || d.Has("RESUME") || d.Has("Go on with the game?") || !d.Has("Enter:resume") {
+		t.Fatal("a popup over the pause, or no Enter:resume")
 	}
 	y := tt.g.At.Y
 	d.Advance(3 * time.Second)
 	if tt.g.At.Y != y {
 		t.Fatal("the game went on paused")
 	}
-	d.Press("Enter")
-	if !tt.playing() || d.Has("RESUME") {
-		t.Fatal("Enter on the popup did not resume")
+	d.Press("Space")
+	if !d.Has("[Enter] Resume") || !d.Has("[n]ew game") || !d.Has("[x] End game") {
+		t.Fatal("the Space menu paused is not Resume, New game and End game")
 	}
 	d.Press("Esc")
-	d.Press("Esc")
-	if !tt.paused() || d.Has("RESUME") || !d.Has("Enter:resume") {
-		t.Fatal("Esc on the popup did not leave the game paused, Enter on PLAYGROUND to resume")
-	}
 	d.Press("Enter")
 	if !tt.playing() {
 		t.Fatal("Enter on PLAYGROUND did not resume")
@@ -532,8 +591,7 @@ func TestNameWithTrickyCharacters(t *testing.T) {
 		d.Note("name " + name)
 		play(d)
 		d.Press("j")
-		d.Press("Esc")
-		d.Press("Esc") // the popup: paused
+		d.Press("Esc") // paused
 		d.Press("x")
 		d.Paste(name)
 		d.Press("Enter")
@@ -642,11 +700,20 @@ func TestScoresBestFirst(t *testing.T) {
 func TestNoPointsNotKept(t *testing.T) {
 	tt, d := open(t, 60, 32)
 	play(d)
-	d.Press("Esc")
-	d.Press("Esc") // the popup: paused
+	d.Press("Esc") // paused
+	// Asked every time, as a game worth keeping is (tdp F6).
 	d.Press("x")
-	if !tt.g.Over || len(kept(t)) != 0 || d.Has("END GAME") {
-		t.Fatal("a game with no points asked, was kept, or did not end")
+	if tt.g.Over || !d.Has("END GAME") || !d.Has("This game ends, not kept: no points.") || !d.Has("End this game?") || !d.Has("Enter:end") {
+		t.Fatal("End game with no points did not ask first")
+	}
+	d.Press("Esc")
+	if tt.g.Over || d.Has("END GAME") {
+		t.Fatal("Esc on End game's confirm ended the game")
+	}
+	d.Press("x")
+	d.Press("Enter")
+	if !tt.g.Over || len(kept(t)) != 0 || d.Has("nothing is kept") {
+		t.Fatal("a game with no points was kept, did not end, or said so after")
 	}
 	d.Advance(game.Curtain)
 	if d.Has("KEEP SCORE") || !d.Has("Enter:play") {
@@ -666,8 +733,7 @@ func TestEndGameAsksAndKeeps(t *testing.T) {
 	}
 	play(d)
 	d.Press("j")
-	d.Press("Esc")
-	d.Press("Esc") // the popup: paused
+	d.Press("Esc") // paused
 	d.Press("x")
 	if !d.Has("END GAME") || !d.Has("1 points: who played?") || !d.Has("Enter:end") {
 		t.Fatal("End game did not ask who played, saying the points")
@@ -692,8 +758,7 @@ func TestNewGameAsksWhoPlayed(t *testing.T) {
 	tt, d := open(t, 60, 32)
 	play(d)
 	d.Press("j")
-	d.Press("Esc")
-	d.Press("Esc") // the popup: paused
+	d.Press("Esc") // paused
 	d.Press("n")
 	if !d.Has("NEW GAME") || !d.Has("Enter:start") {
 		t.Fatal("New game did not ask who played the game going")
@@ -732,13 +797,14 @@ func TestQuitUnderAPopupAsksFirst(t *testing.T) {
 	_, d := open(t, 60, 32)
 	play(d)
 	d.Press("j")
-	d.Press("Esc") // paused, RESUME open
+	d.Press("Esc") // paused
+	d.Press("Space")
 	d.Press("q")
 	if d.Quit() || !d.Has("Quit tetru?") || stashed() {
 		t.Fatal("q under a popup did not ask first (tdp K9), or saved before the answer")
 	}
 	d.Press("Esc")
-	if d.Quit() || stashed() || !d.Has("RESUME") {
+	if d.Quit() || stashed() || !d.Has("PANEL OPERATION") {
 		t.Fatal("Esc on Quit tetru? did not go back, or saved the game all the same")
 	}
 	d.Press("q")
@@ -983,8 +1049,7 @@ func TestQuitKeepsTheGameAndTheNextStartGoesOn(t *testing.T) {
 	if !tt.playing() {
 		t.Fatal("Enter did not go on with it")
 	}
-	d.Press("Esc")
-	d.Press("Esc") // the popup: paused
+	d.Press("Esc") // paused
 	d.Press("x")
 	d.Type("amy")
 	d.Press("Enter")
@@ -1122,11 +1187,14 @@ func TestRankKeepsTheBestTwentyWithTheirPlaces(t *testing.T) {
 	d.Press("T")
 	play(d)
 	tt.g.Score = 150 // under the twentieth
-	d.Press("Esc")
-	d.Press("Esc") // the popup: paused
+	d.Press("Esc")   // paused
 	d.Press("x")
-	if d.Has("END GAME") || !tt.g.Over || !d.Has("150 points, not in the best 20, so nothing is kept.") {
-		t.Fatal("a game not in the best twenty asked who played, or did not say it is not kept")
+	if tt.g.Over || !d.Has("END GAME") || !d.Has("This game ends, not kept: 150 points, not in the best 20.") || d.Has("who played") {
+		t.Fatal("End game with a game not in the best twenty did not ask first, saying why it is not kept")
+	}
+	d.Press("Enter")
+	if !tt.g.Over || d.Has("so nothing is kept") {
+		t.Fatal("End game not in the best twenty did not end, or said so after")
 	}
 	if all := kept(t); len(all) != scores.Most+1 {
 		t.Fatalf("the file was written: %d", len(all))
