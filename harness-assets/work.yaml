@@ -153,9 +153,9 @@ tasks:
     test:
       - check: repo
   - id: 13
-    spec: 62
+    spec: 64
     implementation: |
-      Settings 畫面的 [1] KEYS（下面是 task 17 的 [2] PLAY；settingsLayout：KEYS 整個寬、高是框加表頭加六列，PLAY 其餘），tgo Values（一列一個值）：表頭 ACTION、KEY；MOVE LEFT h、MOVE RIGHT l、DOWN A ROW j、ROTATE LEFT d、ROTATE RIGHT k、
+      Settings 畫面只有一個 panel [1] SETTINGS，tgo Values（一列一個值），兩組（tgo Field.Group）：Keys 六列，Play 一列（task 17 的 HINT）；有分組 tgo 不畫表頭（沒有設 Header）；Keys 一組：MOVE LEFT h、MOVE RIGHT l、DOWN A ROW j、ROTATE LEFT d、ROTATE RIGHT k、
       DROP Enter，沒有 PAUSE 那一列；每一列有說明（tgo Field.Desc，? 的「每一列」）；hint Enter:edit
       Enter 在一列上開 tgo Select：標題 KEY: Rotate left，選項是 a 到 z（沒有 q、r）與 Enter（keys.Choices），現在的鍵選著
       Enter 與移動也能改：落到底改成 s、左移改成 a 之後，Enter、h 可以給別的動作；單獨的 g 也能選（Gaming 沒有 g 開頭的組合，tgo v1.2.8 把它交給模式的鍵）；方向鍵不能選，照預設（task 4）
@@ -199,11 +199,11 @@ tasks:
       排在設定、排行的檔後面問；Enter 移開、沒有存檔，Esc 離開；讀進來之後刪不掉：tgo App.Error 開 CAN'T REMOVE THE GAME SAVED，說下次啟動還會再接一次
     test: [TestPathIsBesideTheScores, TestSaveLoadRemove, TestLoadAGameOfV010, TestLoadBroken, TestStackIsWhatASaveKeepsAndResumeTakesUp, TestQuitKeepsTheGameAndTheNextStartGoesOn, TestNoSaveToPress, TestFinishKeepsTheGameGoing, TestBrokenSaveAsksToMoveAside]
   - id: 17
-    spec: 62
+    spec: 64
     implementation: |
       提示：game.Landing 是正在掉的方塊快速落下會落定的四格（從現在的位置一格一格往下試到放不下為止），每一關都有；消行動畫中、結束後是 nil
       ui picture(g, hint)：t.hint 打開時先把這四格畫成 inkHint（#6c7086，同一個 nf-fa-square），再畫正在掉的方塊蓋在上面；關掉就不畫；寬窄兩種排法畫的是同一張圖
-      開關：Settings 的 [2] PLAY（settingsLayout 放在 KEYS 下面），tgo Values 沒有表頭，一個 Field：HINT，Options [where a drop lands]、Multi（一個開關，tgo 不畫 Select all）、
+      開關：Settings 那一個 panel 的最後一列，Play 一組（tgo Field.Group，在 Keys 一組下面），一個 Field：HINT，Options [where a drop lands]、Multi（一個開關，tgo 不畫 Select all）、
       Checked [t.hint]，Desc a lighter grey where a drop would set the piece；Enter 在原地翻（tgo 的 hint Enter:toggle），OnChange 用 keys.SaveHint 寫進設定檔：
       寫進去 t.hint 跟著換、App Log 記 Success：The hint is now off；寫不進去 setHint 翻回原本的、tgo App.Error 開 CAN'T SAVE THE HINT（路徑與原因）
       設定檔（task 13 的 config.yaml）：hint: true|false，keys.Hint 讀，沒寫是 true；不是 true 或 false 是錯，跟鍵讀不了一樣 tgo App.MoveAside，移開之後 setHint(true)；

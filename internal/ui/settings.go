@@ -9,8 +9,8 @@ import (
 	"github.com/vulcanshen/tetru/internal/keys"
 )
 
-// keyFields are the Settings screen's rows, a value a row (tdp panel.12):
-// an action and its key, Enter to choose another. No row for pausing: Esc
+// keyFields are the Settings panel's first group, KEYS, a value a row (tdp
+// panel.12): an action and its key, Enter to choose another. No row for pausing: Esc
 // pauses, leaving the Gaming mode (tdp K4), and Space opens the Space menu,
 // which holds the game as any popup does (user, 2026-11-12: two things; no
 // pause key of its own, Esc is it).
@@ -18,6 +18,7 @@ func (t *Tetru) keyFields() []*terminu.Field {
 	var fs []*terminu.Field
 	for _, a := range keys.Actions {
 		fs = append(fs, &terminu.Field{
+			Group: "Keys",
 			Label: a.Label(),
 			Desc:  a.Desc(),
 			Value: func() string { return t.keys[a] },
@@ -27,14 +28,15 @@ func (t *Tetru) keyFields() []*terminu.Field {
 	return fs
 }
 
-// hintField is PLAY's row: the hint's switch, one checkbox flipped in
-// place with Enter (tdp checkbox: a switch drawn on the panel), in effect
+// hintField is the Settings panel's second group, PLAY, one row: the
+// hint's switch, one checkbox flipped in place with Enter (tdp checkbox: a switch drawn on the panel), in effect
 // and saved as it is flipped (tdp panel.12). On at first, and on, the hint
 // shows at every level (user, 2026-11-13: a switch in Settings, not the
 // first five levels by themselves). A switch that can't be saved flips
 // back, an error popup saying why (tdp E3).
 func (t *Tetru) hintField() *terminu.Field {
 	f := &terminu.Field{
+		Group:   "Play",
 		Label:   "Hint",
 		Desc:    "a lighter grey where a drop would set the piece",
 		Options: []string{"where a drop lands"},
@@ -54,22 +56,12 @@ func (t *Tetru) hintField() *terminu.Field {
 	return f
 }
 
-// setHint sets the hint's switch, and PLAY's row with it.
+// setHint sets the hint's switch, and its row with it.
 func (t *Tetru) setHint(on bool) {
 	t.hint = on
 	if t.hintF != nil {
 		t.hintF.Checked = []bool{on}
 	}
-}
-
-// settingsLayout lays the Settings screen out (tdp L1: the app's): KEYS the
-// whole width, as high as its rows, PLAY under it, the rest.
-// TODO(tdp #15): one panel, the keys and the hint two sections of it (user,
-// 2026-11-13), once tdp and terminu-go have sections in a panel of a value
-// a row.
-func settingsLayout(w, h int) []terminu.Rect {
-	top := min(h-3, 3+len(keys.Actions)) // the frame, the header, a row an action
-	return []terminu.Rect{{W: w, H: top}, {Y: top, W: w, H: h - top}}
 }
 
 // chooseKey opens a select of the keys offered (tdp select; tdp K11: which

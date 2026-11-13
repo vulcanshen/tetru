@@ -165,7 +165,7 @@ On the Settings screen, `Enter` on an action lists the keys: the small letters a
 which quit and restart. The one chosen is the key from then on, and KEYS beside the well shows it; another
 action's key is refused with a warning saying whose it is. `Enter` and the moves can go to other keys too, and a
 letter so freed to another action. The arrows are no one's to choose and keep what they do at first: set left to `a`
-and `←` still moves left. `Esc` always pauses and `Space` always opens the menu. Under the keys, PLAY has the hint's
+and `←` still moves left. `Esc` always pauses and `Space` always opens the menu. Under the keys, in PLAY, is the hint's
 switch: `Enter` there switches it off or on, kept from then on.
 
 Clearing 1, 2, 3 or 4 rows at once scores 100, 300, 500 or 800 times the level. A piece that lies on the stack is set half

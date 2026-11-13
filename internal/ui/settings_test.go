@@ -26,7 +26,7 @@ func TestScreensSwitchOnTRS(t *testing.T) {
 		t.Fatal("a screen of one panel has the panels in its footer")
 	}
 	d.Press("S")
-	if r := row(d, 2); !strings.Contains(r, "[1] KEYS") || !d.Has("ROTATE LEFT") {
+	if r := row(d, 2); !strings.Contains(r, "[1] SETTINGS") || !d.Has("ROTATE LEFT") {
 		t.Fatalf("S did not show the settings: %q", r)
 	}
 	d.Press("T")
@@ -47,10 +47,14 @@ func TestInfoShowsTheKeys(t *testing.T) {
 func TestSettingsSetAKey(t *testing.T) {
 	tt, d := open(t, 60, 32)
 	d.Press("S")
-	for _, s := range []string{"ACTION", "MOVE LEFT", "h", "DROP", "Enter", "Enter:edit"} {
+	for _, s := range []string{"KEYS", "MOVE LEFT", "h", "DROP", "Enter", "PLAY", "HINT", "Enter:edit"} {
 		if !d.Has(s) {
 			t.Fatalf("the settings have no %q", s)
 		}
+	}
+	// One panel, two groups, no header (user, 2026-11-13; tdp panel.12).
+	if d.Has("ACTION") || d.Has("[2]") || !strings.Contains(row(d, 3), "KEYS") || !strings.Contains(row(d, 4), "  MOVE LEFT") {
+		t.Fatal("the settings are not one panel of groups, the keys first, with no header")
 	}
 	d.Press("j")
 	d.Press("j")
@@ -198,10 +202,10 @@ func TestSettingsSwitchTheHint(t *testing.T) {
 		t.Fatal("the hint is off at first")
 	}
 	d.Press("S")
-	if !d.Has("[2] PLAY") || !d.Has("HINT") || !d.Has("where a drop lands") || !d.Has(checkOn) {
+	if !d.Has("PLAY") || !d.Has("HINT") || !d.Has("where a drop lands") || !d.Has(checkOn) {
 		t.Fatal("the settings have no hint switched on under the keys")
 	}
-	d.Press("2")
+	d.Press("G") // the last row
 	if !d.Has("Enter:toggle") {
 		t.Fatal("the hint's switch has no Enter:toggle")
 	}
@@ -235,7 +239,8 @@ func TestSettingsHaveNoPauseRow(t *testing.T) {
 	if d.Has("PAUSE") {
 		t.Fatal("a Pause row: Esc pauses, Space opens the menu")
 	}
-	d.Press("G") // the last row: Drop
+	d.Press("G") // the last row: the hint
+	d.Press("k") // Drop, the last key
 	d.Press("Enter")
 	if !d.Has("KEY: Drop") {
 		t.Fatal("Drop is not the last row, or opened no select")
@@ -263,7 +268,7 @@ func TestSettingsThatCantBeKept(t *testing.T) {
 	}
 	d.Press("Esc")
 	d.Press("Esc")
-	d.Press("2")
+	d.Press("G")
 	d.Press("Enter")
 	if !d.Has("SAVE THE HINT") || !tt.hint || !tt.hintF.Checked[0] {
 		t.Fatal("a hint that could not be kept: switched off, or no error")
