@@ -95,10 +95,10 @@ func TestSettingsSetAKey(t *testing.T) {
 }
 
 // TestEnterAndTheMovesAreThePlayers: in an app's own mode Enter and the
-// moves are the player's to set too (tdp #14, the user chose A, 2026-11-13).
+// moves are the player's to set too (tdp v1.2.7 K11, K12, K11-25; tdp #14).
 // Moved off, a move still moves and ← with it; a letter so freed and Enter
-// can go to another action; the turns and the drop stay in the footer at 60
-// columns (tdp K11-20).
+// can go to another action, a single g too; the turns and the drop stay in
+// the footer at 60 columns (tdp K11-20).
 func TestEnterAndTheMovesAreThePlayers(t *testing.T) {
 	tt, d := open(t, 60, 32)
 	d.Press("S")
@@ -124,7 +124,8 @@ func TestEnterAndTheMovesAreThePlayers(t *testing.T) {
 	set(0, "a") // Move left off h
 	set(4, "h") // Rotate right on the h so freed
 	set(3, "Enter")
-	want := keys.Set{"a", "l", "j", "Enter", "h", "s"}
+	set(2, "g") // Down a row on a single g: Gaming has no chord starting with g
+	want := keys.Set{"a", "l", "g", "Enter", "h", "s"}
 	if tt.keys != want {
 		t.Fatalf("keys %v, not %v", tt.keys, want)
 	}
@@ -144,6 +145,11 @@ func TestEnterAndTheMovesAreThePlayers(t *testing.T) {
 	d.Press("←")
 	if tt.g.At.X != at.X-2 {
 		t.Fatal("a and ← do not move left")
+	}
+	d.Press("g")
+	d.Press("↓")
+	if tt.g.At.Y != at.Y+2 {
+		t.Fatal("g and ↓ do not move down a row")
 	}
 	d.Press("Enter")
 	if tt.g.At.Turn != 3 {

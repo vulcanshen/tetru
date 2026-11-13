@@ -40,7 +40,7 @@ tasks:
       tgo App.Tick 每 40 ms 一格推進遊戲（README 的計時器）；消行時每 16 ms 一格（task 9）
     test: [TestPiecesComeSevenToABag, TestSameSeedSameGame, TestPieceComesInAtTheTopInTheMiddle, TestMoveStopsAtTheWalls, TestRotateTurnsAndComesBack, TestRotateKicksOffTheWall, TestDownScoresARow, TestDropSetsThePieceAndScoresTwoARow, TestGravityAtTheLevelsSpeed, TestLockWaitsAndMovingRestartsIt, TestLockResetsRunOut, TestClearScoresAtTheLevelAndGoesUp, TestTheSpeedStopsAtTheLastLevel, TestTheStackAtTheTopEnds, TestEndStopsThePiece, TestTheGameFalls]
   - id: 4
-    spec: 53
+    spec: 54
     implementation: |
       開始或繼續一局時，PLAYGROUND 進入 tgo 的模式 Gaming（tgo Panel.EnterMode）：tgo 把外框換成模式色、上框右邊畫 ┫Gaming┣
       Gaming 的鍵（tgo ModeKey）照 Settings 的鍵（task 13），預設：h、← 左一格；l、→ 右一格；j、↓ 往下一格；d、PgDn 左旋（逆時針）；k、↑ 右旋（順時針）；
@@ -152,12 +152,12 @@ tasks:
     test:
       - check: repo
   - id: 13
-    spec: 53
+    spec: 54
     implementation: |
       Settings 畫面只有 [1] KEYS，tgo Values（一列一個值）：表頭 ACTION、KEY；MOVE LEFT h、MOVE RIGHT l、DOWN A ROW j、ROTATE LEFT d、ROTATE RIGHT k、
       DROP Enter，沒有 PAUSE 那一列；每一列有說明（tgo Field.Desc，? 的「每一列」）；hint Enter:edit
       Enter 在一列上開 tgo Select：標題 KEY: Rotate left，選項是 a 到 z（沒有 q、r）與 Enter（keys.Choices），現在的鍵選著
-      Enter 與移動也能改：落到底改成 s、左移改成 a 之後，Enter、h 可以給別的動作；方向鍵不能選，照預設（task 4）
+      Enter 與移動也能改：落到底改成 s、左移改成 a 之後，Enter、h 可以給別的動作；單獨的 g 也能選（Gaming 沒有 g 開頭的組合，tgo v1.2.8 把它交給模式的鍵）；方向鍵不能選，照預設（task 4）
       選到別的動作的鍵：不寫檔、鍵不變，tgo 跳 Warning toast：Can't use [k] for Rotate left: it is Rotate right's key
       其他的 Enter 確定時（tgo Select.Commit）寫進設定檔，寫不進去 popup 不關、tgo 開 error popup，鍵不變；寫進去之後 Gaming 的鍵、footer、
       ? 與 KEYS 跟著換（Gaming 的 Space menu 不列玩的鍵，task 5），App Log 記一筆 Success：Rotate left is now [a]（句子裡的鍵加方括號，tdp M5）

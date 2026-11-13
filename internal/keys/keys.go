@@ -84,12 +84,9 @@ var core = map[string]string{"Space": "it pauses and opens the Space menu", "q":
 // letters and Enter (tdp K11: which keys the player may choose is the
 // app's), none of the core ones (user, 2026-11-12: a key that can't be
 // used is not in the list). One another action has is refused (UsedBy).
-//
-// TODO(tdp #14): tdp v1.2.6 makes Enter a core key in the mode, not for the
-// player to choose or move Drop off; and it does not say whether the moves
-// may leave h, l and j. Answered (the user chose A, 2026-11-13): in an app's
-// own mode Enter and the moves are the player's too, a letter so freed has
-// nothing to move; out with the tdp release that has it.
+// Enter and the moves are the player's too in an app's own mode, a letter
+// so freed having nothing to move; a single g as well, Gaming having no
+// chord starting with g (tdp v1.2.7 K11, K12; tdp #14).
 func Choices() []string {
 	var out []string
 	for c := 'a'; c <= 'z'; c++ {
