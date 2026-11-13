@@ -1,4 +1,4 @@
-spec: 54
+spec: 55
 tasks:
   - id: 1
     accepted: true
@@ -7,11 +7,9 @@ tasks:
   - id: 3
     accepted: true
   - id: 4
-    accepted: false
-    reason: 'tdp 不清楚：玩家把動作從預設的字母改走之後，照模式的預設繼續做那個動作的方向鍵與 PgUp|PgDn（例：左旋改給 Enter，PgDn 照樣左旋、↑ 照樣右旋）在 ?、footer、Space menu 都沒寫；K11-20 要每個鍵都列在 ?，不是移動的還要在 Space menu 或 60 欄的 footer，K12 的慣例是方向鍵與 PgUp|PgDn 不另外列（K12-19 跟著同一個鍵揭露），字母改走之後照哪一條、要列的話寫在哪裡，tdp v1.2.7 沒寫（2026-11-13 review）'
+    accepted: true
   - id: 5
-    accepted: false
-    reason: 'tdp 不清楚：玩家把動作從預設的字母改走之後，照模式的預設繼續做那個動作的方向鍵與 PgUp|PgDn（例：左旋改給 Enter，PgDn 照樣左旋、↑ 照樣右旋）在 ?、footer、Space menu 都沒寫；K11-20 要每個鍵都列在 ?，不是移動的還要在 Space menu 或 60 欄的 footer，K12 的慣例是方向鍵與 PgUp|PgDn 不另外列（K12-19 跟著同一個鍵揭露），字母改走之後照哪一條、要列的話寫在哪裡，tdp v1.2.7 沒寫：? 列的是 Settings 現在的鍵，K11-20 那句 remark 沒算到它們（同 task 4）'
+    accepted: true
   - id: 6
     accepted: true
   - id: 7
@@ -27,8 +25,7 @@ tasks:
   - id: 12
     accepted: true
   - id: 13
-    accepted: false
-    reason: 'tdp 不清楚：玩家把動作從預設的字母改走之後，照模式的預設繼續做那個動作的方向鍵與 PgUp|PgDn（例：左旋改給 Enter，PgDn 照樣左旋、↑ 照樣右旋）在 ?、footer、Space menu 都沒寫；K11-20 要每個鍵都列在 ?，不是移動的還要在 Space menu 或 60 欄的 footer，K12 的慣例是方向鍵與 PgUp|PgDn 不另外列（K12-19 跟著同一個鍵揭露），字母改走之後照哪一條、要列的話寫在哪裡，tdp v1.2.7 沒寫：K11-14 的「? 與提示寫目前作用的鍵」算不算它們（同 task 4）'
+    accepted: true
   - id: 14
     accepted: true
   - id: 15
