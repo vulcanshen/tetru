@@ -74,10 +74,11 @@ func (s Set) Keys(a Action) []string {
 	return []string{s[a]}
 }
 
-// Shown is how a's keys are written in the Gaming mode's ?: its key, and,
-// once a is off its default letter, the arrow that keeps doing it after a
-// | (a|←). On its default letter the arrow goes unwritten, the same key as
-// the letter (tdp K11, K12).
+// Shown is how a's keys are written in its own row of the Gaming mode's ?:
+// its key, and, once a is off its default letter, the arrow that keeps
+// doing it after a | (Enter|PgDn). On its default letter the arrow goes
+// unwritten, the same key as the letter (tdp K11, K12). For the turns, two
+// rows tetru writes itself (tgo ModeKey.Ref); tgo writes the moves' arrows.
 func (s Set) Shown(a Action) string {
 	if arrow, ok := arrows[Default()[a]]; ok && s[a] != Default()[a] {
 		return s[a] + "|" + arrow

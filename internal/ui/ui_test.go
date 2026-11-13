@@ -384,7 +384,7 @@ func TestSpaceMenuRunsRestartAndTheKeysAreInHelp(t *testing.T) {
 	tt, d := open(t, 60, 32)
 	play(d)
 	d.Press("?")
-	for _, s := range []string{"move left", "move right", "down a row", "d|k", "rotate", "drop", "restart", "quit"} {
+	for _, s := range []string{"move left", "move right", "down a row", "d         rotate left", "k         rotate right", "drop", "restart", "quit"} {
 		if !d.Has(s) {
 			t.Fatalf("the Gaming mode's ? has no %q", s)
 		}

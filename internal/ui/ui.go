@@ -537,18 +537,18 @@ var podium = []terminu.Color{terminu.Yellow, terminu.Green, terminu.Hex("#89dceb
 // they are on, Enter too (tdp K11-20; tdp #14). Each action takes the arrow
 // of its default key too (keys.Keys; tdp K12): ↑ turns right as k does, k
 // having no moving to do in the mode, a piece never going up. A move off its
-// default letter has its arrow written after it in ? (a|←, keys.Shown).
-//
-// TODO(tdp #14): a turn off its letter leaves its arrow (PgDn, ↑) unwritten
-// in ?: put in the pair's row, Enter|PgDn|k reads as three keys, not a
-// pair of turns; waits on how tdp and terminu-go write it.
+// default letter has its arrow written after it in ? by tgo (a|←); the turns
+// are two rows in ? (tgo ModeKey.Ref), each with its arrow once off its
+// letter (Enter|PgDn rotate left, k rotate right): one item uses | one way
+// only (tdp M5, K11; tdp #14).
 func (t *Tetru) setModeKeys() {
 	k := t.keys
+	turns := []terminu.KeyRow{{Key: k.Shown(keys.RotateLeft), Desc: "rotate left"}, {Key: k.Shown(keys.RotateRight), Desc: "rotate right"}}
 	t.play.Keys = []terminu.ModeKey{
-		{Key: k.Shown(keys.Left), Keys: k.Keys(keys.Left), Desc: "move left", NoFooter: true, NoMenu: true, Disabled: t.still, Do: t.do(keys.Left)},
-		{Key: k.Shown(keys.Right), Keys: k.Keys(keys.Right), Desc: "move right", NoFooter: true, NoMenu: true, Disabled: t.still, Do: t.do(keys.Right)},
-		{Key: k.Shown(keys.Down), Keys: k.Keys(keys.Down), Desc: "down a row", NoFooter: true, NoMenu: true, Disabled: t.still, Do: t.do(keys.Down)},
-		{Key: k[keys.RotateLeft] + "|" + k[keys.RotateRight], Keys: append(k.Keys(keys.RotateLeft), k.Keys(keys.RotateRight)...), Desc: "rotate", NoMenu: true, Disabled: t.still, Do: t.turn},
+		{Key: k[keys.Left], Keys: k.Keys(keys.Left), Desc: "move left", NoFooter: true, NoMenu: true, Disabled: t.still, Do: t.do(keys.Left)},
+		{Key: k[keys.Right], Keys: k.Keys(keys.Right), Desc: "move right", NoFooter: true, NoMenu: true, Disabled: t.still, Do: t.do(keys.Right)},
+		{Key: k[keys.Down], Keys: k.Keys(keys.Down), Desc: "down a row", NoFooter: true, NoMenu: true, Disabled: t.still, Do: t.do(keys.Down)},
+		{Key: k[keys.RotateLeft] + "|" + k[keys.RotateRight], Keys: append(k.Keys(keys.RotateLeft), k.Keys(keys.RotateRight)...), Desc: "rotate", Ref: turns, NoMenu: true, Disabled: t.still, Do: t.turn},
 		{Key: k[keys.Drop], Keys: k.Keys(keys.Drop), Desc: "drop", NoMenu: true, Disabled: t.still, Do: t.do(keys.Drop)},
 		{Key: "r", Desc: "restart", Label: "Restart", MenuDesc: "start over from level 1", Disabled: t.waiting, Do: func(string) tea.Cmd { return t.newGame() }},
 		// q, a core key, the quit flow in any mode (tdp K11, K9), written in the
