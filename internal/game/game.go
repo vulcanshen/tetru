@@ -23,9 +23,6 @@ const (
 	// 2026-11-11: the levels are speeds; 2026-11-13: fifteen, 1 to F, not
 	// ten).
 	MaxLevel = 15
-	// LinesPerLevel are the rows to clear for the next level (user,
-	// 2026-11-13: twenty, not ten).
-	LinesPerLevel = 20
 	// LockDelay is how long a piece lies on the stack before it is set;
 	// moving or turning it starts the wait again, LockResets times at most.
 	LockDelay  = 500 * time.Millisecond
@@ -153,6 +150,10 @@ type Game struct {
 	Next []int // the pieces to come, the next first
 
 	Level, Lines, Score int
+	// PerLevel are the rows to clear for the next level: the game's own, set
+	// as it began (user, 2026-11-14: in Settings, ten at first; 2026-11-13
+	// twenty, before that ten).
+	PerLevel int
 
 	// Going are the rows full and going, the bottom first, while the clear
 	// is under way: they are out of the stack already, white, then sliding
@@ -170,9 +171,10 @@ type Game struct {
 	gaps   []int         // the rows the clear left empty, top first, while the stack comes down
 }
 
-// New is a game from its first piece. The same seed is the same game.
-func New(seed uint64) *Game {
-	g := &Game{rng: rand.New(rand.NewPCG(seed, seed^0x9e3779b97f4a7c15)), cells: make([]uint8, Cols*Rows), Level: 1}
+// New is a game from its first piece, a level every perLevel rows. The
+// same seed is the same game.
+func New(seed uint64, perLevel int) *Game {
+	g := &Game{rng: rand.New(rand.NewPCG(seed, seed^0x9e3779b97f4a7c15)), cells: make([]uint8, Cols*Rows), Level: 1, PerLevel: perLevel}
 	for range Queue {
 		g.Next = append(g.Next, g.deal())
 	}
@@ -180,10 +182,11 @@ func New(seed uint64) *Game {
 	return g
 }
 
-// Resume is a game saved, taken up again: its level, rows and score, its
-// stack's blocks as Stack gave them; the pieces from seed.
-func Resume(seed uint64, level, lines, score int, stack [Rows][Cols]uint8) *Game {
-	g := &Game{rng: rand.New(rand.NewPCG(seed, seed^0x9e3779b97f4a7c15)), cells: make([]uint8, Cols*Rows)}
+// Resume is a game saved, taken up again: its rows a level, its level,
+// rows and score, its stack's blocks as Stack gave them; the pieces from
+// seed.
+func Resume(seed uint64, perLevel, level, lines, score int, stack [Rows][Cols]uint8) *Game {
+	g := &Game{rng: rand.New(rand.NewPCG(seed, seed^0x9e3779b97f4a7c15)), cells: make([]uint8, Cols*Rows), PerLevel: perLevel}
 	g.Level, g.Lines, g.Score = min(max(level, 1), MaxLevel), lines, score
 	for y, row := range stack {
 		copy(g.cells[y*Cols:(y+1)*Cols], row[:])
@@ -434,8 +437,8 @@ func (g *Game) full() []int {
 
 // clearRows starts the clear of the full rows, top first: they go out of the
 // stack and start going, the bottom one first; they score at once, at the
-// level they were cleared at, and the level goes up a level every ten rows,
-// up to the last; the next piece comes in and waits at the top for the
+// level they were cleared at, and the level goes up a level every
+// PerLevel rows, up to the last; the next piece comes in and waits at the top for the
 // clear to end.
 func (g *Game) clearRows(full []int) {
 	g.Going, g.gaps, g.fx = nil, slices.Clone(full), 0
@@ -446,7 +449,7 @@ func (g *Game) clearRows(full []int) {
 	}
 	g.Lines += len(full)
 	g.Score += clearScores[min(len(full), 4)] * g.Level
-	g.Level = min(MaxLevel, 1+g.Lines/LinesPerLevel)
+	g.Level = min(MaxLevel, 1+g.Lines/g.PerLevel)
 	g.bring()
 }
 

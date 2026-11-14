@@ -16,6 +16,18 @@ import (
 // checkOn and checkOff are a checkbox ticked and not (tdp checkbox).
 const checkOn, checkOff = "\U000f0132", "\U000f0131"
 
+// radioOn and radioOff are a radio's option chosen and not (tdp radio.2).
+const radioOn, radioOff = "\U000f043e", "\U000f043d"
+
+// toHint goes to the hint's row of Settings: over the five lines a level,
+// the last rows.
+func toHint(d *tdptest.Driver) {
+	d.Press("G")
+	for range len(keys.PerLevels) {
+		d.Press("k")
+	}
+}
+
 func TestScreensSwitchOnTRS(t *testing.T) {
 	_, d := open(t, 60, 32)
 	d.Press("R")
@@ -205,7 +217,7 @@ func TestSettingsSwitchTheHint(t *testing.T) {
 	if !d.Has("PLAY") || !d.Has("HINT") || !d.Has("where a drop lands") || !d.Has(checkOn) {
 		t.Fatal("the settings have no hint switched on under the keys")
 	}
-	d.Press("G") // the last row
+	toHint(d)
 	if !d.Has("Enter:toggle") {
 		t.Fatal("the hint's switch has no Enter:toggle")
 	}
@@ -239,7 +251,7 @@ func TestSettingsHaveNoPauseRow(t *testing.T) {
 	if d.Has("PAUSE") {
 		t.Fatal("a Pause row: Esc pauses, Space opens the menu")
 	}
-	d.Press("G") // the last row: the hint
+	toHint(d)
 	d.Press("k") // Drop, the last key
 	d.Press("Enter")
 	if !d.Has("KEY: Drop") {
@@ -268,10 +280,62 @@ func TestSettingsThatCantBeKept(t *testing.T) {
 	}
 	d.Press("Esc")
 	d.Press("Esc")
-	d.Press("G")
+	toHint(d)
 	d.Press("Enter")
 	if !d.Has("SAVE THE HINT") || !tt.hint || !tt.hintF.Checked[0] {
 		t.Fatal("a hint that could not be kept: switched off, or no error")
+	}
+	d.Press("Esc")
+	d.Press("G") // every 25 lines
+	d.Press("Enter")
+	if !d.Has("SAVE THE LINES A LEVEL") || tt.per != 10 || tt.perF.Selected != 1 {
+		t.Fatal("lines a level that could not be kept: chosen, or no error")
+	}
+}
+
+func TestSettingsSetTheLinesALevel(t *testing.T) {
+	// The lines to clear for the next level, ten at first, the player's
+	// to set (user, 2026-11-14), five offered, drawn in place (tdp radio).
+	tt, d := open(t, 60, 32)
+	if tt.per != 10 {
+		t.Fatalf("%d lines a level at first", tt.per)
+	}
+	play(d)
+	d.Press("Esc") // paused, a game going
+	d.Press("S")
+	for _, n := range []string{"5", "15", "20", "25"} {
+		if !d.Has(radioOff + " every " + n + " lines") {
+			t.Fatalf("no every %s lines to choose", n)
+		}
+	}
+	if !d.Has("LEVEL UP") || !d.Has(radioOn+" every 10 lines") {
+		t.Fatal("the settings have no lines a level, ten chosen")
+	}
+	d.Press("G") // the last row: every 25 lines
+	d.Press("Enter")
+	if tt.per != 25 || !d.Has(radioOn+" every 25 lines") || !d.Has(radioOff+" every 10 lines") {
+		t.Fatal("Enter did not choose 25 lines a level")
+	}
+	if n, err := keys.PerLevel(tt.cfg); err != nil || n != 25 {
+		t.Fatalf("25 lines a level not kept in the settings: %d %v", n, err)
+	}
+	if again := NewTetru(); again.per != 25 || again.perF.Selected != 4 {
+		t.Fatal("the next start is not at 25 lines a level")
+	}
+	d.Press("!")
+	if !d.Has("A level is now 25 lines, from the") {
+		t.Fatal("no App Log entry")
+	}
+	d.Press("Esc")
+	// The game going keeps the ten it began with; the next one has 25.
+	if tt.g.PerLevel != 10 {
+		t.Fatalf("the game going changed to %d lines a level", tt.g.PerLevel)
+	}
+	d.Press("T")
+	d.Press("n")
+	d.Press("Enter") // start: no points, nothing kept
+	if !tt.playing() || tt.g.PerLevel != 25 {
+		t.Fatalf("the new game goes up every %d lines", tt.g.PerLevel)
 	}
 }
 
@@ -299,6 +363,13 @@ func TestBrokenSettingsAskToMoveAside(t *testing.T) {
 	d = tdptest.Start(t, tt.App, 60, 32)
 	if !d.Has("MOVE ASIDE") || !tt.hint {
 		t.Fatal("a broken hint did not ask to move the settings aside")
+	}
+	// Lines a level that are not offered: the same, ten.
+	os.WriteFile(path, []byte("lines_per_level: 12\n"), 0o644)
+	tt = NewTetru()
+	d = tdptest.Start(t, tt.App, 60, 32)
+	if !d.Has("MOVE ASIDE") || tt.per != 10 {
+		t.Fatal("broken lines a level did not ask to move the settings aside")
 	}
 }
 

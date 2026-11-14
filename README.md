@@ -8,7 +8,7 @@
 **A falling-block game for the terminal.**
 
 Pieces of four blocks fall into a well twelve blocks wide and twenty-four deep; move and turn them as they fall, and
-fill rows from wall to wall to clear them. Every twenty rows is a level, and every level falls faster, up to the fifteenth. tetru keeps the best twenty scores
+fill rows from wall to wall to clear them. Every ten rows is a level, or as many as you set, and every level falls faster, up to the fifteenth. tetru keeps the best twenty scores
 with the player's name and the time, and ranks them, the best first.
 
 ![tetru: a game played, the Space menu pausing it, and the score kept](docs/demo.gif)
@@ -20,10 +20,10 @@ with the player's name and the time, and ranks them, the best first.
   play with.
 - **Your keys**: every key you play with can be changed on the Settings screen; `Esc` (pause) and `Space` (the menu)
   stay as they are.
-- **Fifteen levels of speed**: a level every twenty rows, from a row a second to ten a second; past the fifteenth the
-  speed stays.
+- **Fifteen levels of speed**: a level every ten rows, from a row a second to ten a second; past the fifteenth the
+  speed stays. Make it 5, 15, 20 or 25 rows on the Settings screen, from the next game on.
 - **The level beside the field**: from 66 columns wide, the level stands big at both sides of the field, four rows
-  clear of its top and its foot, and lights up from the foot as you clear its twenty rows, waves going up it; a
+  clear of its top and its foot, and lights up from the foot as you clear its rows, waves going up it; a
   band in the colour of the piece that cleared the last rows sweeps up both sides to bring in the next. Past 9, under 78
   columns, the levels are A to F; the last is gold.
 - **A hint, if you like**: a lighter grey on the ground shows where the piece lands if you drop it now, at every
@@ -144,7 +144,7 @@ tetru has three screens; switch with their keys, or from Global operation in the
 |---|---|
 | `T` | Tetru: the game |
 | `R` | Rank: the best twenty scores, each with its place |
-| `S` | Settings: the keys to play with, and the hint |
+| `S` | Settings: the keys to play with, the hint, and the rows a level |
 
 Playing (the game in the `Gaming` mode), with the keys as they first are:
 
@@ -165,7 +165,8 @@ which quit and restart. The one chosen is the key from then on, and KEYS beside 
 action's key is refused with a warning saying whose it is. `Enter` and the moves can go to other keys too, and a
 letter so freed to another action. The arrows are no one's to choose and keep what they do at first: set left to `a`
 and `←` still moves left. `Esc` always pauses and `Space` always opens the menu. Under the keys, in PLAY, is the hint's
-switch: `Enter` there switches it off or on, kept from then on.
+switch: `Enter` there switches it off or on, kept from then on. Under it, LEVEL UP: the rows to clear for each level,
+every 5, 10, 15, 20 or 25; `Enter` on one chooses it, for the next game on. A game going keeps the one it began with.
 
 Clearing 1, 2, 3 or 4 rows at once scores 100, 300, 500 or 800 times the level. A piece that lies on the stack is set half
 a second later; moving or turning it gives it the half second again, a few times.
@@ -195,7 +196,7 @@ The keys every family app shares:
 |---|---|---|
 | The scores | `~/.tetru/scores.yaml` | `TETRU__DATA` |
 | A game kept going as tetru quit, till the next start takes it up | `~/.tetru/game.yaml` | `TETRU__DATA` |
-| The keys to play with, and the hint | `~/.config/tetru/config.yaml` (`$XDG_CONFIG_HOME/tetru`) | `TETRU__CONFIG` |
+| The keys to play with, the hint, and the rows a level | `~/.config/tetru/config.yaml` (`$XDG_CONFIG_HOME/tetru`) | `TETRU__CONFIG` |
 
 The best twenty scores are kept; a game with no points, or too few for them, is not. A game kept going is kept in the rank once it ends, after it is taken up again. tetru uses none of the family's shared setting keys.
 

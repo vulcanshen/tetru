@@ -162,3 +162,33 @@ func TestTheHintIsOnTillSwitchedOff(t *testing.T) {
 		t.Fatalf("a hint neither true nor false: %v %v", on, err)
 	}
 }
+
+func TestALevelIsTenRowsTillChosen(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "tetru", "config.yaml")
+	if n, err := PerLevel(path); err != nil || n != 10 || DefaultPerLevel != 10 {
+		t.Fatalf("no file: %d rows a level, %v", n, err)
+	}
+	if err := SaveHint(path, false); err != nil {
+		t.Fatal(err)
+	}
+	if n, err := PerLevel(path); err != nil || n != 10 {
+		t.Fatalf("a file that does not say: %d %v", n, err)
+	}
+	if err := SavePerLevel(path, 25); err != nil {
+		t.Fatal(err)
+	}
+	if n, err := PerLevel(path); err != nil || n != 25 {
+		t.Fatalf("chose 25, read %d %v", n, err)
+	}
+	if on, err := Hint(path); err != nil || on {
+		t.Fatalf("the hint went with the rows a level: %v %v", on, err)
+	}
+	for _, body := range []string{"lines_per_level: 12\n", "lines_per_level: ten\n"} {
+		if err := os.WriteFile(path, []byte(body), 0o644); err != nil {
+			t.Fatal(err)
+		}
+		if n, err := PerLevel(path); err == nil || n != 10 {
+			t.Fatalf("%q: %d %v", body, n, err)
+		}
+	}
+}

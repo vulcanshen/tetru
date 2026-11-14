@@ -14,6 +14,7 @@ import (
 	"github.com/vulcanshen/terminu-go/tdptest"
 
 	"github.com/vulcanshen/tetru/internal/game"
+	"github.com/vulcanshen/tetru/internal/keys"
 	"github.com/vulcanshen/tetru/internal/scores"
 )
 
@@ -243,7 +244,7 @@ func TestPictureIsLockus(t *testing.T) {
 	if s.px[boxH][queueX] != inkNone {
 		t.Fatal("no pixel between the boxes")
 	}
-	g := game.New(1)
+	g := game.New(1, 10)
 	s = picture(g, true)
 	for i, p := range g.Next {
 		found := false
@@ -1008,10 +1009,17 @@ func TestRByMistakeStopsTheGame(t *testing.T) {
 func TestQuitKeepsTheGameAndTheNextStartGoesOn(t *testing.T) {
 	dir := t.TempDir()
 	t.Setenv("TETRU__DATA", dir)
-	t.Setenv("TETRU__CONFIG", t.TempDir())
+	cfg := filepath.Join(t.TempDir(), "config.yaml")
+	t.Setenv("TETRU__CONFIG", filepath.Dir(cfg))
+	if err := keys.SavePerLevel(cfg, 15); err != nil {
+		t.Fatal(err)
+	}
 	tt := NewTetru()
 	d := tdptest.Start(t, tt.App, 80, 32)
 	play(d)
+	if tt.g.PerLevel != 15 {
+		t.Fatalf("a game begun with 15 lines a level in Settings goes up every %d", tt.g.PerLevel)
+	}
 	d.Press("j")
 	tt.g.Put(0, game.Rows-1, 3)
 	tt.g.Put(1, game.Rows-1, 4)
@@ -1029,11 +1037,15 @@ func TestQuitKeepsTheGameAndTheNextStartGoesOn(t *testing.T) {
 		t.Fatal("no game saved")
 	}
 
+	// Settings changed since: the game saved keeps the 15 it began with.
+	if err := keys.SavePerLevel(cfg, 25); err != nil {
+		t.Fatal(err)
+	}
 	tt = NewTetru()
 	d = tdptest.Start(t, tt.App, 80, 32)
 	g := tt.g
-	if g == nil || g.Level != level || g.Lines != lines || g.Score != score || !tt.paused() || !d.Has("Enter:resume") || !d.Has("Score: 1") {
-		t.Fatal("the next start did not take the game saved up, paused")
+	if g == nil || g.PerLevel != 15 || g.Level != level || g.Lines != lines || g.Score != score || !tt.paused() || !d.Has("Enter:resume") || !d.Has("Score: 1") {
+		t.Fatal("the next start did not take the game saved up, paused, with its own lines a level")
 	}
 	if g.Cell(0, game.Rows-1) != 4 || g.Cell(1, game.Rows-1) != 5 || g.Cell(2, game.Rows-1) != 0 {
 		t.Fatal("the stack saved is not back, each block its piece's")
@@ -1266,7 +1278,7 @@ func clearOf(t *testing.T, tt *Tetru, n int) *game.Game {
 	stack[game.Rows-5][0] = game.Kept
 	var g *game.Game
 	for seed := uint64(1); ; seed++ {
-		if g = game.Resume(seed, 1, 0, 0, stack); g.Cur == 0 {
+		if g = game.Resume(seed, 10, 1, 0, 0, stack); g.Cur == 0 {
 			break
 		}
 	}

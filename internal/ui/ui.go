@@ -62,7 +62,9 @@ type Tetru struct {
 	cfg      string         // the settings file
 	keys     keys.Set       // the keys to play with
 	hint     bool           // the hint shows (Settings)
-	hintF    *terminu.Field // the hint's switch, Settings' last row
+	hintF    *terminu.Field // the hint's switch, a row of Settings
+	per      int            // the rows a level of the next game (Settings)
+	perF     *terminu.Field // its radio, Settings' last row
 	cfgErr   error          // why the settings could not be read, at start
 	stash    string         // the game saved to go on with
 	stashErr error          // why it could not be read, at start
@@ -98,16 +100,16 @@ func NewTetru() *Tetru {
 	// 2026-11-11: Save keeps it and quits; the next start goes on with it).
 	var sg *saved.Game
 	if sg, t.stashErr = saved.Load(t.stash); sg != nil {
-		t.g = game.Resume(t.seed(), sg.Level, sg.Lines, sg.Score, sg.Stack)
+		t.g = game.Resume(t.seed(), sg.PerLevel, sg.Level, sg.Lines, sg.Score, sg.Stack)
 		t.lv.show(t.g.Level)
 		t.rmErr = saved.Remove(t.stash)
 		t.App.Log(terminu.Info, "Took up the game saved: level "+strconv.Itoa(sg.Level)+", "+comma(sg.Score)+" points")
 	}
-	t.hint = true
+	t.hint, t.per = true, keys.DefaultPerLevel
 	if t.keys, t.cfgErr = keys.Load(t.cfg); t.cfgErr != nil {
 		t.keys = keys.Default()
-	} else {
-		t.hint, t.cfgErr = keys.Hint(t.cfg)
+	} else if t.hint, t.cfgErr = keys.Hint(t.cfg); t.cfgErr == nil {
+		t.per, t.cfgErr = keys.PerLevel(t.cfg)
 	}
 	a := t.App
 	a.MinWidth, a.MinHeight = minW, minH
@@ -127,11 +129,11 @@ func NewTetru() *Tetru {
 	}
 	t.rankP = &terminu.Panel{Label: "Rank", Body: t.list}
 	t.gameP = &terminu.Panel{Label: "Playground", Body: &field{t}, OnEsc: func() tea.Cmd { return nil }}
-	// Settings is one panel, the keys and the hint two groups of it, with
-	// no header (user, 2026-11-13: one panel, two sections; tdp v1.2.9
-	// panel.12, tdp #15).
-	t.hintF = t.hintField()
-	settingsP := &terminu.Panel{Label: "Settings", Body: &terminu.Values{Fields: append(t.keyFields(), t.hintF)}}
+	// Settings is one panel, the keys, and the hint with the rows a level,
+	// two groups of it, with no header (user, 2026-11-13: one panel, two
+	// sections; tdp v1.2.9 panel.12, tdp #15).
+	t.hintF, t.perF = t.hintField(), t.perField()
+	settingsP := &terminu.Panel{Label: "Settings", Body: &terminu.Values{Fields: append(t.keyFields(), t.hintF, t.perF)}}
 	// The mode's Space menu lists Restart and Quit alone (user, 2026-11-12;
 	// tdp K11: what an app's own mode lists there is the app's): not the
 	// keys to play, nor [Esc] Pause, which the footer has. Tab and the
@@ -152,7 +154,7 @@ func NewTetru() *Tetru {
 		NarrowBelow: narrowBelow,
 	})
 	a.AddScreen(&terminu.Screen{Name: "Rank", Key: "R", Desc: "the scores, best first", Panels: []*terminu.Panel{t.rankP}})
-	a.AddScreen(&terminu.Screen{Name: "Settings", Key: "S", Desc: "the keys to play with, and the hint", Panels: []*terminu.Panel{settingsP}})
+	a.AddScreen(&terminu.Screen{Name: "Settings", Key: "S", Desc: "the keys, the hint, the lines a level", Panels: []*terminu.Panel{settingsP}})
 	var err error
 	if a.Splash, err = terminu.NewSplash(icon, "tetru", version.Display(), "A falling-block game for the terminal"); err != nil {
 		panic(err) // the embedded icon is broken: a mistake in the program
@@ -177,6 +179,7 @@ func (t *Tetru) moveAside() tea.Cmd {
 		return t.App.MoveAside(t.cfg, err, func() tea.Cmd {
 			t.keys = keys.Default()
 			t.setHint(true)
+			t.setPerLevel(keys.DefaultPerLevel)
 			t.setModeKeys()
 			return t.moveAside()
 		})
@@ -247,8 +250,8 @@ func (t *Tetru) setActions() {
 	}
 }
 
-// keepGame keeps the game going in the file of the game saved, its level,
-// rows, score and stack, for the next start to go on with; it is not kept
+// keepGame keeps the game going in the file of the game saved, its rows a
+// level, level, rows, score and stack, for the next start to go on with; it is not kept
 // in the rank now, but once it ends after it is taken up again. Nobody
 // saves by hand: tetru does it as it quits with a game going (user,
 // 2026-11-12: save and quit are two things, a stray s mid-game must not
@@ -256,7 +259,7 @@ func (t *Tetru) setActions() {
 // time starts over).
 func (t *Tetru) keepGame() error {
 	g := t.g
-	if err := saved.Save(t.stash, saved.Game{Level: g.Level, Lines: g.Lines, Score: g.Score, Stack: g.Stack()}); err != nil {
+	if err := saved.Save(t.stash, saved.Game{PerLevel: g.PerLevel, Level: g.Level, Lines: g.Lines, Score: g.Score, Stack: g.Stack()}); err != nil {
 		return err
 	}
 	t.saved = true
@@ -277,10 +280,11 @@ func (t *Tetru) enter() tea.Cmd {
 	return t.begin()
 }
 
-// begin starts a new game, in the Gaming mode, its level swept in at the
-// field's sides in its first piece's colour.
+// begin starts a new game, in the Gaming mode, a level every so many rows
+// as Settings says now, its level swept in at the field's sides in its
+// first piece's colour.
 func (t *Tetru) begin() tea.Cmd {
-	t.g, t.saved, t.topped = game.New(t.seed()), false, false
+	t.g, t.saved, t.topped = game.New(t.seed(), t.per), false, false
 	t.lv.sweepTo(t.g.Level, t.g.Cur)
 	return t.resume()
 }

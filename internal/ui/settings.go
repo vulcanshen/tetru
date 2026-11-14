@@ -2,6 +2,7 @@ package ui
 
 import (
 	"slices"
+	"strconv"
 
 	tea "github.com/charmbracelet/bubbletea"
 	terminu "github.com/vulcanshen/terminu-go"
@@ -61,6 +62,44 @@ func (t *Tetru) setHint(on bool) {
 	t.hint = on
 	if t.hintF != nil {
 		t.hintF.Checked = []bool{on}
+	}
+}
+
+// perField is PLAY's second row: the rows a level, a radio of the five
+// offered drawn in place (tdp radio.1: five at most), Enter on one choosing
+// it, in effect and saved at once (tdp radio.3, panel.12) (user,
+// 2026-11-14: in Settings, ten at first, the player's to set). It is the
+// next game's: a game going, or saved, keeps the one it began with, its
+// level counted from its rows by it. One that can't be saved goes back, an
+// error popup saying why (tdp E3).
+func (t *Tetru) perField() *terminu.Field {
+	f := &terminu.Field{
+		Group: "Play",
+		Label: "Level up",
+		Desc:  "the lines to clear for the next level, from the next game",
+	}
+	for _, n := range keys.PerLevels {
+		f.Options = append(f.Options, "every "+strconv.Itoa(n)+" lines")
+	}
+	f.Selected = slices.Index(keys.PerLevels, t.per)
+	f.OnChange = func() tea.Cmd {
+		n := keys.PerLevels[f.Selected]
+		if err := keys.SavePerLevel(t.cfg, n); err != nil {
+			t.setPerLevel(t.per)
+			return t.App.Error("Can't save the lines a level", t.cfg, err.Error())
+		}
+		t.setPerLevel(n)
+		t.App.Log(terminu.Success, "A level is now "+strconv.Itoa(n)+" lines, from the next game")
+		return nil
+	}
+	return f
+}
+
+// setPerLevel sets the rows a level of the next game, and its row with it.
+func (t *Tetru) setPerLevel(n int) {
+	t.per = n
+	if t.perF != nil {
+		t.perF.Selected = slices.Index(keys.PerLevels, n)
 	}
 }
 

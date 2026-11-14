@@ -1,7 +1,8 @@
 // Package saved keeps the one game saved to go on with later (user,
 // 2026-11-11: Save keeps the score and the blocks on the ground, and
-// quits): its level, rows and score and its stack, each block's piece too
-// (user, 2026-11-13: the colours back as they were), in the data directory (tdp E3: ~/.tetru/game.yaml, TETRU__DATA to move it). It
+// quits): its rows a level, its level, rows and score and its stack, each
+// block's piece too (user, 2026-11-13: the colours back as they were), in
+// the data directory (tdp E3: ~/.tetru/game.yaml, TETRU__DATA to move it). It
 // is read back as tetru starts, and then removed.
 package saved
 
@@ -19,21 +20,27 @@ import (
 	"github.com/vulcanshen/tetru/internal/scores"
 )
 
-// Game is a game saved: its stack's blocks as game.Stack gives them.
+// Game is a game saved: the rows a level it began with (game.PerLevel), its
+// stack's blocks as game.Stack gives them.
 type Game struct {
-	Level, Lines, Score int
-	Stack               [game.Rows][game.Cols]uint8
+	PerLevel, Level, Lines, Score int
+	Stack                         [game.Rows][game.Cols]uint8
 }
+
+// OldPerLevel are the rows a level of a game saved before a game kept its
+// own (v0.2.0 and before, whose files do not say): v0.2.0's twenty.
+const OldPerLevel = 20
 
 // file is a game saved as written: the stack a row a line, top first, a
 // block its piece's letter (game.Letters: I O T S Z J L), # a block whose
 // piece is not known (game.Kept: saved by v0.1.0, which kept no colours),
 // and . none.
 type file struct {
-	Level int      `yaml:"level"`
-	Lines int      `yaml:"lines"`
-	Score int      `yaml:"score"`
-	Stack []string `yaml:"stack"`
+	PerLevel *int     `yaml:"lines_per_level"`
+	Level    int      `yaml:"level"`
+	Lines    int      `yaml:"lines"`
+	Score    int      `yaml:"score"`
+	Stack    []string `yaml:"stack"`
 }
 
 // Path is the game saved: game.yaml beside the scores.
@@ -58,7 +65,12 @@ func Load(path string) (*Game, error) {
 	if f.Level < 1 || f.Level > game.MaxLevel || f.Lines < 0 || f.Score < 0 {
 		return nil, fmt.Errorf("level %d, %d lines, %d points: out of range", f.Level, f.Lines, f.Score)
 	}
-	g := &Game{Level: f.Level, Lines: f.Lines, Score: f.Score}
+	g := &Game{PerLevel: OldPerLevel, Level: f.Level, Lines: f.Lines, Score: f.Score}
+	if f.PerLevel != nil {
+		if g.PerLevel = *f.PerLevel; g.PerLevel < 1 {
+			return nil, fmt.Errorf("lines_per_level: %d is not a row or more", g.PerLevel)
+		}
+	}
 	for y, row := range f.Stack {
 		if len(row) != game.Cols || strings.Trim(row, marks) != "" {
 			return nil, fmt.Errorf("stack row %d: %q is not %d of %s", y+1, row, game.Cols, marks)
@@ -73,7 +85,7 @@ func Load(path string) (*Game, error) {
 // Save writes g, the file replaced whole so a failed write leaves the old
 // one as it was.
 func Save(path string, g Game) error {
-	f := file{Level: g.Level, Lines: g.Lines, Score: g.Score}
+	f := file{PerLevel: &g.PerLevel, Level: g.Level, Lines: g.Lines, Score: g.Score}
 	for _, row := range g.Stack {
 		var b strings.Builder
 		for _, c := range row {

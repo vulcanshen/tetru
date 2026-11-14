@@ -146,7 +146,7 @@ func TestTheLevelIsBigAtTheSides(t *testing.T) {
 }
 
 func TestTheLevelFillsFromItsFoot(t *testing.T) {
-	g := game.New(1)
+	g := game.New(1, 20)
 	var b banner
 	b.show(1)
 	r := room{L: 17, R: 17, strip: fieldW, H: sceneH}
@@ -172,7 +172,7 @@ func TestTheLevelFillsFromItsFoot(t *testing.T) {
 		}
 		return 5*f.sy - top
 	}
-	// Twenty rows a level (user, 2026-11-13), over 15 lines.
+	// Twenty rows a level (one of Settings'), over 15 lines.
 	if f.sy != 3 {
 		t.Fatalf("the 1 is %d lines a pixel", f.sy)
 	}
@@ -183,9 +183,14 @@ func TestTheLevelFillsFromItsFoot(t *testing.T) {
 		}
 	}
 	// The twentieth row: the level up, its clear not over, the 1 is full.
-	g.Lines, g.Level = game.LinesPerLevel, 2
+	g.Lines, g.Level = g.PerLevel, 2
 	if got := lines(); got != 5*f.sy {
 		t.Fatalf("the level up lit %d lines of 15, not all", got)
+	}
+	// By the game's own rows a level: five of ten is half.
+	g.PerLevel, g.Lines, g.Level = 10, 5, 1
+	if got := lines(); got != 8 {
+		t.Fatalf("5 rows of 10 lit %d lines of 15, not 8", got)
 	}
 }
 
@@ -194,7 +199,7 @@ func TestTheLevelUpSweepsTheNextIn(t *testing.T) {
 	play(d)
 	d.Advance(sweepTime)
 	g := tt.g
-	g.Lines = game.LinesPerLevel - 1
+	g.Lines = g.PerLevel - 1
 	fullFoot(g)
 	p := uint8(g.Cur)
 	d.Press("Enter")
@@ -304,7 +309,7 @@ func TestWavesGoUpEveryLevel(t *testing.T) {
 	// 2026-11-13: waves, not a breath); what is not lit stays the ground.
 	tt, d := open(t, 120, 40)
 	play(d)
-	tt.g.Lines = game.LinesPerLevel / 2
+	tt.g.Lines = tt.g.PerLevel / 2
 	d.Advance(sweepTime)
 	f := roomAt(120, 40).place(1)
 	lit := int(math.Round(float64(5*f.sy) / 2))
@@ -360,7 +365,7 @@ func TestTwoFiguresPast9WhereTheyHaveRoom(t *testing.T) {
 	}
 	tt, d := open(t, 120, 40)
 	play(d)
-	tt.g.Level, tt.g.Lines = 10, 9*game.LinesPerLevel
+	tt.g.Level, tt.g.Lines = 10, 9*tt.g.PerLevel
 	d.Advance(frame + sweepTime)
 	f := wide.place(10)
 	if l, r := atSides(d, 120, 40); tt.lv.lv != 10 || l != lit(f.rows)*f.sx*f.sy || r != l {
@@ -380,7 +385,7 @@ func TestTheLastLevelIsGold(t *testing.T) {
 	tt, d := open(t, 120, 40)
 	play(d)
 	g := tt.g
-	g.Level, g.Lines = game.MaxLevel, (game.MaxLevel-1)*game.LinesPerLevel
+	g.Level, g.Lines = game.MaxLevel, (game.MaxLevel-1)*g.PerLevel
 	d.Advance(frame + sweepTime)
 	f := roomAt(120, 40).place(game.MaxLevel)
 	if tt.lv.lv != game.MaxLevel {
@@ -402,7 +407,7 @@ func TestTheLastLevelIsGold(t *testing.T) {
 func TestAGameTakenUpShowsItsLevelAtOnce(t *testing.T) {
 	t.Setenv("TETRU__DATA", t.TempDir())
 	t.Setenv("TETRU__CONFIG", t.TempDir())
-	if err := saved.Save(saved.Path(), saved.Game{Level: 3, Lines: 25, Score: 100}); err != nil {
+	if err := saved.Save(saved.Path(), saved.Game{PerLevel: 10, Level: 3, Lines: 25, Score: 100}); err != nil {
 		t.Fatal(err)
 	}
 	tt := NewTetru()

@@ -1,4 +1,4 @@
-id: 68
+id: 69
 from: v1.2.9
 to: v1.2.10
 tasks:
@@ -61,14 +61,17 @@ tasks:
       - '方塊的顏色照 locku（catppuccin-mocha）：I sky、O yellow、T mauve、S green、Z red、J blue、L peach。內容本身的顏色是領域的，app 可以自行決定（tdp P5）；不碰介面元素用的意義（tdp P4）'
       - '場地、接下來的方塊與它們的框都是 PLAYGROUND 內容自己畫的，不是 popup（tdp F1）。PLAYGROUND 是畫面上唯一的 panel，一直有 focus，不會失焦淡化；被 popup 蓋住時跟著淡化'
   - id: 3
-    spec: 60
-    request: '真的可以玩的落塊消行遊戲；10 關，關卡指的是速度：到第 10 關之後不再加速，一直玩到遊戲結束或玩家離開。後來（使用者 2026-11-13）：改成 20 行一關，關卡開放到 15。再後來（使用者 2026-11-13）：原本第 10 關的速度換到第 15 關，中間關卡速度提升的差距變小'
-    tdp: [tdp P5]
+    spec: 69
+    request: '真的可以玩的落塊消行遊戲；10 關，關卡指的是速度：到第 10 關之後不再加速，一直玩到遊戲結束或玩家離開。後來（使用者 2026-11-13）：改成 20 行一關，關卡開放到 15。再後來（使用者 2026-11-13）：原本第 10 關的速度換到第 15 關，中間關卡速度提升的差距變小。又後來（使用者 2026-11-14）：每一關幾行放到 Settings 裡面，預設 10 行，讓使用者自己設定'
+    tdp: [tdp P5, tdp panel.12, tdp radio, tdp E2, tdp E3, tdp note.7]
     remark:
       - '遊戲規則是功能邏輯，app 可以自行決定（tdp P5）'
       - '場地 12 格寬、24 格高（使用者 2026-11-11：寬高固定，比標準的 10×20 加大一點；寬高比照樣 1:2）'
       - '七種方塊，七個一袋、袋裡順序打亂（照 locku）；新的方塊從場地上方、正中間進來'
-      - '每消 20 行升一關（使用者 2026-11-13；原本 10 行）；第 1–15 關每往下一格的時間：1000、866、754、660、572、497、433、372、319、274、232、196、163、130、100 ms：原本十關的曲線（1000 到 100 ms）拉長到十五關，原本第 10 關的速度是第 15 關的（使用者 2026-11-13：中間每一關加快的差距變小；中間的數值是 app 定的，照原本曲線的形狀在對數上內插），第 15 關一秒 10 行；第 15 關之後不再升、不再加速（使用者 2026-11-11；2026-11-13 改成 15 關）'
+      - '每消 10 行升一關，幾行一關玩家可以在 Settings 改（使用者 2026-11-14：預設 10 行，讓使用者自己設定；2026-11-13 到 v0.2.0 是 20 行，再之前 10 行）；第 1–15 關每往下一格的時間：1000、866、754、660、572、497、433、372、319、274、232、196、163、130、100 ms：原本十關的曲線（1000 到 100 ms）拉長到十五關，原本第 10 關的速度是第 15 關的（使用者 2026-11-13：中間每一關加快的差距變小；中間的數值是 app 定的，照原本曲線的形狀在對數上內插），第 15 關一秒 10 行；第 15 關之後不再升、不再加速（使用者 2026-11-11；2026-11-13 改成 15 關）'
+      - '一關幾行（使用者 2026-11-14：放到 Settings 裡面，讓使用者自己設定）：Settings 那一個 panel 的 PLAY 組（task 13、17）在 HINT 下面加一列 LEVEL UP，五個選項 every 5 lines、every 10 lines、every 15 lines、every 20 lines、every 25 lines，直接畫在 panel 上（tdp radio：五個以內的單選用 radio，一律直排）；Enter 選它，focus 不動，選的那一刻就生效、就存（tdp radio.3、panel.12）。說明（? 的「每一列」）the lines to clear for the next level, from the next game。能選哪幾個是 app 定的：5 的倍數到 25，五個剛好畫得下 radio；要更多再改成 select。App Log 記一筆 Success：A level is now 25 lines, from the next game（tdp note.7）'
+      - '一關幾行是一局自己的：開局時照 Settings 定下，之後改 Settings 只管下一局；正在玩、暫停中與存起來的一局（task 16）照它開局時的。理由：關卡是從這一局消的總行數算的（1 + 行數 / 一關幾行），玩到一半換掉會讓關卡突然跳好幾關或往回掉，進度（task 18 的大字）也跟著亂跳'
+      - '存在設定檔（tdp E3，跟鍵、提示同一個 config.yaml，TETRU__CONFIG 覆寫，tdp E2）：lines_per_level: 5、10、15、20 或 25，沒寫是 10；寫不進去：選項回到原本的、開 error popup 說寫不進去與原因（跟提示一樣）；啟動時不是這五個之一：跟鍵讀不了一樣，問要不要把設定檔移開（tdp E3），移開之後是 10'
       - '碰到底之後 500 ms 才固定；那段時間裡移動、旋轉成功就重新算，最多重算 15 次，免得一直拖著不落'
       - '旋轉照 locku：方塊在自己的框裡轉。轉不過去時依序試往左 1 格、往右 1 格、往上 1 格，長條再試左右各 2 格'
       - '分數：一次消 1、2、3、4 行是 100、300、500、800 乘上當時的關卡；往下一格每一格 1 分、落到底每一格 2 分'
@@ -195,14 +198,14 @@ tasks:
       - 'GitHub 的 social preview：docs/social-preview.png（使用者 2026-11-12：social preview 還沒作），照家族其他成員的樣子（locku 的 social-preview）：640×320 黑底，上面是 docs/icon.svg 直接畫成 260×260，下面是 Tiny5 字型的 tetru（#cdd6f4）。tdp 沒管這張圖，家族成員都有；開 GitHub repo 後在 Settings 的 Social preview 上傳'
       - 'docs/social-preview.png：harness v1.2.2 的 project.3 寫明 docs/ 裡圖上沒寫的檔案由 app 自行決定（原本找不到根據，2026-11-12 review 回報 harness #1，使用者選 B，已關）'
   - id: 13
-    spec: 64
+    spec: 69
     request: '除了 Space 是暫停並打開 Space menu，其他的鍵都在 Settings 裡讓使用者自己設定。後來（使用者 2026-11-13）：Setting 不需要拆兩個 panel 去作設定，同一個 panel 分成兩個 section 就好'
     tdp: [tdp panel.12, tdp select, tdp popup.7, tdp toast, tdp E2, tdp E3, tdp F5, tdp note.7, tdp K1, tdp K11, tdp K12, tdp P5, tdp M5, tdp popup.1, tdp screen.2, tdp K6, tdp panel.11]
     remark:
       - '讓玩家改 Gaming 的鍵、能選哪些、怎麼設定，app 可以自行決定（tdp K11，K11-14；tdp #5 回報後 v1.2.3 放行）；要守的：選到 Gaming 裡已經有作用的鍵（別的動作的鍵、core key）就跳 Warning、寫出被誰用了、不設定；? 與 footer 寫的是目前的鍵；core key 與 panel 的鍵不給改'
       - note: '使用者 2026-11-13 要 Settings 是同一個 panel 分成兩段（鍵、提示的開關）。tdp v1.2.8 只有一般清單能分組（panel.11），回報 tdp #15；tdp v1.2.9 的 panel.12 加了分組（terminu-go v1.2.10 的 Field.Group），照它合成一個 panel。中間暫時是兩個 panel（[1] KEYS、[2] PLAY）'
         issue: tdp #15
-      - 'Settings 畫面只有一個 panel：[1] SETTINGS，一列一個值（tdp panel.12），分兩組（tdp v1.2.9 panel.12 的分組：標題 Overlay0、大寫，組裡的列多縮兩格，focus 跳過標題）：KEYS 與 task 17 的 PLAY（提示的開關）；有分組就沒有表頭（原本的 ACTION、KEY 拿掉）。KEYS 一組：Move left、Move right、Down a row、Rotate left、Rotate right、Drop 各一列。沒有 Pause 那一列（使用者 2026-11-12：PAUSE 跟 Space menu 是兩件事；不需要 pause 鍵，使用 Esc 就好）：暫停是 Esc 離開 Gaming（tdp K4），Space 打開 Space menu，menu 開著遊戲停著是因為 Gaming 時開任何 popup 遊戲都停（task 5）'
+      - 'Settings 畫面只有一個 panel：[1] SETTINGS，一列一個值（tdp panel.12），分兩組（tdp v1.2.9 panel.12 的分組：標題 Overlay0、大寫，組裡的列多縮兩格，focus 跳過標題）：KEYS 與 PLAY（task 17 的提示開關、task 3 的一關幾行）；有分組就沒有表頭（原本的 ACTION、KEY 拿掉）。KEYS 一組：Move left、Move right、Down a row、Rotate left、Rotate right、Drop 各一列。沒有 Pause 那一列（使用者 2026-11-12：PAUSE 跟 Space menu 是兩件事；不需要 pause 鍵，使用 Esc 就好）：暫停是 Esc 離開 Gaming（tdp K4），Space 打開 Space menu，menu 開著遊戲停著是因為 Gaming 時開任何 popup 遊戲都停（task 5）'
       - 'Enter 在一列上打開 select（tdp select）：標題 KEY: <動作>，列出 a 到 z 與 Enter，不列 q、r 與 Space（使用者 2026-11-12：不能用的鍵不要出現在選單裡；q 離開、Space 開 Space menu，r 是 Gaming 模式自己的 Restart，task 5；s 原本是 Save，Save 拿掉之後可以選），現在的鍵選著；選到別的動作在用的鍵，跳 Warning toast（tdp toast）：Can''t use [k] for Rotate left: it is Rotate right''s key（句子裡的鍵加方括號，tdp M5），鍵不變、不寫檔；其他的 Enter 確定就寫進設定檔，寫不進去 popup 不關、上面開 error popup（tdp popup.7），值不變'
       - '列出的鍵（tdp K11：能選哪些由 app 決定）：小寫字母與 Enter，不列 q、r 與 Space（上一條）；Enter 與移動也能改，空出來的 h、j、l 可以給別的動作；單獨的 g 也能選，Gaming 沒有 g 開頭的組合（tdp v1.2.7 K11、K12、K11-25，tdp #14 使用者選 A；tgo v1.2.8 把單獨的 g 交給模式的鍵）；方向鍵不能選，照預設（task 4）。Space、?、!、Esc、q、Ctrl-C、Tab、數字鍵不在選項裡，所以 K11-14、K11-25 選到不能用的鍵那一步不會發生（v1.2.7：只在 app 的選項裡有那個鍵時才做）。設定檔裡的鍵不是小寫字母或 Enter、或是 q、Space、r、兩個動作同一個鍵，都算讀不了'
       - '設定是 app 自己的選項（tdp E3）：~/.config/tetru/config.yaml（$XDG_CONFIG_HOME/tetru），TETRU__CONFIG 覆寫（tdp E2）；keys 底下 move_left、move_right、down、rotate_left、rotate_right、drop。沒寫的照預設；設定檔裡其他的 key 寫回時留著（tdp E3）。改了在 App Log 記一筆（tdp note.7）'
@@ -233,16 +236,16 @@ tasks:
       - 'PLAYGROUND 是 app 自己的內容（tdp v1.2.6 的 panel.16：tdp 的元件和規則裝不下的東西，玩到一半的遊戲）：框、[1] PLAYGROUND、hint、focus 與淡化照一般的 panel；內容怎麼畫是 app 的（場地、NEXT、INFO、KEYS 的框是內容，不是 popup，tdp F1）；模式外的鍵 [Enter] Play/Resume、[n]ew game、[x] End game 是 panel 的熱鍵、列在 Space menu，Enter 開一局或接著玩（panel-159、panel-160）'
 
   - id: 16
-    spec: 63
+    spec: 69
     request: '把當前分數和 panel 1 已經落地的格子位置存起來；重新啟動後接著玩，地上的格子直接是白色，不用分色（使用者 2026-11-11；後來 2026-11-13：save 同時儲存方塊顏色，重新進來的時候原本方塊顏色要能夠還原）；這一局先不記排行，下次開 tetru 接著玩，讀回來就刪掉存檔（使用者選的）。save 和 quit 要分開：不需要作 save 給使用者操作，save 是 app 的背景行為；要 quit 的時候正在遊戲，app 自動存檔，也不用問，下次進來使用者不想繼續直接 restart 就好（使用者 2026-11-12）'
     tdp: [tdp E3, tdp E2, tdp P5, tdp F6, tdp K9, tdp note, tdp note.7, tdp M4, tdp K11, tdp F5]
     remark:
-      - '存在 app 自己的資料（tdp E3）：TETRU__DATA 或 ~/.tetru 的 game.yaml，跟 scores.yaml 放一起；level、lines、score 與 stack：24 列字串，一列 12 個字，由上往下；一格是它那個方塊的字母（I O T S Z J L，使用者 2026-11-13：顏色要能還原），. 沒有。# 是不知道哪個方塊的格子：v0.1.0 存的檔只記了有沒有（那時使用者 2026-11-11：不用分色），讀得回來、畫成白色。只有一局'
+      - '存在 app 自己的資料（tdp E3）：TETRU__DATA 或 ~/.tetru 的 game.yaml，跟 scores.yaml 放一起；lines_per_level（這一局的一關幾行，task 3：一局照它開局時的）、level、lines、score 與 stack：24 列字串，一列 12 個字，由上往下；一格是它那個方塊的字母（I O T S Z J L，使用者 2026-11-13：顏色要能還原），. 沒有。# 是不知道哪個方塊的格子：v0.1.0 存的檔只記了有沒有（那時使用者 2026-11-11：不用分色），讀得回來、畫成白色。沒有 lines_per_level 的檔（v0.2.0 以前存的）照 20 行一關接著玩：v0.2.0 是 20 行（v0.1.0 的 10 行，v0.2.0 已經照 20 行接，不再分）。只有一局'
       - '存的是落地的格子（使用者 2026-11-11：panel 1 已經落地的格子）：正在掉的方塊、接下來的方塊不存。消行動畫還沒做完時存，存的是做完之後的樣子'
       - '什麼時候存：離開 app 時有一局在玩（玩著或暫停中），就存起來再離開（task 10 的離開流程）；連按兩次 Ctrl-C、關掉終端機時，main 在 Run 結束後存（tgo v1.2.3 起關掉終端機 Run 照常回來）。沒有給使用者按的 Save：原本 Gaming 模式的 s 與暫停時的 [s]ave 是存檔並離開，使用者 2026-11-12 拿掉（玩到一半不小心按到 s 就離開了；save 歸 save、quit 歸 quit）'
       - '不問（tdp F6：哪些要確認 app 可以自行決定；存了這一局，沒有東西會丟）：寫好就離開，這一局不記排行（下次接著玩、結束時才記，同一局只記一筆）；App Log 記一筆 Success。寫不進去：開 error popup（tdp note）Can''t save the game，路徑與原因，不離開（task 10）；連按兩次 Ctrl-C 或關掉終端機時存不起來，就把分數記成 ANON（task 7）'
-      - '啟動時有 game.yaml：接著那一局，停在暫停（PLAYGROUND 的 hint Enter:resume），關卡、行數、分數照存的，地上的格子照存的方塊上色，跟離開時一樣（使用者 2026-11-13；v0.1.0 存的 # 畫成白色 #ffffff），方塊從新的一袋來。讀進來就刪掉 game.yaml（使用者選的），之後跟一般的一局一樣結束、記分；App Log 記一筆 Info（tdp note.7）'
-      - 'game.yaml 讀不了（YAML 錯、列數或寬度不對、有 . I O T S Z J L # 以外的字、關卡不在 1 到 15、行數或分數是負的）：照 tdp E3 用 tgo App.MoveAside 問要不要移成 game.yaml.bak，Enter 移開、從沒有存檔開始，Esc 離開；設定、排行的檔也讀不了時排在它們後面問。讀進來之後刪不掉：開 error popup Can''t remove the game saved，說下次啟動還會再接一次'
+      - '啟動時有 game.yaml：接著那一局，停在暫停（PLAYGROUND 的 hint Enter:resume），一關幾行、關卡、行數、分數照存的（不照現在的 Settings），地上的格子照存的方塊上色，跟離開時一樣（使用者 2026-11-13；v0.1.0 存的 # 畫成白色 #ffffff），方塊從新的一袋來。讀進來就刪掉 game.yaml（使用者選的），之後跟一般的一局一樣結束、記分；App Log 記一筆 Info（tdp note.7）'
+      - 'game.yaml 讀不了（YAML 錯、列數或寬度不對、有 . I O T S Z J L # 以外的字、關卡不在 1 到 15、行數或分數是負的、lines_per_level 不到 1）：照 tdp E3 用 tgo App.MoveAside 問要不要移成 game.yaml.bak，Enter 移開、從沒有存檔開始，Esc 離開；設定、排行的檔也讀不了時排在它們後面問。讀進來之後刪不掉：開 error popup Can''t remove the game saved，說下次啟動還會再接一次'
       - '存了的一局，main 在 Run 結束後不再存一次、也不記成 ANON（task 7）'
       - note: '原本 [s]ave 存好就離開 app、不進 K9 的離開流程，review 判 tdp 不清楚（2026-11-12）。使用者 2026-11-12 把 Save 拿掉、改成離開時自動存：存檔在 K9 的離開流程裡，不再有 panel 或模式的動作直接離開 app，這一點不用 tdp 回答了'
         issue: tdp #11
@@ -259,13 +262,13 @@ tasks:
       - 'PLAY 是 Settings 那一個 panel 的第二組，不另開 panel（使用者 2026-11-13：同一個 panel 分成兩個 section 就好；tdp v1.2.9 panel.12）。中間有一段是另一個 panel [2] PLAY：tdp v1.2.8 的一列一個值的 panel 不能分組（tdp #15），開關不是一個動作的鍵，放不進表頭是 ACTION、KEY 的 KEYS'
       - '跟著方塊左右移動、旋轉、往下隨時改；寬窄兩種排法都一樣'
   - id: 18
-    spec: 66
+    spec: 69
     request: '場地左右兩邊的空白放關卡數字：每一次過關都來一個從下到上的特效，結束後關卡數字顯示在左右兩邊；隨著遊戲過程，數字有 0~100% 的特效；過關時再從下到上轉場換成下一關的數字；只放一個字，第十關顯示 A（使用者 2026-11-13）。看了做好的之後：升關效果太小了；空間夠放 10，先放 10 看看；窄寬的時候數字可以大一點（使用者 2026-11-13）。再後來：關卡開放到 15，剛好到 F，這樣寬窄都可以；滿關後的呼吸不要用白色配 lavender，太干擾，lavender 和原本背景中間找一個顏色，三個顏色互換（使用者 2026-11-13）。又後來：字太高，上下各佔 4 格就好，現在只佔 2 格；每一關的數字都要有呼吸動畫，第 15 關直接換成金色、一樣呼吸；轉場加點顏色，過關那一次落下的方塊是什麼顏色，轉場就用那個顏色（使用者 2026-11-13）。看了之後：呼吸太頻繁了，等於一直在閃（使用者 2026-11-13）。再後來：呼吸效果換掉，變成波浪效果，一直由下往上，方塊背景和 lavender 中間那個顏色，一個 wave 一個 wave 地從下往上（使用者 2026-11-13）。又：為什麼在寬版的時候 10 以上還是 A–F？寬版應該就是 10–15（使用者 2026-11-13）。又：窄寬的時候 11 顯示 11，12 卻變成 C（使用者 2026-11-13）'
     tdp: [tdp P5, tdp panel.16, tdp P4, tdp E5, tdp L4, tdp K11]
     remark:
       - 'PLAYGROUND 是 app 自己的內容，內容怎麼畫、它的符號與顏色 app 可以自行決定（tdp panel.16、P5）；關卡數字、進度與特效都是遊戲的內容，不是 tdp 的介面元素，不碰 P4 管的意義'
       - '畫法：用場地同一個方塊 icon（nf-fa-square，一個 2 欄 × 1 列）拼 3×5 的字，字的一格橫向 sx 個 icon、直向 sy 列；sy 是場地的高上下各留 4 格（場地的格子；放大時一格是 k 列）之後放得下的最大（24 列時是 3，字 15 列高；使用者 2026-11-13：太高，原本上下只留 2 格），sx 取窄的那一邊放得下的最大（字寬加一個 icon 不超過那一邊），最多跟 sy 一樣（使用者 2026-11-13：窄寬的時候數字大一點，所以窄的時候字是瘦長的）。左右各一個，離場地一樣遠（至少隔一個 icon），上下置中在場地旁；跟場地的 icon 排在同一條格線上。連一個 icon 寬的字都放不下（65 欄以下，與窄寬的排法）就不畫'
-      - '進度（使用者選的：由下往上填色）：字先畫成場地的底色 Surface0 #313244；這一關消了幾行（Lines 除以 20 的餘數），就從下往上亮幾分之二十（字的列數乘上比例，四捨五入），Lavender #b4befe（INFO 裡 Level 的值也是這個顏色，也不是任何一種方塊的顏色）；消到升關的那一行時，還沒換字之前整個字亮滿。亮的部分會呼吸（使用者 2026-11-13：每一關都要有呼吸動畫），沒亮的部分停在底色（2026-11-13 起是波浪，見下面）'
+      - '進度（使用者選的：由下往上填色）：字先畫成場地的底色 Surface0 #313244；這一關消了幾行（Lines 除以這一局一關幾行的餘數，task 3），就從下往上亮那個比例（字的列數乘上比例，四捨五入），Lavender #b4befe（INFO 裡 Level 的值也是這個顏色，也不是任何一種方塊的顏色）；消到升關的那一行時，還沒換字之前整個字亮滿。亮的部分會呼吸（使用者 2026-11-13：每一關都要有呼吸動畫），沒亮的部分停在底色（2026-11-13 起是波浪，見下面）'
       - '過關（使用者選的：遊戲不停，只掃兩邊；使用者 2026-11-13：效果太小，改大）：消行的特效做完、關卡變了，一段方塊色（場地高的五分之一、至少 2 列）下面拖三段由那個顏色漸暗到底色的尾巴（每段場地高的十分之一），顏色是消掉這一關最後那幾行的方塊的顏色（使用者 2026-11-13：原本白色，加點顏色，用過關那一次落下的方塊的顏色），尾巴是它與底色之間的四分點（跟消行的白色淡出一樣算法），橫跨兩邊整片（離場地那一個 icon 留空），從場地的底往上掃到頂，800 ms；掃過的地方換成下一關的字（從 0% 開始），上面還是亮滿的舊字。照常操作；Esc 暫停、popup 蓋住時跟著遊戲一起停'
       - '字：1–9；第 10–15 關兩邊放得下兩個字時畫 10–15，放不下時畫 A–F（使用者 2026-11-13：開放到 15，剛好到 F，這樣寬窄都可以；寬版應該就是 10–15。之前把它讀成寬窄都畫 A–F，是讀錯了）。兩個字是一個兩格寬的 1（沒有底座）、空一格、再一個字（0–5，11 的第二個 1 也是窄的），共 6 格寬（11 是 5 格）；10–15 都照 10 的寬（6 格）決定放不放得下、算 sx，所以同一個寬度下第 10 關以後全是兩個字或全是字母，筆畫一樣粗（使用者 2026-11-13：窄的時候 11 顯示 11、12 卻變成 C，因為 11 比較窄，74、76 欄放得下它、放不下其他的），10–15 的筆畫比 1–9 細；每邊 7 個 icon 以上才放得下，也就是 78 欄起，76 欄以下是 A–F。A–F 與 1–9 都 3 格寬，放得下 1 就放得下 F'
       - '波浪（使用者 2026-11-13：呼吸效果換掉，變成波浪，一直由下往上）：字亮的部分上面，一段字的顏色與底色正中間的顏色（Lavender 的是 #7378a1，F 的金色是 #92754c），高一個字的格子（sy 列），從字的腳底下往上走到過了字頂，2 秒走完，走出去的同時下一個從腳底下進來，一個接一個；亮的部分其餘照字的顏色，沒亮的部分停在底色、波浪不經過（跟呼吸一樣只在亮的部分）；只在玩的時候走，暫停、結束時停下來，整個是字的顏色。之前（都是使用者 2026-11-13 改掉的）：只有最後一關的心跳（每 1000 ms 撲通兩下，到底色），每一關都有的心跳（太頻繁、一直在閃），4 秒一次的慢呼吸（亮、中間、底色輪替）。顏色沒有白色（使用者 2026-11-13：白色太干擾）。波浪多快、多高是動畫本身，app 可以自行決定（tdp P5）'

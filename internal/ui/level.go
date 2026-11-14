@@ -213,7 +213,7 @@ func (b *banner) ink(g *game.Game, r room, u, l int, waving bool) uint8 {
 	}
 	fill := 1.0
 	if b.lv == g.Level {
-		fill = float64(g.Lines%game.LinesPerLevel) / game.LinesPerLevel
+		fill = float64(g.Lines%g.PerLevel) / float64(g.PerLevel)
 	}
 	wave := -1.0
 	if waving {

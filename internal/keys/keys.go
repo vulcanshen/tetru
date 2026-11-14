@@ -1,7 +1,8 @@
 // Package keys is the keys tetru is played with: the player chooses them
 // (user, 2026-11-11: all but Space, which pauses and opens the Space
-// menu), and they are kept in tetru's settings (tdp E3), with the one
-// other setting, the hint's switch (user, 2026-11-13).
+// menu), and they are kept in tetru's settings (tdp E3), with the other
+// settings: the hint's switch (user, 2026-11-13) and the rows a level
+// (user, 2026-11-14).
 package keys
 
 import (
@@ -232,6 +233,44 @@ func SaveHint(path string, on bool) error {
 		return err
 	}
 	m["hint"] = on
+	return write(path, m)
+}
+
+// PerLevels are the rows a level the player chooses from (user, 2026-11-14:
+// in Settings; five, so drawn in place, tdp radio.1), and DefaultPerLevel
+// the one at first (user: ten).
+var PerLevels = []int{5, 10, 15, 20, 25}
+
+const DefaultPerLevel = 10
+
+// PerLevel says how many rows a level is, from the settings file at path
+// (lines_per_level: one of PerLevels): DefaultPerLevel when the file does
+// not say. A file that can't be read, or a number not offered, is an error
+// (tdp E3), with DefaultPerLevel.
+func PerLevel(path string) (int, error) {
+	m, err := read(path)
+	if err != nil {
+		return DefaultPerLevel, err
+	}
+	v, ok := m["lines_per_level"]
+	if !ok {
+		return DefaultPerLevel, nil
+	}
+	n, ok := v.(int)
+	if !ok || !slices.Contains(PerLevels, n) {
+		return DefaultPerLevel, fmt.Errorf("lines_per_level: %v is none of %v", v, PerLevels)
+	}
+	return n, nil
+}
+
+// SavePerLevel writes n as the rows a level into the settings file at path,
+// the rest as it is.
+func SavePerLevel(path string, n int) error {
+	m, err := read(path)
+	if err != nil {
+		return err
+	}
+	m["lines_per_level"] = n
 	return write(path, m)
 }
 

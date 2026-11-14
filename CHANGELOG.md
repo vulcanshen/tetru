@@ -2,6 +2,12 @@
 
 Each release names the version of terminu design (tdp) it follows.
 
+## Unreleased
+
+- Ten rows to a level again, and yours to set: every 5, 10, 15, 20 or 25 rows, on the Settings screen under the hint.
+  A new setting is for the next game; a game going, or kept going, keeps the one it began with. A game kept by v0.2.0
+  or before goes on at twenty.
+
 ## v0.2.0 — tdp v1.2.10
 
 - `Esc` in a game only pauses it: no box over the paused game any more, `Enter` goes on, `Space` lists Resume, New

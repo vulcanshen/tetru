@@ -5,9 +5,10 @@ import (
 	"time"
 )
 
-// with is a game whose falling piece is p, at its spawn, on an empty field.
+// with is a game whose falling piece is p, at its spawn, on an empty field,
+// a level every ten rows.
 func with(p int) *Game {
-	g := New(1)
+	g := New(1, 10)
 	g.Next[0] = p
 	g.come()
 	return g
@@ -24,7 +25,7 @@ func (g *Game) fill(y int, holes ...int) {
 }
 
 func TestPiecesComeSevenToABag(t *testing.T) {
-	g := New(7)
+	g := New(7, 10)
 	g.bag = nil // a fresh bag: New dealt the queue from the first
 	seen := map[int]int{}
 	for range 7 * 4 {
@@ -38,7 +39,7 @@ func TestPiecesComeSevenToABag(t *testing.T) {
 }
 
 func TestSameSeedSameGame(t *testing.T) {
-	a, b := New(42), New(42)
+	a, b := New(42, 10), New(42, 10)
 	for range 50 {
 		if a.Cur != b.Cur {
 			t.Fatal("two games of one seed differ")
@@ -196,7 +197,8 @@ func TestLockResetsRunOut(t *testing.T) {
 
 func TestClearScoresAtTheLevelAndGoesUp(t *testing.T) {
 	g := with(I)
-	g.Level, g.Lines = 3, 2*LinesPerLevel+17
+	g.PerLevel = 7 // the game's own, whatever Settings says now
+	g.Level, g.Lines = 3, 2*7+6
 	for y := Rows - 4; y < Rows; y++ {
 		g.fill(y, Cols-1)
 	}
@@ -215,8 +217,8 @@ func TestClearScoresAtTheLevelAndGoesUp(t *testing.T) {
 	if got := g.Score - score; got != 800*3+2*fell {
 		t.Fatalf("four rows at level 3 scored %d", got)
 	}
-	if g.Lines != 3*LinesPerLevel+1 || g.Level != 4 {
-		t.Fatalf("lines %d level %d after %d rows", g.Lines, g.Level, 3*LinesPerLevel+1)
+	if g.Lines != 3*7+3 || g.Level != 4 {
+		t.Fatalf("lines %d level %d after %d rows, a level every 7", g.Lines, g.Level, 3*7+3)
 	}
 	for x := 0; x < Cols; x++ {
 		if g.Cell(x, Rows-1) != 0 {
@@ -289,9 +291,9 @@ func TestStackIsWhatASaveKeepsAndResumeTakesUp(t *testing.T) {
 	if g.Cell(0, Rows-2) == 0 {
 		t.Fatal("Stack moved the stack itself")
 	}
-	r := Resume(2, 3, 25, 12340, s)
-	if r.Level != 3 || r.Lines != 25 || r.Score != 12340 || !r.Live() || r.Over {
-		t.Fatalf("taken up: level %d, %d lines, %d points", r.Level, r.Lines, r.Score)
+	r := Resume(2, 20, 3, 45, 12340, s)
+	if r.PerLevel != 20 || r.Level != 3 || r.Lines != 45 || r.Score != 12340 || !r.Live() || r.Over {
+		t.Fatalf("taken up: a level every %d rows, level %d, %d lines, %d points", r.PerLevel, r.Level, r.Lines, r.Score)
 	}
 	for y := range Rows {
 		for x := range Cols {
@@ -300,7 +302,7 @@ func TestStackIsWhatASaveKeepsAndResumeTakesUp(t *testing.T) {
 			}
 		}
 	}
-	if r := Resume(2, 99, 0, 0, [Rows][Cols]uint8{}); r.Level != MaxLevel {
+	if r := Resume(2, 10, 99, 0, 0, [Rows][Cols]uint8{}); r.Level != MaxLevel {
 		t.Fatalf("level %d past the last", r.Level)
 	}
 }
@@ -311,7 +313,7 @@ func TestTheSpeedStopsAtTheLastLevel(t *testing.T) {
 	g.fill(Rows-1, 0, 1, 2, 3)
 	g.Drop() // flat, in columns 3–6: the row is not full, nothing goes
 	g.Level = MaxLevel
-	g.Lines = (MaxLevel+5)*LinesPerLevel - 1 // well past the last
+	g.Lines = (MaxLevel+5)*g.PerLevel - 1 // well past the last
 	g.fill(Rows-2, Cols-1)
 	g.Next[0] = I
 	g.come()
