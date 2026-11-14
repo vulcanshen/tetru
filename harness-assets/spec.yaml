@@ -63,7 +63,7 @@ tasks:
   - id: 3
     spec: 69
     request: '真的可以玩的落塊消行遊戲；10 關，關卡指的是速度：到第 10 關之後不再加速，一直玩到遊戲結束或玩家離開。後來（使用者 2026-11-13）：改成 20 行一關，關卡開放到 15。再後來（使用者 2026-11-13）：原本第 10 關的速度換到第 15 關，中間關卡速度提升的差距變小。又後來（使用者 2026-11-14）：每一關幾行放到 Settings 裡面，預設 10 行，讓使用者自己設定'
-    tdp: [tdp P5, tdp panel.12, tdp radio, tdp E2, tdp E3, tdp note.7]
+    tdp: [tdp P5, tdp panel.12, tdp radio, tdp E2, tdp E3, tdp note.7, tdp F5, tdp note.6]
     remark:
       - '遊戲規則是功能邏輯，app 可以自行決定（tdp P5）'
       - '場地 12 格寬、24 格高（使用者 2026-11-11：寬高固定，比標準的 10×20 加大一點；寬高比照樣 1:2）'
@@ -200,7 +200,7 @@ tasks:
   - id: 13
     spec: 69
     request: '除了 Space 是暫停並打開 Space menu，其他的鍵都在 Settings 裡讓使用者自己設定。後來（使用者 2026-11-13）：Setting 不需要拆兩個 panel 去作設定，同一個 panel 分成兩個 section 就好'
-    tdp: [tdp panel.12, tdp select, tdp popup.7, tdp toast, tdp E2, tdp E3, tdp F5, tdp note.7, tdp K1, tdp K11, tdp K12, tdp P5, tdp M5, tdp popup.1, tdp screen.2, tdp K6, tdp panel.11]
+    tdp: [tdp panel.12, tdp select, tdp popup.7, tdp toast, tdp E2, tdp E3, tdp F5, tdp note.7, tdp K1, tdp K11, tdp K12, tdp P5, tdp M5, tdp popup.1, tdp screen.2, tdp K6, tdp panel.11, tdp note.6]
     remark:
       - '讓玩家改 Gaming 的鍵、能選哪些、怎麼設定，app 可以自行決定（tdp K11，K11-14；tdp #5 回報後 v1.2.3 放行）；要守的：選到 Gaming 裡已經有作用的鍵（別的動作的鍵、core key）就跳 Warning、寫出被誰用了、不設定；? 與 footer 寫的是目前的鍵；core key 與 panel 的鍵不給改'
       - note: '使用者 2026-11-13 要 Settings 是同一個 panel 分成兩段（鍵、提示的開關）。tdp v1.2.8 只有一般清單能分組（panel.11），回報 tdp #15；tdp v1.2.9 的 panel.12 加了分組（terminu-go v1.2.10 的 Field.Group），照它合成一個 panel。中間暫時是兩個 panel（[1] KEYS、[2] PLAY）'
@@ -252,7 +252,7 @@ tasks:
   - id: 17
     spec: 64
     request: '「提示」功能：第 5 關以下都有，第 6 關開始消失；方塊落下的樣子：背景的黑格子會變成落下的樣子，用淺一點的灰色呈現，就是使用者如果在這個點按下 Enter，會落地成怎樣的樣子的提示（使用者 2026-11-12）。後來：改成 Settings 裡面的一個開關的項目，預設打開；打開的時候就都會有，不再是第五關前自己有（使用者 2026-11-13）'
-    tdp: [tdp P5, tdp panel.16, tdp panel.12, tdp checkbox, tdp E2, tdp E3, tdp note.7, tdp F5]
+    tdp: [tdp P5, tdp panel.16, tdp panel.12, tdp checkbox, tdp E2, tdp E3, tdp note.7, tdp F5, tdp note.6]
     remark:
       - '場地裡的格子畫什麼、什麼顏色是遊戲的內容與內容本身的顏色，app 可以自行決定（tdp P5）'
       - '畫法：正在掉的方塊按快速落下（預設 Enter，task 13 可以改鍵）會落定的那四格，在場地的底上用 Overlay0 #6c7086 畫同一個方塊 icon（nf-fa-square）：比底的 Surface0 #313244 亮，比結束灰幕的 Overlay1 #7f849c 暗一點（使用者 2026-11-12：原本的 Surface2 #585b70 再淡一點，用 Overlay0），也不是任何一種方塊的顏色；正在掉的方塊蓋在它上面，已經落到那裡時就看不到'
