@@ -11,7 +11,7 @@ Pieces of four blocks fall into a well twelve blocks wide and twenty-four deep; 
 fill rows from wall to wall to clear them. Every ten rows is a level, or as many as you set, and every level falls faster, up to the fifteenth. tetru keeps the best twenty scores
 with the player's name and the time, and ranks them, the best first.
 
-![tetru: a game played, the Space menu pausing it, and the score kept](docs/demo.gif)
+![tetru: a game kept going taken up at level 13 and played up to 15, the Space menu, the score kept, and Settings](docs/demo.gif)
 
 ## Features
 
