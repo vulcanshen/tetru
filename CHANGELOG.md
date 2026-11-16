@@ -2,12 +2,12 @@
 
 Each release names the version of terminu design (tdp) it follows.
 
-## Unreleased
+## v0.3.2 — tdp v1.2.11
 
-- INFO counts the clears under the score: how many times one, two, three or four rows went at once, Single, Double,
+- INFO counts the clears under the score: how many times one, two, three or four lines went at once, Single, Double,
   Triple and Quad. A game kept going by v0.3.1 or before does not know them: `-` for that game.
 - NEXT shows the next piece alone, one box, not two, so INFO has the room.
-- Rank has each score's rows and clears too: LINES, SINGLE, DOUBLE, TRIPLE, QUAD, before the time. At 60 columns all
+- Rank has each score's lines and clears too: LINES, SINGLE, DOUBLE, TRIPLE, QUAD, before the time. At 60 columns all
   but the time fit; a score kept by v0.3.1 or before has `-` for them.
 
 ## v0.3.1 — tdp v1.2.11
