@@ -2,7 +2,7 @@
 
 Each release names the version of terminu design (tdp) it follows.
 
-## Unreleased
+## v0.3.1 — tdp v1.2.11
 
 - The waves up the level's figure shade off: darkest at the front, lighter and lighter behind it.
 - `Space` can be yours too: on the Settings screen a turn or the drop can go on `Space`, with a warning that it then
