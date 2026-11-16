@@ -1,4 +1,4 @@
-spec: 69
+spec: 72
 tasks:
   - id: 1
     accepted: true
@@ -7,7 +7,8 @@ tasks:
   - id: 3
     accepted: true
   - id: 4
-    accepted: true
+    accepted: false
+    reason: 'tdp 不清楚：Space 上放的是兩個旋轉之一時，footer 照 M5 合成一對（Space|k:rotate、d|Space:rotate、Enter|Space:rotate），v1.2.11 沒有寫這種情況：screen.2、K11-27 寫「footer 最前面、原本 Space:menu 的位置寫 Space:<動作>」，照字面右旋在 Space 時要單獨一項 Space:rotate right（d|Space:rotate 的最前面是 d）；M5 寫一對方向相反、用一個動詞講的鍵用 | 接起來。使用者 2026-11-16 經 terminu 選 A（照 M5 寫一對），tdp 下一版的 K11、screen.2、K11-27 補這句（terminu 本機已 commit、還沒發），不用再回報，等 tdp 發版'
   - id: 5
     accepted: true
   - id: 6
@@ -25,7 +26,8 @@ tasks:
   - id: 12
     accepted: true
   - id: 13
-    accepted: true
+    accepted: false
+    reason: 'tdp 不清楚：Rotate left、Rotate right 兩列可以選 Space，合不合看 task 4 的寫法：K11「footer 放不下的 app 不提供 Space」；照 screen.2、K11-27 的字面拆成單獨的 Space:<動作>，60 欄放不下 r:restart，這兩列就不能提供；照 M5 合成一對才放得下。Drop 選 Space（Space:drop）不受影響。跟 task 4 同一點，使用者已經選 A，等 tdp 下一版'
   - id: 14
     accepted: true
   - id: 15
