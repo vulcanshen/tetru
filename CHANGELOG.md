@@ -2,6 +2,10 @@
 
 Each release names the version of terminu design (tdp) it follows.
 
+## Unreleased
+
+- The waves up the level's figure shade off: darkest at the front, lighter and lighter behind it.
+
 ## v0.3.0 — tdp v1.2.10
 
 - Ten rows to a level again, and yours to set: LEVEL UP on the Settings screen, under the hint, every 5, 10, 15, 20

@@ -20,9 +20,11 @@ import (
 // misreading), four of the field's rows clear of its top and its foot
 // (user, 2026-11-13: too high, two rows clear). It lights up from its foot
 // as the level's rows are cleared, Lavender over the ground, and over what
-// is lit waves go up from its foot, one after another, in the colour half
-// way to the ground (user, 2026-11-13: the waves, not a breath; the breath,
-// a heartbeat a second, too often, a blinking; not white, too much);
+// is lit waves go up from its foot, one after another, their front in the
+// colour two thirds of the way to the ground and the rows under it lighter
+// and lighter (user, 2026-11-13: the waves, not a breath; the breath, a
+// heartbeat a second, too often, a blinking; not white, too much;
+// 2026-11-16: the wave's rows not all one shade, then all of it deeper);
 // the last level, 15 or F, is all lit, gold (user, 2026-11-13). As the level
 // goes up, a band with a fading trail goes up over the whole of both sides
 // in the colour of the piece that cleared the level's last rows (user,
@@ -226,7 +228,9 @@ func (b *banner) ink(g *game.Game, r room, u, l int, waving bool) uint8 {
 // none; on them, lit from their foot to fill (0 to 1), the ground over
 // that; the last level's all lit. Lit is Lavender, the last level's gold;
 // wave (0 to 1, none under 0) as far on its way up, a font pixel's lines
-// of it are half way to the ground.
+// of it go toward the ground: its front two thirds of the way, and the
+// lines under the front a half and a third of the way, in three even
+// parts of the wave.
 func face(r room, level, u, l int, fill, wave float64) uint8 {
 	if level == 0 {
 		return inkNone
@@ -247,7 +251,7 @@ func face(r room, level, u, l int, fill, wave float64) uint8 {
 		// The wave's top, lines up from under the foot, to past the top.
 		front := int(wave * float64(6*f.sy))
 		if up := 5*f.sy - y; up <= front && up > front-f.sy {
-			return c + 1
+			return c + 1 + uint8((front-up)*3/f.sy)
 		}
 	}
 	return c

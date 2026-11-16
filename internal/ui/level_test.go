@@ -260,11 +260,12 @@ func TestTheLevelUpSweepsTheNextIn(t *testing.T) {
 }
 
 // waveOver walks a wave over f as sd draws it, a frame at a time, and says
-// what it saw: when each line, from the foot, first turned the colour half
-// way to the ground (-1 never), and how many times; what is lit is in c or
-// c + 1, the wave a font pixel's lines high or less, and the rest the
-// ground, or it fails.
-func waveOver(t *testing.T, tt *Tetru, f figure, lit int, c uint8) (first []time.Duration, times []int) {
+// what it saw: when each line, from the foot, first turned the wave front's
+// colour, the deepest (-1 never), and how many times, and the
+// most shades the wave had at once. What is lit is in c or in the wave's
+// c + 1 to c + 3, the wave a font pixel's lines high or less and lighter
+// down from its front, and the rest the ground, or it fails.
+func waveOver(t *testing.T, tt *Tetru, f figure, lit int, c uint8) (first []time.Duration, times []int, shades int) {
 	t.Helper()
 	h := 5 * f.sy
 	first, times = make([]time.Duration, h), make([]int, h)
@@ -275,18 +276,23 @@ func waveOver(t *testing.T, tt *Tetru, f figure, lit int, c uint8) (first []time
 	for at := time.Duration(0); at < 2*waveTime; at += frame / 4 {
 		tt.lv.wave = at % waveTime
 		sd := sidesAt(tt, 120, 40)
-		on := 0
+		on, under, seen := 0, uint8(0), map[uint8]bool{}
 		for up := range h {
 			ink := lineInk(sd, f, h-1-up)
+			wave := up < lit && ink > c && ink <= c+3
 			switch {
 			case up >= lit && ink != inkGround:
 				t.Fatalf("line %d from the foot, not lit, is %d %v into the wave", up, ink, at)
-			case up < lit && ink != c && ink != c+1:
+			case up < lit && ink != c && !wave:
 				t.Fatalf("line %d from the foot, lit, is %d %v into the wave", up, ink, at)
+			case wave && under != 0 && ink > under:
+				t.Fatalf("line %d from the foot is lighter (%d) than the wave's line under it (%d) %v in", up, ink, under, at)
+			}
+			if wave {
+				on, under, seen[ink] = on+1, ink, true
 			}
 			now := up < lit && ink == c+1
 			if now {
-				on++
 				if !was[up] {
 					times[up]++
 					if first[up] < 0 {
@@ -299,31 +305,38 @@ func waveOver(t *testing.T, tt *Tetru, f figure, lit int, c uint8) (first []time
 		if on > f.sy {
 			t.Fatalf("a wave %d lines high %v in", on, at)
 		}
+		shades = max(shades, len(seen))
 	}
-	return first, times
+	return first, times, shades
 }
 
 func TestWavesGoUpEveryLevel(t *testing.T) {
 	// Every level, over what is lit of it, waves go up from its foot, one
-	// after another, in the colour half way to the ground (user,
-	// 2026-11-13: waves, not a breath); what is not lit stays the ground.
+	// after another, their front in the colour two thirds of the way to the
+	// ground and the lines under it lighter, a half and a third of the way
+	// (user, 2026-11-13: waves, not a breath; 2026-11-16: the wave's rows
+	// not all one shade, then all of it deeper); what is not lit stays the
+	// ground.
 	tt, d := open(t, 120, 40)
 	play(d)
 	tt.g.Lines = tt.g.PerLevel / 2
 	d.Advance(sweepTime)
 	f := roomAt(120, 40).place(1)
 	lit := int(math.Round(float64(5*f.sy) / 2))
-	first, times := waveOver(t, tt, f, lit, inkLevel)
+	first, times, shades := waveOver(t, tt, f, lit, inkLevel)
 	for up := range lit {
 		if times[up] != 2 {
-			t.Fatalf("line %d from the foot went half way %d times in two waves", up, times[up])
+			t.Fatalf("line %d from the foot was the wave's front %d times in two waves", up, times[up])
 		}
 		if up > 0 && first[up] <= first[up-1] {
 			t.Fatalf("the wave reached line %d from the foot at %v, no later than the one under it (%v)", up, first[up], first[up-1])
 		}
 	}
-	if inks[inkLevel+1] != terminu.Hex("#7378a1") {
-		t.Fatal("the wave is not half way from Lavender to the ground")
+	if f.sy != 3 || shades != 3 {
+		t.Fatalf("a wave %d lines high had %d shades at most", f.sy, shades)
+	}
+	if inks[inkLevel+1] != terminu.Hex("#5d6182") || inks[inkLevel+2] != terminu.Hex("#7378a1") || inks[inkLevel+3] != terminu.Hex("#888fc0") {
+		t.Fatal("the wave is not two thirds, a half and a third of the way from Lavender to the ground")
 	}
 	d.Press("Esc")
 	tt.lv.wave = waveTime / 4
@@ -392,10 +405,12 @@ func TestTheLastLevelIsGold(t *testing.T) {
 		t.Fatal("the last level did not sweep in")
 	}
 	// All lit, gold, the family's icons' (user, 2026-11-13: gold at the
-	// fifteenth), the waves going up it the same, half way to the ground.
-	first, _ := waveOver(t, tt, f, 5*f.sy, inkGold)
-	if first[0] < 0 || first[5*f.sy-1] <= first[0] || inks[inkGold] != terminu.Hex("#f2b753") || inks[inkGold+1] != terminu.Hex("#92754c") {
-		t.Fatal("no wave up the F, or not gold and half way from it")
+	// fifteenth), the waves going up it the same, their front two thirds of
+	// the way to the ground, lighter under it.
+	first, _, shades := waveOver(t, tt, f, 5*f.sy, inkGold)
+	if first[0] < 0 || first[5*f.sy-1] <= first[0] || shades != 3 || inks[inkGold] != terminu.Hex("#f2b753") ||
+		inks[inkGold+1] != terminu.Hex("#715e49") || inks[inkGold+2] != terminu.Hex("#92754c") || inks[inkGold+3] != terminu.Hex("#b28b4e") {
+		t.Fatal("no wave up the F, or not gold and two thirds, a half and a third of the way from it")
 	}
 	d.Press("Esc")
 	tt.lv.wave = waveTime / 2
