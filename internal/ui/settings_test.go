@@ -131,7 +131,7 @@ func TestEnterAndTheMovesAreThePlayers(t *testing.T) {
 		d.Press("Enter")
 		d.Press("g")
 		d.Press("g")
-		for _, c := range keys.Choices() {
+		for _, c := range keys.Choices(keys.Actions[row]) {
 			if c == key {
 				break
 			}
@@ -394,5 +394,98 @@ func TestAKeyInUseIsRefused(t *testing.T) {
 			t.Fatalf("a refused key was written: %v %v", s, err)
 		}
 		d.Advance(5 * time.Second) // the toast goes
+	}
+}
+
+func TestSpaceIsATurnOrTheDropIfThePlayerChooses(t *testing.T) {
+	// The player may put the drop, or a turn, on Space; by default Space
+	// opens the menu (user, 2026-11-16; tdp v1.2.11 K11, K11-27). Chosen, a
+	// Warning says what Space does now and that the menu is Esc first; the
+	// Gaming mode has no Space menu then, Space:<the action> first in the
+	// footer, where Space:menu was, Restart and Quit in it as ever.
+	tt, d := open(t, 60, 32)
+	d.Press("S")
+	choose := func(row int, key string) {
+		t.Helper()
+		d.Press("g")
+		d.Press("g")
+		for range row {
+			d.Press("j")
+		}
+		d.Press("Enter")
+		d.Press("/")
+		d.Type(key)
+		d.Press("Enter")
+		d.Press("Enter")
+	}
+	choose(5, "Space")
+	if tt.keys[keys.Drop] != "Space" || !d.Has("[Space] is now Drop while you play") || !d.Has("For the menu, press [Esc] first") {
+		t.Fatalf("Space for Drop: %q, or no Warning", tt.keys[keys.Drop])
+	}
+	if s, err := keys.Load(tt.cfg); err != nil || s[keys.Drop] != "Space" {
+		t.Fatalf("not kept in the settings: %v %v", s, err)
+	}
+	d.Advance(5 * time.Second)
+	// One key one thing: Space taken, a turn is refused it (tdp K11-14).
+	choose(3, "Space")
+	if tt.keys[keys.RotateLeft] != "d" || !d.Has("Can't use [Space] for Rotate left") {
+		t.Fatalf("Space taken, given to Rotate left too: %q", tt.keys[keys.RotateLeft])
+	}
+	d.Advance(5 * time.Second)
+
+	d.Press("T")
+	if !d.Has("Space  drop") || d.Has("Space  menu") {
+		t.Fatal("KEYS does not say Space drops, or still has the menu")
+	}
+	play(d)
+	if r := strings.TrimSpace(row(d, 31)); r != "Space:drop ?:help d|k:rotate r:restart q:quit Esc:pause" {
+		t.Fatalf("footer %q", r)
+	}
+	before := tt.g.Score
+	d.Press("Space")
+	if tt.g.Score-before < 2*10 || d.Has("GAMING MODE") {
+		t.Fatal("Space did not drop the piece, or opened the menu")
+	}
+	d.Press("?")
+	spaceRow := ""
+	for _, r := range d.Screen() {
+		if strings.Contains(r, "Space ") {
+			spaceRow += r
+		}
+	}
+	if !strings.Contains(spaceRow, "drop") || strings.Contains(spaceRow, "what you can do here") {
+		t.Fatalf("? does not list Space among the mode's keys: %q", spaceRow)
+	}
+	d.Press("Esc") // ? closes
+	d.Press("Esc") // the game pauses, out of the mode
+	d.Press("Space")
+	if !d.Has("[Enter] Resume") || !d.Has("[x] End game") {
+		t.Fatal("paused, Space did not open PLAYGROUND's Space menu")
+	}
+	d.Press("Esc")
+
+	// A turn on Space, the drop on a letter and the other turn on Enter, the
+	// widest the footer gets: at 60 columns it still holds every key but
+	// the moves (tdp K11-27). The turns stay one pair (tdp M5).
+	d.Press("S")
+	choose(5, "x")
+	choose(3, "Enter")
+	choose(4, "Space")
+	if tt.keys != (keys.Set{"h", "l", "j", "Enter", "Space", "x"}) || !d.Has("[Space] is now Rotate right while you play") {
+		t.Fatalf("keys %v, or no Warning", tt.keys)
+	}
+	d.Advance(5 * time.Second)
+	d.Press("T")
+	d.Press("Enter") // resume
+	if r := strings.TrimSpace(row(d, 31)); r != "Enter|Space:rotate ?:help x:drop r:restart q:quit Esc:pause" {
+		t.Fatalf("footer %q", r)
+	}
+	for tt.g.Cur == 1 { // an O does not turn
+		d.Press("x")
+	}
+	turn := tt.g.At.Turn
+	d.Press("Space")
+	if tt.g.At.Turn == turn || d.Has("GAMING MODE") {
+		t.Fatal("Space did not turn the piece, or opened the menu")
 	}
 }

@@ -51,7 +51,7 @@ func TestUsedBySaysWhoHasAKey(t *testing.T) {
 		"d":     "it is Rotate left's key",
 		"PgDn":  "it is Rotate left's key",
 		"i":     "",
-		"Space": "it pauses and opens the Space menu",
+		"Space": "", // no action's by default: the menu's, the player's to give
 		"q":     "it quits",
 		"r":     "it restarts",
 		"s":     "", // Save is no key: tetru saves as it quits
@@ -62,13 +62,27 @@ func TestUsedBySaysWhoHasAKey(t *testing.T) {
 			t.Fatalf("%q: %q", k, got)
 		}
 	}
-	c := Choices()
-	if !slices.Contains(c, "a") || !slices.Contains(c, "k") || !slices.Contains(c, "Enter") || !slices.Contains(c, "s") || slices.Contains(c, "Tab") {
-		t.Fatalf("choices %v", c)
+	// Space on the drop, the turn left wants it: refused, one key one thing
+	// (tdp K11-14, K11-27).
+	d[Drop] = "Space"
+	if got := d.UsedBy(RotateLeft, "Space"); got != "it is Drop's key" {
+		t.Fatalf("Space taken: %q", got)
 	}
-	for _, k := range []string{"Space", "q", "r"} {
-		if slices.Contains(c, k) {
-			t.Fatalf("%s, a key the player can't have, is offered", k)
+	for _, a := range Actions {
+		c := Choices(a)
+		if !slices.Contains(c, "a") || !slices.Contains(c, "k") || !slices.Contains(c, "Enter") || !slices.Contains(c, "s") || slices.Contains(c, "Tab") {
+			t.Fatalf("%s: choices %v", a.ID(), c)
+		}
+		for _, k := range []string{"q", "r"} {
+			if slices.Contains(c, k) {
+				t.Fatalf("%s, a key the player can't have, is offered", k)
+			}
+		}
+		// Space for the turns and the drop (user, 2026-11-16), not the moves:
+		// with Space:move right first the footer at 60 columns has no room for
+		// Restart (tdp K11-27).
+		if want := a == RotateLeft || a == RotateRight || a == Drop; slices.Contains(c, "Space") != want {
+			t.Fatalf("%s: Space offered %v", a.ID(), !want)
 		}
 	}
 }
@@ -120,10 +134,12 @@ func TestSaveThenLoadKeepsOtherKeys(t *testing.T) {
 func TestLoadBadKeys(t *testing.T) {
 	dir := t.TempDir()
 	for name, body := range map[string]string{
-		"core":     "keys:\n  rotate_left: q\n",
-		"twice":    "keys:\n  rotate_left: k\n",
-		"not yaml": "keys: [\n",
-		"not keys": "keys: 3\n",
+		"core":         "keys:\n  rotate_left: q\n",
+		"twice":        "keys:\n  rotate_left: k\n",
+		"not yaml":     "keys: [\n",
+		"not keys":     "keys: 3\n",
+		"space twice":  "keys:\n  drop: Space\n  rotate_left: Space\n",
+		"space a move": "keys:\n  down: Space\n",
 	} {
 		path := filepath.Join(dir, strings.ReplaceAll(name, " ", "-")+".yaml")
 		if err := os.WriteFile(path, []byte(body), 0o644); err != nil {
@@ -132,6 +148,14 @@ func TestLoadBadKeys(t *testing.T) {
 		if _, err := Load(path); err == nil {
 			t.Fatalf("%s: read as good", name)
 		}
+	}
+	// Space on the drop, Enter on the turn left: the player's, read back.
+	path := filepath.Join(dir, "space.yaml")
+	if err := os.WriteFile(path, []byte("keys:\n  drop: Space\n  rotate_left: Enter\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if s, err := Load(path); err != nil || s[Drop] != "Space" || s[RotateLeft] != "Enter" {
+		t.Fatalf("Space on the drop: %v %v", s, err)
 	}
 }
 

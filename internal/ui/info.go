@@ -1,6 +1,7 @@
 package ui
 
 import (
+	"slices"
 	"strings"
 
 	terminu "github.com/vulcanshen/terminu-go"
@@ -30,19 +31,23 @@ const (
 	infoH = statRows + 2 + keyLines + 2
 )
 
-// keyRows are the keys and what they do.
+// keyRows are the keys and what they do: Space the menu, unless the player
+// gave it a turn or the drop, the Gaming mode then having no Space menu
+// (tdp v1.2.11 K11).
 func (m *info) keyRows() [][2]string {
 	k := m.t.keys
-	return [][2]string{
+	rows := [][2]string{
 		{k[keys.Left], "move left"},
 		{k[keys.Right], "move right"},
 		{k[keys.Down], "down a row"},
 		{k[keys.RotateLeft], "rotate left"},
 		{k[keys.RotateRight], "rotate right"},
 		{k[keys.Drop], "drop"},
-		{"Space", "menu"}, // it holds the game as any popup (user, 2026-11-12)
-		{"Esc", "pause"},
 	}
+	if !slices.Contains(k[:], "Space") {
+		rows = append(rows, [2]string{"Space", "menu"}) // it holds the game as any popup (user, 2026-11-12)
+	}
+	return append(rows, [2]string{"Esc", "pause"})
 }
 
 // Stats is INFO's rows, w × h, a cell from the box's frame.

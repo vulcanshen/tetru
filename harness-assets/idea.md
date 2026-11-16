@@ -110,6 +110,7 @@
 - （2026-11-15）問：既然 mode 裡熱鍵可以隨我們安排，Space 要不要出 popup 在 mode 中也是 app 說了算嗎？（tdp K11：不是）確實想要改成落到底，但是這也確實跟 tdp 的「不知道就按 space」違背。不動，我再想想。
 - （2026-11-16）來討論 space 給 drop 這件事：預設不變，Settings 的 drop 添加 space 項目，玩家如果選了該項目，按下 enter 後會跳警告，或者有沒有其他 tgo 可以在該項目上提示警告；每一列都可以選 Space。我開啟 terminu session 了，直接溝通不發 issue 吧。
 - （2026-11-16，經 terminu 轉達）K11 選 A：使用者可以自己在設定裡把模式的一個動作放到 Space，預設照舊開 Space menu，app 不能把動作設成預設；放了之後這個模式沒有 Space menu，原本只在 menu 的鍵都要在 60 欄的 footer 裡（放不下就不能提供 Space），footer 寫 Space:<動作>，? 照樣列每個鍵，Esc 之後 Space 開 panel 的 menu；Space 已經有動作時再選 Space 跳 Warning、不設定。警告選 A：select 不改，選定 Space 後跳 Warning toast，說出 Space 在模式裡改做什麼、要 menu 先按 Esc。tdp 文字寫好、還沒定版；terminu-go 要改（模式的 Space、footer 的 Space:menu），在那之前照現在做。
+- （2026-11-16，經 terminu 轉達）tdp v1.2.11、terminu-go v1.2.12 發了；footer 的位置使用者定了：Space:<動作> 寫在最前面、原本 Space:menu 的位置，例：Space:drop ?:help r:restart Esc:pause。
 - （2026-11-12）tdp #9 使用者選 A：離開 app 自己的模式時要不要跳 popup，app 可以自行決定；tetru 的 RESUME 照現在的做法。
 - （2026-11-12）我們的 save 很有毛病，save 完直接 quit，玩到一半不小心按到 s 就慘了。save 和 quit 應該要分開，save 歸 save，quit 歸 quit：要 quit 的時候正在遊戲，app 自動存檔，也不用問，下次進來使用者不想繼續直接 restart 就好；所以根本不需要作 save 給使用者操作，save 是 app 的背景行為。Gaming 中的 Space menu 應該只有 restart 和 quit。
 - （2026-11-12）footer 的 q:quit：q 雖然是 core key，讓 Gaming 模式中 footer 加入 q:quit 就好。（tdp #13 使用者選 A：app 自己的模式 footer 要不要寫 q:quit，app 可以自行決定）

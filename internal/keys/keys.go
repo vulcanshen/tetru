@@ -1,6 +1,7 @@
 // Package keys is the keys tetru is played with: the player chooses them
 // (user, 2026-11-11: all but Space, which pauses and opens the Space
-// menu), and they are kept in tetru's settings (tdp E3), with the other
+// menu; 2026-11-16: Space too, if the player chooses, the turns' or the
+// drop's), and they are kept in tetru's settings (tdp E3), with the other
 // settings: the hint's switch (user, 2026-11-13) and the rows a level
 // (user, 2026-11-14).
 package keys
@@ -92,23 +93,31 @@ func (s Set) Shown(a Action) string {
 // there (tdp K11): the core keys, and Restart (user, 2026-11-11; Save, s,
 // gone 2026-11-12: tetru saves as it quits).
 // A key the player can't have, so not offered (Choices).
-var core = map[string]string{"Space": "it pauses and opens the Space menu", "q": "it quits", "r": "it restarts"}
+var core = map[string]string{"q": "it quits", "r": "it restarts"}
 
-// Choices are the keys offered to the player for an action: the small
+// Choices are the keys offered to the player for action a: the small
 // letters and Enter (tdp K11: which keys the player may choose is the
 // app's), none of the core ones (user, 2026-11-12: a key that can't be
 // used is not in the list). One another action has is refused (UsedBy).
 // Enter and the moves are the player's too in an app's own mode, a letter
 // so freed having nothing to move; a single g as well, Gaming having no
-// chord starting with g (tdp v1.2.7 K11, K12; tdp #14).
-func Choices() []string {
+// chord starting with g (tdp v1.2.7 K11, K12; tdp #14). Space for a turn
+// or the drop, never by default (user, 2026-11-16: the player's choice;
+// tdp v1.2.11 K11): the mode then has no Space menu, the footer at 60
+// columns holding every key but the moves, whatever keys the others are
+// on. Not for a move: Space:move right first, Restart no longer fits.
+func Choices(a Action) []string {
 	var out []string
 	for c := 'a'; c <= 'z'; c++ {
 		if core[string(c)] == "" {
 			out = append(out, string(c))
 		}
 	}
-	return append(out, "Enter")
+	out = append(out, "Enter")
+	if a == RotateLeft || a == RotateRight || a == Drop {
+		out = append(out, "Space")
+	}
+	return out
 }
 
 // UsedBy says what already has key k in the Gaming mode, other than action a:
@@ -131,7 +140,7 @@ func (s Set) Check() error {
 	by := map[string]Action{}
 	for _, a := range Actions {
 		k := s[a]
-		if !slices.Contains(Choices(), k) || core[k] != "" {
+		if !slices.Contains(Choices(a), k) {
 			return fmt.Errorf("%s: %q can't be a key to %s", a.ID(), k, strings.ToLower(a.Label()))
 		}
 		if b, ok := by[k]; ok {

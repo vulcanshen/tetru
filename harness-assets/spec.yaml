@@ -1,6 +1,6 @@
-id: 71
-from: v1.2.9
-to: v1.2.10
+id: 72
+from: v1.2.10
+to: v1.2.11
 tasks:
   - id: 1
     spec: 45
@@ -78,7 +78,7 @@ tasks:
       - '新的方塊放不進場地，或固定時有一格還在場地上方，遊戲結束（照 locku）'
       - '名字是 tetru；不用別的遊戲的名稱、商標與音樂'
   - id: 4
-    spec: 55
+    spec: 72
     request: '遊戲的按鍵：h 左、l 右、j 下一格、d 左旋、k 右旋、Enter 快速向下；這是遊戲，要讓使用者好玩，跟 tdp 衝突就請 tdp 調整'
     tdp: [tdp K11, tdp K12, tdp K3, tdp P5, tdp M5, tdp panel.3, tdp screen.2, tdp menu.4, tdp K6, tdp panel.1, tdp M6, tdp K9, tdp panel.16, tdp M3, tdp note.5]
     remark:
@@ -88,14 +88,15 @@ tasks:
       - 'footer（tdp screen.2：Space:menu ?:help、模式自己的鍵、最後 Esc:<離開的動詞>）：d、k（旋轉）與 Enter（落到底）是對方塊做的事，寫成 d|k:rotate Enter:drop：兩個旋轉是一對方向相反、用一個動詞講的鍵（tdp M5），合成一項，使用者把它們與落到底改到哪個鍵（Enter 也算），60 欄時都放得下（tdp K11-20；tdp v1.2.7：Enter 上放了什麼都算 core key，不用進 footer，tetru 照樣放得下；tdp #14 之前寫成 d:rotate left k:rotate right，落到底改成字母時 60 欄放不下）；h、l、j 是移動，不寫，照 screen.2 的例子（Drag 寫 Enter:drop、不寫 j|k）。終端機窄、放不下的由 tgo 省略，Esc:pause 一定在'
       - '方向鍵照預設：h|j|k|l 就是 ←|↓|↑|→，u|d 就是 PgUp|PgDn（tdp K12），預設 ← 左、→ 右、↓ 往下、PgDn 左旋（跟 d）、↑ 右旋（跟 k）。使用者不能選方向鍵與 PgUp|PgDn，它們照這個模式的預設：動作改到別的鍵、或別的動作放到那個字母上，它們照樣做預設的事；PgUp 在 Gaming 沒有預設，不作用，使用者把動作放到 u 也不跟（tdp v1.2.7 K11、K12、K12-19，tdp #14 使用者選 A：左移改成 a，← 照樣往左）；原本「方向鍵跟著字母、字母改掉就不作用」'
       - 'Enter 在 Gaming 裡是落到底並固定：K11 的表的 Enter 在 app 自己的模式由 app 決定（tdp v1.2.6 起），照 tdp K3「對 focus 的東西做最直觀的動作」，Gaming 裡 focus 的是落下中的方塊，把它放到底就是最直觀的（跟 Drag mode 的 Enter 放下一樣）。Gaming 外 Enter 在 PLAYGROUND 上是開始一局或繼續（tdp K3：panel 沒有項目時，對整個 panel 做最直觀的動作）'
+      - 'Space 上放了動作時（task 13；tdp v1.2.11 K11、K11-27、screen.2）：footer 最前面、原本 Space:menu 的位置寫 Space:<動作>，tgo v1.2.12 自己寫：落到底是 Space:drop；旋轉之一在 Space 時照樣是一對（tdp M5），Space 那一半照左右的位置寫（Space|k:rotate、d|Space:rotate、Enter|Space:rotate）；Enter 上沒有動作時不寫 Enter。60 欄時除了移動以外的每個鍵都放得下，不管其他鍵在哪：最寬是 Enter|Space:rotate ?:help x:drop r:restart q:quit Esc:pause，59 欄。移動不給 Space：Space:move right 在最前面時，其他鍵照預設就要 64 欄，tgo 從 Esc 前面收起，收掉 r:restart，那時沒有 Space menu，r 就看不到了（tdp K11：footer 放不下的 app 不提供 Space）'
       - '旋轉與落到底是對落下中的方塊做的事，在 footer；左右與往下一格是移動，不在 footer（見下面的 footer 那一條）。這些鍵都在 ?（tdp K6），不列在 Space menu（task 5）'
       - note: 'footer 寫 q:quit（使用者 2026-11-12：Gaming 模式中 footer 加入 q:quit）。q 是 core key，在任何模式裡都是進入 K9 的離開流程，不是 Gaming 自己的鍵；這裡只是把它寫在 footer 上。v1.2.4 的 screen.2 只准寫模式自己的鍵（2026-11-12 review），回報 tdp #13，使用者選 A，tdp v1.2.5 定案：app 自己的模式，footer 在 Space:menu ?:help 與最後的 Esc:<離開的動詞> 中間寫哪些鍵由 app 自行決定，模式裡能按的鍵都可以，core key 也可以（例：q:quit），每個鍵做的事照它在模式裡的作用（K11、screen.2、screen-36）。tgo v1.2.5：沒有 Do 的 ModeKey {Key: q, Desc: quit}'
         issue: tdp #13
       - '? 的寫法（tdp v1.2.8 K11、K12、M5）：字母改走以後照預設作用的方向鍵與 PgUp|PgDn，寫在它做的動作那一列、用 | 接在使用者選的鍵後面（a|← move left、g|↓ down a row）；在預設的字母上不寫（同一個鍵）；預設沒有作用的 PgUp 不寫。兩個旋轉在 footer 是一項 d|k:rotate，在 ? 一律分兩列（d rotate left、k rotate right；左旋改到 Enter 時 Enter|PgDn rotate left）：一項裡的 | 只用一種意思，一對裡接上做同一件事的鍵就拆成兩項（M5）；預設時也分兩列，? 的樣子不跟著設定變，也寫得出哪個往左、哪個往右（tdp #14）'
 
   - id: 5
-    spec: 68
-    request: 'Space 暫停，並打開 Space menu；Space 不能改；暫停用 popup 顯示，不畫在遊戲裡（那是 locku 的限制，tetru 是獨立的 app）；玩的時候的 Space menu 不用列 h、l、j、k、Enter，連 d、k 都不用，應該是給 restart、save（使用者 2026-11-11）；後來使用者一度說列的確實是這個模式的鍵，再問為什麼 h、l、j、Enter 出現在裡面，選了重新打開 tdp #7（2026-11-11）；save 不給使用者操作，Gaming 中的 Space menu 只有 restart 和 quit（使用者 2026-11-12：save 存完直接 quit，玩到一半不小心按到 s 就慘了）'
+    spec: 72
+    request: 'Space 暫停，並打開 Space menu；Space 不能改；暫停用 popup 顯示，不畫在遊戲裡（那是 locku 的限制，tetru 是獨立的 app）；玩的時候的 Space menu 不用列 h、l、j、k、Enter，連 d、k 都不用，應該是給 restart、save（使用者 2026-11-11）；後來使用者一度說列的確實是這個模式的鍵，再問為什麼 h、l、j、Enter 出現在裡面，選了重新打開 tdp #7（2026-11-11）；save 不給使用者操作，Gaming 中的 Space menu 只有 restart 和 quit（使用者 2026-11-12：save 存完直接 quit，玩到一半不小心按到 s 就慘了）。再後來（使用者 2026-11-16）：玩家可以自己在 Settings 把動作放到 Space，預設不變（task 13）'
     tdp: [tdp K5, tdp K11, tdp K4, tdp menu.4, tdp M2, tdp M7, tdp L1, tdp screen.7, tdp F1, tdp F6, tdp confirm, tdp K12, tdp K6, tdp screen.2, tdp M5, tdp toast, tdp K9, tdp K1, tdp K2, tdp P5, tdp M3, tdp panel.16, tdp note.5, tdp F4, tdp T1]
     remark:
       - 'Gaming 裡按 Space 開 Gaming 模式的 Space menu（tdp K11：app 自己的模式，Space menu 列什麼 app 可以自行決定；標題與樣子照 menu.4）：只有 GAMING MODE 的 [r]estart、[q]uit（使用者 2026-11-12：Gaming 中的 Space menu 應該只有 restart 和 quit；原本是 restart、save），選了等於按 r、q。玩的鍵不列，都在 ? 與 INFO；[Esc] Pause 那一列也不列（K11：留不留 app 決定；使用者要的只有這兩列，Esc:pause 在 footer）。menu 開著遊戲就停，Esc 或 Space 關掉就接著玩'
@@ -106,7 +107,7 @@ tasks:
       - 'Esc 離開 Gaming＝暫停（tdp K4：Esc 是安全的出口，不會丟掉這一局）。只是離開模式，不跳 popup（使用者 2026-11-13：依照 tdp，第一下 Esc 是離開模式，遊戲變成暫停是對的，但不應該跳窗，應該就是 panel 1 focus 的樣子）：PLAYGROUND 回到模式外的樣子，模式名與外框顏色恢復，hint 是 Enter:resume，Enter 回到 Gaming；場地上不畫 PAUSED（使用者 2026-11-11：暫停不畫在場地上）。原本（2026-11-11 起）開 RESUME confirm（Paused: level 3, 25 lines, 12,340 points. / Go on with the game?），在上面按 Esc 就停在沒有 popup 的暫停，使用者 2026-11-13 覺得怪，拿掉'
       - '暫停時 PLAYGROUND 的 Space menu 是一般的（tdp M2）：PANEL OPERATION 的 [Enter] Resume、[n]ew game、[x] End game，與 Global operation（換畫面、離開都在這裡）；沒有 Save（task 16）'
       - 'Tab、數字鍵在 Gaming 裡不暫停、不出聲：Tetru 畫面只有 PLAYGROUND 一個 panel，它們在模式外本來就不做事，在模式裡也不作用（照 tdp K11，模式不暫停 Tab 與數字鍵時它們照常作用：K2 的 Tab 在只有一個 panel 時回到同一個，K1 的數字鍵沒有那個號碼的 panel 時不作用，所以什麼都不做、不出聲）。原本暫停、跳 Info toast：Press [Esc] to leave Gaming first'
-      - 'Space 一直是 Space（使用者 2026-11-11：除了 Space 以外都能設），也是 tdp K1、P5 的 core key：Settings 不列它（task 13）'
+      - 'Space 預設打開 Gaming 的 Space menu。玩家在 Settings 把旋轉或落到底放到 Space 時（使用者 2026-11-16；tdp v1.2.11 K11、K5、menu.4、K11-27），Gaming 裡按 Space 做那個動作，沒有 Gaming 的 Space menu（tgo v1.2.12：有 Do、Keys 收 Space 的 ModeKey 就是）；動作停用時（堆到頂之後）按了不作用；menu 原本的兩列 [r]estart、[q]uit 本來就在 footer（task 4）；? 照樣列每個鍵，Space 列在模式的鍵裡；Esc 暫停之後 Space 照 K5 打開 PLAYGROUND 的 Space menu。原本（使用者 2026-11-11）Space 一直是 Space、Settings 不列它'
       - note: '（2026-11-13 起不跳 popup，下面是原本的 RESUME confirm 的根據）Esc 離開 Gaming 時接著開 RESUME confirm：v1.2.4 的 K11、K4 沒寫離開模式時能不能開 popup（2026-11-12 review），回報 tdp #9，使用者選 A，tdp v1.2.5 定案：離開 app 自己的模式時要不要跳 popup，app 可以自行決定（K11、K4、K11-3、K11-16）。要守的三點 tetru 都做到（TestEscPausesEnterResumes）：只跳一個 popup；跳出來時模式已經離開，PLAYGROUND 的模式名、外框顏色都恢復；RESUME 上按 Esc 是關掉它、留在模式外面（暫停），回到 Gaming 是 popup 的 Enter:resume。tgo v1.2.5 的 Mode.OnExit 在離開之後才跑'
         issue: tdp #9
       - note: '模式的 Space menu 裡能執行的列（[r]estart、[q]uit）：原本 tdp 清單有一條說模式裡沒有能執行的按鍵清單，跟 K11 本文、K11-15、menu.4 矛盾，回報 tdp #12；tdp v1.2.5 拿掉那一條，能不能執行由 menu-24、menu-25 寫，tetru 照本文不改'
@@ -198,18 +199,18 @@ tasks:
       - 'GitHub 的 social preview：docs/social-preview.png（使用者 2026-11-12：social preview 還沒作），照家族其他成員的樣子（locku 的 social-preview）：640×320 黑底，上面是 docs/icon.svg 直接畫成 260×260，下面是 Tiny5 字型的 tetru（#cdd6f4）。tdp 沒管這張圖，家族成員都有；開 GitHub repo 後在 Settings 的 Social preview 上傳'
       - 'docs/social-preview.png：harness v1.2.2 的 project.3 寫明 docs/ 裡圖上沒寫的檔案由 app 自行決定（原本找不到根據，2026-11-12 review 回報 harness #1，使用者選 B，已關）'
   - id: 13
-    spec: 71
+    spec: 72
     request: '除了 Space 是暫停並打開 Space menu，其他的鍵都在 Settings 裡讓使用者自己設定。後來（使用者 2026-11-13）：Setting 不需要拆兩個 panel 去作設定，同一個 panel 分成兩個 section 就好。再後來（使用者 2026-11-16）：Space 也給玩家選，預設不變；Settings 每一列都可以選 Space（使用者想要的是 Space 落到底），選了按 Enter 後跳警告，或者 tgo 有沒有辦法在那個選項上就提示警告'
     tdp: [tdp panel.12, tdp select, tdp popup.7, tdp toast, tdp E2, tdp E3, tdp F5, tdp note.7, tdp K1, tdp K11, tdp K12, tdp P5, tdp M5, tdp popup.1, tdp screen.2, tdp K6, tdp panel.11, tdp note.6]
     remark:
-      - note: 'Space 給玩家選：tdp v1.2.10 的 K11 寫明模式裡 Space 打開模式的 Space menu（表、app 自己的模式「裡面照樣要守的」），使用者設定的鍵不能是 Space（「Space、?、!、Esc、q、Ctrl-C、Tab 與數字鍵照上表，不能改」，這句是使用者 2026-11-13 經 tetru 定的）。使用者 2026-11-15 想讓 Space 落到底，也說跟「不知道就按 Space」違背；2026-11-16 定了方向：預設不變，玩家在 Settings 選了才換，每一列都能選，選了跳警告。送給本機的 terminu session（使用者：直接溝通不發 issue），提了 A（預設不變、玩家選了之後模式裡沒有 Space menu，? 與 footer 照樣揭露，Esc 之後 Space 開 panel 的 menu；理由是 K11 放行改 Enter 的「使用者自己選的鍵不會這樣」與 K10 的 PTY），B（預設就是動作），C（不放行），並問 select 的選項能不能帶說明好提示警告（tgo Select.Options 是 []string），不然用 Warning toast。會動到 task 4（footer 的 Space:menu）、task 5（Gaming 的 Space menu）。回覆（2026-11-16，terminu 轉達）：使用者選 A，預設照舊、app 不能把動作設成預設；放了之後模式沒有 Space menu，原本只在 menu 的鍵都要在 60 欄的 footer（放不下就不能提供 Space），footer 寫 Space:<動作>，Space 已經有動作時再選跳 Warning；警告也選 A：select 不改，選定 Space 後跳 Warning toast（字由 app 決定）。tdp 的 K5、K11、screen.2、menu.4 已改（新增 K11-27，K11-1/14/15/20/25 加例外），還沒定版；terminu-go v1.2.11 的模式先攔 Space 開 menu、footer 一律寫 Space:menu，要等 terminu-go 改。暫時照現在：Space 只開 menu，Settings 不列 Space'
+      - note: 'Space 給玩家選：tdp v1.2.10 的 K11 寫明模式裡 Space 打開模式的 Space menu（表、app 自己的模式「裡面照樣要守的」），使用者設定的鍵不能是 Space（「Space、?、!、Esc、q、Ctrl-C、Tab 與數字鍵照上表，不能改」，這句是使用者 2026-11-13 經 tetru 定的）。使用者 2026-11-15 想讓 Space 落到底，也說跟「不知道就按 Space」違背；2026-11-16 定了方向：預設不變，玩家在 Settings 選了才換，每一列都能選，選了跳警告。送給本機的 terminu session（使用者：直接溝通不發 issue），提了 A（預設不變、玩家選了之後模式裡沒有 Space menu，? 與 footer 照樣揭露，Esc 之後 Space 開 panel 的 menu；理由是 K11 放行改 Enter 的「使用者自己選的鍵不會這樣」與 K10 的 PTY），B（預設就是動作），C（不放行），並問 select 的選項能不能帶說明好提示警告（tgo Select.Options 是 []string），不然用 Warning toast。會動到 task 4（footer 的 Space:menu）、task 5（Gaming 的 Space menu）。回覆（2026-11-16，terminu 轉達）：使用者選 A，預設照舊、app 不能把動作設成預設；放了之後模式沒有 Space menu，原本只在 menu 的鍵都要在 60 欄的 footer（放不下就不能提供 Space），footer 寫 Space:<動作>，Space 已經有動作時再選跳 Warning；警告也選 A：select 不改，選定 Space 後跳 Warning toast（字由 app 決定）。tdp 的 K5、K11、screen.2、menu.4 已改（新增 K11-27，K11-1/14/15/20/25 加例外），還沒定版；terminu-go v1.2.11 的模式先攔 Space 開 menu、footer 一律寫 Space:menu，要等 terminu-go 改。tdp v1.2.11、terminu-go v1.2.12 發版（2026-11-16，terminu 轉達），照它做了：見下面「列出的鍵」、task 4 的 footer、task 5 的 Space menu。使用者選的「每一列都可以選 Space」只做到旋轉與落到底：移動放到 Space 時 60 欄的 footer 放不下 r:restart（task 4），tdp 寫明放不下就不能提供'
         issue: 本機 terminu session 2026-11-16
       - '讓玩家改 Gaming 的鍵、能選哪些、怎麼設定，app 可以自行決定（tdp K11，K11-14；tdp #5 回報後 v1.2.3 放行）；要守的：選到 Gaming 裡已經有作用的鍵（別的動作的鍵、core key）就跳 Warning、寫出被誰用了、不設定；? 與 footer 寫的是目前的鍵；core key 與 panel 的鍵不給改'
       - note: '使用者 2026-11-13 要 Settings 是同一個 panel 分成兩段（鍵、提示的開關）。tdp v1.2.8 只有一般清單能分組（panel.11），回報 tdp #15；tdp v1.2.9 的 panel.12 加了分組（terminu-go v1.2.10 的 Field.Group），照它合成一個 panel。中間暫時是兩個 panel（[1] KEYS、[2] PLAY）'
         issue: tdp #15
       - 'Settings 畫面只有一個 panel：[1] SETTINGS，一列一個值（tdp panel.12），分兩組（tdp v1.2.9 panel.12 的分組：標題 Overlay0、大寫，組裡的列多縮兩格，focus 跳過標題）：KEYS 與 PLAY（task 17 的提示開關、task 3 的一關幾行）；有分組就沒有表頭（原本的 ACTION、KEY 拿掉）。KEYS 一組：Move left、Move right、Down a row、Rotate left、Rotate right、Drop 各一列。沒有 Pause 那一列（使用者 2026-11-12：PAUSE 跟 Space menu 是兩件事；不需要 pause 鍵，使用 Esc 就好）：暫停是 Esc 離開 Gaming（tdp K4），Space 打開 Space menu，menu 開著遊戲停著是因為 Gaming 時開任何 popup 遊戲都停（task 5）'
-      - 'Enter 在一列上打開 select（tdp select）：標題 KEY: <動作>，列出 a 到 z 與 Enter，不列 q、r 與 Space（使用者 2026-11-12：不能用的鍵不要出現在選單裡；q 離開、Space 開 Space menu，r 是 Gaming 模式自己的 Restart，task 5；s 原本是 Save，Save 拿掉之後可以選），現在的鍵選著；選到別的動作在用的鍵，跳 Warning toast（tdp toast）：Can''t use [k] for Rotate left: it is Rotate right''s key（句子裡的鍵加方括號，tdp M5），鍵不變、不寫檔；其他的 Enter 確定就寫進設定檔，寫不進去 popup 不關、上面開 error popup（tdp popup.7），值不變'
-      - '列出的鍵（tdp K11：能選哪些由 app 決定）：小寫字母與 Enter，不列 q、r 與 Space（上一條）；Enter 與移動也能改，空出來的 h、j、l 可以給別的動作；單獨的 g 也能選，Gaming 沒有 g 開頭的組合（tdp v1.2.7 K11、K12、K11-25，tdp #14 使用者選 A；tgo v1.2.8 把單獨的 g 交給模式的鍵）；方向鍵不能選，照預設（task 4）。Space、?、!、Esc、q、Ctrl-C、Tab、數字鍵不在選項裡，所以 K11-14、K11-25 選到不能用的鍵那一步不會發生（v1.2.7：只在 app 的選項裡有那個鍵時才做）。設定檔裡的鍵不是小寫字母或 Enter、或是 q、Space、r、兩個動作同一個鍵，都算讀不了'
+      - 'Enter 在一列上打開 select（tdp select）：標題 KEY: <動作>，列出 a 到 z 與 Enter（旋轉與落到底再加 Space），不列 q、r（使用者 2026-11-12：不能用的鍵不要出現在選單裡；q 離開，r 是 Gaming 模式自己的 Restart，task 5；s 原本是 Save，Save 拿掉之後可以選），現在的鍵選著；選到別的動作在用的鍵，跳 Warning toast（tdp toast）：Can''t use [k] for Rotate left: it is Rotate right''s key（句子裡的鍵加方括號，tdp M5），鍵不變、不寫檔；其他的 Enter 確定就寫進設定檔，寫不進去 popup 不關、上面開 error popup（tdp popup.7），值不變。選了 Space 時再跳 Warning toast（tdp K11、K11-27；使用者 2026-11-16：選了按 Enter 後跳警告；select 不改，terminu 轉達使用者選 A）：[Space] is now <動作> while you play／For the menu, press [Esc] first，說出 Space 在 Gaming 裡改做什麼、要 menu 先按 Esc。Space 已經是別的動作的鍵時照上面跳 Can''t use [Space] for …、不設定（K11-14）'
+      - '列出的鍵（tdp K11：能選哪些由 app 決定）：小寫字母與 Enter，不列 q、r（上一條）；Space 只列在 Rotate left、Rotate right、Drop 三列（使用者 2026-11-16；tdp v1.2.11 K11：只由玩家自己選，預設不放），移動不列（task 4：60 欄的 footer 放不下）；Enter 與移動也能改，空出來的 h、j、l 可以給別的動作；單獨的 g 也能選，Gaming 沒有 g 開頭的組合（tdp v1.2.7 K11、K12、K11-25，tdp #14 使用者選 A；tgo v1.2.8 把單獨的 g 交給模式的鍵）；方向鍵不能選，照預設（task 4）。?、!、Esc、q、Ctrl-C、Tab、數字鍵不在選項裡，所以 K11-14、K11-25 選到不能用的鍵那一步不會發生（v1.2.7：只在 app 的選項裡有那個鍵時才做）；Space 在選項裡，已經有動作時照 K11-14 拒絕。設定檔裡的鍵不是小寫字母或 Enter、移動是 Space、或是 q、r、兩個動作同一個鍵，都算讀不了'
       - '設定是 app 自己的選項（tdp E3）：~/.config/tetru/config.yaml（$XDG_CONFIG_HOME/tetru），TETRU__CONFIG 覆寫（tdp E2）；keys 底下 move_left、move_right、down、rotate_left、rotate_right、drop。沒寫的照預設；設定檔裡其他的 key 寫回時留著（tdp E3）。改了在 App Log 記一筆（tdp note.7）'
       - '設定檔讀不了（格式錯、鍵不能用、兩個動作同一個鍵）時照 tdp E3 問要不要移開（tgo MoveAside），移開就用預設的鍵；排行的檔也讀不了時接著問它'
       - '改了馬上生效：Gaming 的鍵、footer、? 與 INFO 寫的都是現在的鍵'
@@ -218,13 +219,13 @@ tasks:
         issue: tdp #14
 
   - id: 14
-    spec: 20
+    spec: 72
     request: '遊戲右下的 panel 分上下兩段：上面 Level、Lines、Score，下面操作方式；不叫 Manual。後來（使用者 2026-11-12）：INFO 裡的 level、lines、score 和下方的 manual 拆成兩個不同 block（之前用 panel 做，為了節省空間才那樣安排）'
     tdp: [tdp P5, tdp F1, tdp M5, tdp components.2, tdp screen.4, tdp menu, tdp panel.16]
     remark:
       - 'NEXT 2 下面是兩個 PLAYGROUND 自己畫的框（task 15），內容 app 可以自行決定（tdp P5、F1）：INFO 與 KEYS。三個 NEXT 與 INFO 還是 panel 時擠在一個 panel 裡分兩段、中間一條虛線，現在是框，各自一個（使用者 2026-11-12）。名字照使用者說的不用 Manual：玩到哪叫 INFO，怎麼玩叫 KEYS'
       - 'INFO：Level、Lines、Score 一行一個，label Overlay0、值 Lavender（task 1），框的高就是三行'
-      - 'KEYS：一列一個鍵與它做什麼，照使用者在 Settings 設的鍵：移動左右、往下一格、左旋、右旋、落到底，再加 Space（menu）與 Esc（pause）（使用者 2026-11-12：暫停與 Space menu 是兩件事）；鍵名照 tdp M5（Enter、Space、Esc），鍵 Blue 跟 hint 一樣、說明是一般的字；鍵一欄 5 格，欄與欄之間兩格（tdp components.2）'
+      - 'KEYS：一列一個鍵與它做什麼，照使用者在 Settings 設的鍵：移動左右、往下一格、左旋、右旋、落到底，再加 Space（menu）與 Esc（pause）（使用者 2026-11-12：暫停與 Space menu 是兩件事）；玩家把旋轉或落到底放到 Space 時（task 13），Space 寫在那個動作那一列，沒有 Space menu 那一列（Gaming 裡沒有 Space menu，task 5）；鍵名照 tdp M5（Enter、Space、Esc），鍵 Blue 跟 hint 一樣、說明是一般的字；鍵一欄 5 格，欄與欄之間兩格（tdp components.2）'
       - '只能讀，沒有 cursor、沒有鍵，也拿不到 focus（task 15）。它不取代 ?：每個鍵照樣在 ?'
   - id: 15
     spec: 20

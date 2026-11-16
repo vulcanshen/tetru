@@ -578,7 +578,12 @@ var podium = []terminu.Color{terminu.Yellow, terminu.Green, terminu.Hex("#89dceb
 // default letter has its arrow written after it in ? by tgo (a|←); the turns
 // are two rows in ? (tgo ModeKey.Ref), each with its arrow once off its
 // letter (Enter|PgDn rotate left, k rotate right): one item uses | one way
-// only (tdp M5, K11; tdp #14).
+// only (tdp M5, K11; tdp #14). A turn or the drop the player put on Space
+// is done by Space, the mode having no Space menu then; tgo writes it first
+// in the footer, where Space:menu was (Space:drop ?:help, Space|k:rotate),
+// and Restart and Quit, all the menu had, are in the footer already: at 60
+// columns it holds every key but the moves, whatever keys the others are
+// on (tdp v1.2.11 K11, K11-27; keys.Choices).
 func (t *Tetru) setModeKeys() {
 	k := t.keys
 	turns := []terminu.KeyRow{{Key: k.Shown(keys.RotateLeft), Desc: "rotate left"}, {Key: k.Shown(keys.RotateRight), Desc: "rotate right"}}

@@ -43,17 +43,18 @@ tasks:
       tgo App.Tick 每 40 ms 一格推進遊戲（README 的計時器）；消行時每 16 ms 一格（task 9）
     test: [TestPiecesComeSevenToABag, TestSameSeedSameGame, TestPieceComesInAtTheTopInTheMiddle, TestMoveStopsAtTheWalls, TestRotateTurnsAndComesBack, TestRotateKicksOffTheWall, TestDownScoresARow, TestDropSetsThePieceAndScoresTwoARow, TestGravityAtTheLevelsSpeed, TestLockWaitsAndMovingRestartsIt, TestLockResetsRunOut, TestClearScoresAtTheLevelAndGoesUp, TestTheSpeedStopsAtTheLastLevel, TestTheStackAtTheTopEnds, TestEndStopsThePiece, TestTheGameFalls, TestALevelIsTenRowsTillChosen, TestSettingsSetTheLinesALevel, TestSettingsThatCantBeKept, TestBrokenSettingsAskToMoveAside, TestQuitKeepsTheGameAndTheNextStartGoesOn]
   - id: 4
-    spec: 55
+    spec: 72
     implementation: |
       開始或繼續一局時，PLAYGROUND 進入 tgo 的模式 Gaming（tgo Panel.EnterMode）：tgo 把外框換成模式色、上框右邊畫 ┫Gaming┣
       Gaming 的鍵（tgo ModeKey）照 Settings 的鍵（task 13），預設：h、← 左一格；l、→ 右一格；j、↓ 往下一格；d、PgDn 左旋（逆時針）；k、↑ 右旋（順時針）；
       Enter 落到底並固定；沒有方塊可動時（消行中、結束之後）這六個鍵停用（tgo ModeKey.Disabled，footer 與 ? 是停用色）；方向鍵與 PgUp、PgDn 照預設（keys.Keys：動作預設的字母的方向鍵）：← 左、→ 右、↓ 往下、PgDn 左旋、↑ 右旋，動作改到別的鍵時照樣做這些；移動改離預設的字母時，tgo 在 ? 那一列寫成 a|← move left、g|↓ down a row（tgo v1.2.9：Keys 裡沒有方向鍵那個字母就接上），在預設的字母上不寫方向鍵；兩個旋轉在 ? 分兩列（tgo ModeKey.Ref）：d rotate left、k rotate right，改離預設的字母時接上方向鍵（keys.Shown：左旋改到 Enter 是 Enter|PgDn rotate left），footer 照舊一項 d|k:rotate
       footer 由 tgo 寫：Space:menu ?:help d|k:rotate Enter:drop r:restart q:quit Esc:pause；兩個旋轉是一個 tgo ModeKey（Key d|k，Keys d、PgDn、k、↑，按的鍵決定往哪邊轉），60 欄時是 Space:menu ?:help d|k:rotate Enter:drop r:restart Esc:pause，Enter 改給左旋、落到底改成 s 時是 Space:menu ?:help Enter|k:rotate s:drop r:restart Esc:pause；左右、往下標成不進 footer（tgo ModeKey.NoFooter），放不下的由 tgo 省略、Esc:pause 留著；這些鍵都在 ?，不在 Space menu（task 5）
+      玩家把旋轉或落到底放到 Space 時（task 13）：那個 ModeKey 的 Keys 收 Space、有 Do，tgo v1.2.12 把它寫在 footer 最前面、原本 Space:menu 的位置：落到底是 Space:drop ?:help d|k:rotate r:restart q:quit Esc:pause（Enter 上沒有動作，不寫），右旋在 Space、左旋在 Enter、落到底在 x 時是 Enter|Space:rotate ?:help x:drop r:restart q:quit Esc:pause，60 欄都放得下；Gaming 裡按 Space 做那個動作；? 裡 Space 列在模式的鍵（旋轉是 Space|PgDn rotate left 這樣的一列）
       Gaming 裡 PLAYGROUND 的下框不寫 hint（Enter 的 hint 拿掉；panel 上沒有按得動的鍵）
       Enter 在 PLAYGROUND 上（Gaming 外）：沒有一局在暫停時開新的一局（task 6），有就繼續（task 5）；hint Enter:play，暫停時 Enter:resume
-    test: [TestPlay, TestTheGamingFooterHasTheTurnsAndTheDrop, TestSpaceMenuRunsRestartAndTheKeysAreInHelp, TestTheGameFalls, TestSettingsSetAKey, TestArrowsKeepTheirDefault, TestEnterAndTheMovesAreThePlayers]
+    test: [TestPlay, TestTheGamingFooterHasTheTurnsAndTheDrop, TestSpaceMenuRunsRestartAndTheKeysAreInHelp, TestTheGameFalls, TestSettingsSetAKey, TestArrowsKeepTheirDefault, TestEnterAndTheMovesAreThePlayers, TestSpaceIsATurnOrTheDropIfThePlayerChooses]
   - id: 5
-    spec: 68
+    spec: 72
     implementation: |
       Gaming 裡按 Space：tgo 開 Gaming 的 Space menu，標題 [1] PLAYGROUND，只有 GAMING MODE 的 [r]estart（start over from level 1）、
       [q]uit（leave tetru; a game going goes on next time），選了 [r]estart 就等於按 r（tgo 先關掉 menu 再跑 ModeKey.Do，所以開的 popup 上 Esc 回到遊戲；使用者 2026-11-13 覺得這樣正常，tdp v1.2.10 K11：app 自己的模式裡由 app 決定），選了 [q]uit 就是 task 10 的離開流程；玩的六個鍵標 tgo ModeKey.NoMenu、模式標 Mode.NoLeaveRow
@@ -68,7 +69,8 @@ tasks:
       PANEL OPERATION 的 [Enter] Resume（this game, where it was）、[n]ew game、[x] End game，與 Global operation（沒有 Save，task 16）；Enter 回到 Gaming
       Tab、數字鍵在 Gaming 裡不暫停（tgo Mode.Pause 沒設）：只有一個 panel，tgo 換 panel 時不做事、不出聲
       Settings 沒有 Pause 那一列（task 13）；INFO 寫 Space menu、Esc pause（task 14）
-    test: [TestTheGameStopsUnderAPopup, TestEscPausesEnterResumes, TestTabInPlayDoesNothing, TestSpaceMenuRunsRestartAndTheKeysAreInHelp, TestSettingsHaveNoPauseRow, TestRestartFromThePlayModesSpaceMenu, TestPlay]
+      玩家把旋轉或落到底放到 Space 時（task 13）：Gaming 裡按 Space 做那個動作（tgo v1.2.12：Keys 收 Space、有 Do 的 ModeKey），沒有 Gaming 的 Space menu，動作停用時按了不作用；[r]estart、[q]uit 本來就在 footer（r:restart q:quit，task 4）；Esc 暫停之後按 Space 開 PLAYGROUND 的 Space menu（[Enter] Resume、[n]ew game、[x] End game）
+    test: [TestTheGameStopsUnderAPopup, TestEscPausesEnterResumes, TestTabInPlayDoesNothing, TestSpaceMenuRunsRestartAndTheKeysAreInHelp, TestSettingsHaveNoPauseRow, TestRestartFromThePlayModesSpaceMenu, TestPlay, TestSpaceIsATurnOrTheDropIfThePlayerChooses]
   - id: 6
     spec: 67
     implementation: |
@@ -160,29 +162,30 @@ tasks:
     test:
       - check: repo
   - id: 13
-    spec: 69
+    spec: 72
     implementation: |
       Settings 畫面只有一個 panel [1] SETTINGS，tgo Values（一列一個值），兩組（tgo Field.Group）：Keys 六列，Play 兩列（task 17 的 HINT、task 3 的 LEVEL UP）；有分組 tgo 不畫表頭（沒有設 Header）；Keys 一組：MOVE LEFT h、MOVE RIGHT l、DOWN A ROW j、ROTATE LEFT d、ROTATE RIGHT k、
       DROP Enter，沒有 PAUSE 那一列；每一列有說明（tgo Field.Desc，? 的「每一列」）；hint Enter:edit
-      Enter 在一列上開 tgo Select：標題 KEY: Rotate left，選項是 a 到 z（沒有 q、r）與 Enter（keys.Choices），現在的鍵選著
+      Enter 在一列上開 tgo Select：標題 KEY: Rotate left，選項是 a 到 z（沒有 q、r）與 Enter，ROTATE LEFT、ROTATE RIGHT、DROP 三列再加 Space（keys.Choices(動作)），現在的鍵選著
       Enter 與移動也能改：落到底改成 s、左移改成 a 之後，Enter、h 可以給別的動作；單獨的 g 也能選（Gaming 沒有 g 開頭的組合，tgo v1.2.8 把它交給模式的鍵）；方向鍵不能選，照預設（task 4）
-      選到別的動作的鍵：不寫檔、鍵不變，tgo 跳 Warning toast：Can't use [k] for Rotate left: it is Rotate right's key
+      選到別的動作的鍵：不寫檔、鍵不變，tgo 跳 Warning toast：Can't use [k] for Rotate left: it is Rotate right's key（Space 已經是落到底時選 Space 給左旋也是：Can't use [Space] for Rotate left: it is Drop's key）
+      選了 Space（寫進去之後）：另外跳 Warning toast 兩列：[Space] is now Drop while you play／For the menu, press [Esc] first
       其他的 Enter 確定時（tgo Select.Commit）寫進設定檔，寫不進去 popup 不關、tgo 開 error popup，鍵不變；寫進去之後 Gaming 的鍵、footer、
       ? 與 KEYS 跟著換（Gaming 的 Space menu 不列玩的鍵，task 5），App Log 記一筆 Success：Rotate left is now [a]（句子裡的鍵加方括號，tdp M5）
       設定檔：TETRU__CONFIG，不然 $XDG_CONFIG_HOME/tetru，不然 ~/.config/tetru 底下的 config.yaml；keys 底下 move_left、move_right、down、
       rotate_left、rotate_right、drop；沒寫的照預設；寫回時檔裡其他的 key 照留；先寫暫存檔再改名，目錄 0755、檔 0644
-      啟動時設定檔讀不了（YAML 錯、鍵不是小寫字母或 Enter、是 q、Space 或 r、兩個動作同一個鍵）：tgo App.MoveAside 問要不要移成 config.yaml.bak，Enter 移開、用預設的鍵，
+      啟動時設定檔讀不了（YAML 錯、鍵不是小寫字母、Enter 或 Space、移動是 Space、是 q 或 r、兩個動作同一個鍵）：tgo App.MoveAside 問要不要移成 config.yaml.bak，Enter 移開、用預設的鍵，
       Esc 離開；排行的檔也讀不了時接著問它
-    test: [TestDefaultIsTheUsersKeys, TestArrowsKeepTheirDefault, TestUsedBySaysWhoHasAKey, TestPathIsInTheConfigDirectory, TestSaveThenLoadKeepsOtherKeys, TestLoadBadKeys, TestSettingsSetAKey, TestSettingsThatCantBeKept, TestBrokenSettingsAskToMoveAside, TestSettingsHaveNoPauseRow, TestAKeyInUseIsRefused, TestEnterAndTheMovesAreThePlayers]
+    test: [TestDefaultIsTheUsersKeys, TestArrowsKeepTheirDefault, TestUsedBySaysWhoHasAKey, TestPathIsInTheConfigDirectory, TestSaveThenLoadKeepsOtherKeys, TestLoadBadKeys, TestSettingsSetAKey, TestSettingsThatCantBeKept, TestBrokenSettingsAskToMoveAside, TestSettingsHaveNoPauseRow, TestAKeyInUseIsRefused, TestEnterAndTheMovesAreThePlayers, TestSpaceIsATurnOrTheDropIfThePlayerChooses]
   - id: 14
-    spec: 20
+    spec: 72
     implementation: |
       INFO 與 KEYS 是 PLAYGROUND 的 body 在 NEXT 2 下面畫的兩個框（task 15），框裡從上面一列一列寫，離框一格
       INFO（5 列）：Level: 1 / Lines: 0 / Score: 12,340 一行一個，label Overlay0、值 Lavender；沒在玩時是上一局的值，還沒玩過是 1、0、0
       KEYS（到最後一列）：鍵一欄 5 格（Blue），空兩格，說明：h move left、l move right、j down a row、d rotate left、k rotate right、Enter drop（都照 Settings 現在的鍵）、
-      Space menu、Esc pause
+      Space menu、Esc pause；玩家把旋轉或落到底放到 Space 時（task 13），Space 寫在那個動作那一列（Space  drop），沒有 Space menu 那一列
       沒有 cursor、沒有鍵、拿不到 focus（task 15）
-    test: [TestStatsInInfo, TestInfoShowsTheKeys, TestSettingsSetAKey, TestLeastSizeIsTheGameAlone]
+    test: [TestStatsInInfo, TestInfoShowsTheKeys, TestSettingsSetAKey, TestLeastSizeIsTheGameAlone, TestSpaceIsATurnOrTheDropIfThePlayerChooses]
   - id: 15
     spec: 20
     implementation: |

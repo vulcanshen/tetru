@@ -18,8 +18,8 @@ with the player's name and the time, and ranks them, the best first.
 - **Drawn as locku's falling blocks**: the same square pixels and colours. The well at the left; at its right, in the same
   panel, the next two pieces, a box each, then INFO with the level, the rows and the score, and KEYS with the keys to
   play with.
-- **Your keys**: every key you play with can be changed on the Settings screen; `Esc` (pause) and `Space` (the menu)
-  stay as they are.
+- **Your keys**: every key you play with can be changed on the Settings screen, `Space` too for a turn or the drop;
+  `Esc` (pause) stays as it is.
 - **Fifteen levels of speed**: a level every ten rows, from a row a second to ten a second; past the fifteenth the
   speed stays. Make it 5, 15, 20 or 25 rows on the Settings screen, from the next game on.
 - **The level beside the field**: from 66 columns wide, the level stands big at both sides of the field, four rows
@@ -164,7 +164,9 @@ On the Settings screen, `Enter` on an action lists the keys: the small letters a
 which quit and restart. The one chosen is the key from then on, and KEYS beside the well shows it; another
 action's key is refused with a warning saying whose it is. `Enter` and the moves can go to other keys too, and a
 letter so freed to another action. The arrows are no one's to choose and keep what they do at first: set left to `a`
-and `←` still moves left. `Esc` always pauses and `Space` always opens the menu. Under the keys, in PLAY, is the hint's
+and `←` still moves left. `Esc` always pauses. `Space` opens the menu unless you give it a turn or the drop: it then
+does that while you play, with no menu there, and a warning says so; `Esc` first, then `Space`, for the menu. It is
+not offered for the moves: the bottom line would have no room left for `r:restart`. Under the keys, in PLAY, is the hint's
 switch: `Enter` there switches it off or on, kept from then on. Under it, LEVEL UP: the rows to clear for each level,
 every 5, 10, 15, 20 or 25; `Enter` on one chooses it, for the next game on. A game going keeps the one it began with.
 

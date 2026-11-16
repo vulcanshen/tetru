@@ -14,7 +14,8 @@ import (
 // panel.12): an action and its key, Enter to choose another. No row for pausing: Esc
 // pauses, leaving the Gaming mode (tdp K4), and Space opens the Space menu,
 // which holds the game as any popup does (user, 2026-11-12: two things; no
-// pause key of its own, Esc is it).
+// pause key of its own, Esc is it), unless the player gave Space a turn or
+// the drop.
 func (t *Tetru) keyFields() []*terminu.Field {
 	var fs []*terminu.Field
 	for _, a := range keys.Actions {
@@ -105,13 +106,16 @@ func (t *Tetru) setPerLevel(n int) {
 
 // chooseKey opens a select of the keys offered (tdp select; tdp K11: which
 // keys and how are the app's): the small letters and Enter, not the keys
-// the Gaming mode keeps (Space, q, r), the key now chosen. A key another
-// action has is refused with a Warning saying whose it is,
-// and not set (tdp K11). Another is written to the settings file
-// before the popup closes: a failure keeps it open under an error popup
-// (tdp popup.7).
+// the Gaming mode keeps (q, r), and Space for a turn or the drop (keys.Choices),
+// the key now chosen. A key another action has is refused with a Warning
+// saying whose it is, and not set (tdp K11), Space too once an action has
+// it. Another is written to the settings file before the popup closes: a
+// failure keeps it open under an error popup (tdp popup.7). Space chosen,
+// a Warning says what it does now and that the menu is Esc first, the
+// Gaming mode having no Space menu then (user, 2026-11-16: a warning once
+// it is chosen; tdp v1.2.11 K11, K11-27).
 func (t *Tetru) chooseKey(a keys.Action) tea.Cmd {
-	opts := keys.Choices()
+	opts := keys.Choices(a)
 	return t.App.Select(terminu.Select{
 		Title:    "Key",
 		Subject:  a.Label(),
@@ -135,6 +139,9 @@ func (t *Tetru) chooseKey(a keys.Action) tea.Cmd {
 			}
 			t.setModeKeys()
 			t.App.Log(terminu.Success, a.Label()+" is now ["+opts[i]+"]")
+			if opts[i] == "Space" {
+				return t.App.Toast(terminu.Warning, "[Space] is now "+a.Label()+" while you play", "For the menu, press [Esc] first")
+			}
 			return nil
 		},
 	})
