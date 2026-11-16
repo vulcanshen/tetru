@@ -16,9 +16,9 @@ import (
 const (
 	// Cols and Rows are the field, in blocks.
 	Cols, Rows = 12, 24
-	// Queue is how many pieces to come are shown, a box each (user,
+	// Queue is how many pieces to come are shown (user, 2026-11-16: one;
 	// 2026-11-11: Next 1 and Next 2).
-	Queue = 2
+	Queue = 1
 	// MaxLevel is the last level: the speed goes no higher after it (user,
 	// 2026-11-11: the levels are speeds; 2026-11-13: fifteen, 1 to F, not
 	// ten).
@@ -154,6 +154,11 @@ type Game struct {
 	// as it began (user, 2026-11-14: in Settings, ten at first; 2026-11-13
 	// twenty, before that ten).
 	PerLevel int
+	// Clears are how many times one, two, three and four rows were cleared
+	// at once (user, 2026-11-16); Counted says they are counted from the
+	// game's start: not for a game saved before they were kept.
+	Clears  [4]int
+	Counted bool
 
 	// Going are the rows full and going, the bottom first, while the clear
 	// is under way: they are out of the stack already, white, then sliding
@@ -174,7 +179,7 @@ type Game struct {
 // New is a game from its first piece, a level every perLevel rows. The
 // same seed is the same game.
 func New(seed uint64, perLevel int) *Game {
-	g := &Game{rng: rand.New(rand.NewPCG(seed, seed^0x9e3779b97f4a7c15)), cells: make([]uint8, Cols*Rows), Level: 1, PerLevel: perLevel}
+	g := &Game{rng: rand.New(rand.NewPCG(seed, seed^0x9e3779b97f4a7c15)), cells: make([]uint8, Cols*Rows), Level: 1, PerLevel: perLevel, Counted: true}
 	for range Queue {
 		g.Next = append(g.Next, g.deal())
 	}
@@ -183,11 +188,14 @@ func New(seed uint64, perLevel int) *Game {
 }
 
 // Resume is a game saved, taken up again: its rows a level, its level,
-// rows and score, its stack's blocks as Stack gave them; the pieces from
-// seed.
-func Resume(seed uint64, perLevel, level, lines, score int, stack [Rows][Cols]uint8) *Game {
+// rows and score, its clears (nil: not kept, not counted), its stack's
+// blocks as Stack gave them; the pieces from seed.
+func Resume(seed uint64, perLevel, level, lines, score int, clears *[4]int, stack [Rows][Cols]uint8) *Game {
 	g := &Game{rng: rand.New(rand.NewPCG(seed, seed^0x9e3779b97f4a7c15)), cells: make([]uint8, Cols*Rows), PerLevel: perLevel}
 	g.Level, g.Lines, g.Score = min(max(level, 1), MaxLevel), lines, score
+	if clears != nil {
+		g.Clears, g.Counted = *clears, true
+	}
 	for y, row := range stack {
 		copy(g.cells[y*Cols:(y+1)*Cols], row[:])
 	}
@@ -448,6 +456,7 @@ func (g *Game) clearRows(full []int) {
 		g.Going = append(g.Going, y)
 	}
 	g.Lines += len(full)
+	g.Clears[min(len(full), 4)-1]++
 	g.Score += clearScores[min(len(full), 4)] * g.Level
 	g.Level = min(MaxLevel, 1+g.Lines/g.PerLevel)
 	g.bring()

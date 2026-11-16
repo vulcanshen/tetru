@@ -227,6 +227,36 @@ func TestClearScoresAtTheLevelAndGoesUp(t *testing.T) {
 	}
 }
 
+// One, two, three and four rows at once are each counted apart (user,
+// 2026-11-16: how many times one row, two, three, four).
+func TestClearsCountedByHowManyRowsAtOnce(t *testing.T) {
+	g := with(I)
+	if !g.Counted || g.Clears != [4]int{} {
+		t.Fatalf("a new game's clears: %v, counted %v", g.Clears, g.Counted)
+	}
+	want := [4]int{}
+	for _, n := range []int{1, 4, 2, 1, 3} {
+		clear(g.cells) // what the last clear left
+		g.Next[0] = I
+		g.come()
+		for y := Rows - n; y < Rows; y++ {
+			g.fill(y, Cols-1)
+		}
+		g.Rotate(1)
+		for g.Move(1) {
+		}
+		g.Drop()
+		g.Advance(ClearTime(n))
+		want[n-1]++
+		if g.Clears != want {
+			t.Fatalf("after %d rows at once the clears are %v, not %v", n, g.Clears, want)
+		}
+	}
+	if g.Lines != 1+4+2+1+3 {
+		t.Fatalf("%d lines", g.Lines)
+	}
+}
+
 func TestClearSlidesThenTheStackComesDown(t *testing.T) {
 	g := with(I)
 	g.fill(Rows-1, Cols-1)
@@ -291,9 +321,12 @@ func TestStackIsWhatASaveKeepsAndResumeTakesUp(t *testing.T) {
 	if g.Cell(0, Rows-2) == 0 {
 		t.Fatal("Stack moved the stack itself")
 	}
-	r := Resume(2, 20, 3, 45, 12340, s)
+	r := Resume(2, 20, 3, 45, 12340, &[4]int{20, 6, 3, 1}, s)
 	if r.PerLevel != 20 || r.Level != 3 || r.Lines != 45 || r.Score != 12340 || !r.Live() || r.Over {
 		t.Fatalf("taken up: a level every %d rows, level %d, %d lines, %d points", r.PerLevel, r.Level, r.Lines, r.Score)
+	}
+	if !r.Counted || r.Clears != [4]int{20, 6, 3, 1} {
+		t.Fatalf("taken up with its clears: %v, counted %v", r.Clears, r.Counted)
 	}
 	for y := range Rows {
 		for x := range Cols {
@@ -302,8 +335,8 @@ func TestStackIsWhatASaveKeepsAndResumeTakesUp(t *testing.T) {
 			}
 		}
 	}
-	if r := Resume(2, 10, 99, 0, 0, [Rows][Cols]uint8{}); r.Level != MaxLevel {
-		t.Fatalf("level %d past the last", r.Level)
+	if r := Resume(2, 10, 99, 0, 0, nil, [Rows][Cols]uint8{}); r.Level != MaxLevel || r.Counted {
+		t.Fatalf("level %d past the last, or clears not kept counted", r.Level)
 	}
 }
 

@@ -1,11 +1,13 @@
 // Package scores keeps tetru's scores: who played, when and how many
-// points, a game a record, in the data directory (tdp E3:
+// points, how many rows and how many times one, two, three and four at
+// once (user, 2026-11-16), a game a record, in the data directory (tdp E3:
 // ~/.tetru/scores.yaml, TETRU__DATA to move it).
 package scores
 
 import (
 	"cmp"
 	"errors"
+	"fmt"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -15,11 +17,24 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// Score is one game's record.
+// Score is one game's record. Lines and Clears are nil in a record kept
+// by v0.3.1 or before, which did not keep them, and Clears in one of a
+// game saved by it and taken up after.
 type Score struct {
-	Time  time.Time `yaml:"time"`
-	Name  string    `yaml:"name"`
-	Score int       `yaml:"score"`
+	Time   time.Time `yaml:"time"`
+	Name   string    `yaml:"name"`
+	Score  int       `yaml:"score"`
+	Lines  *int      `yaml:"lines,omitempty"`
+	Clears *[4]int   `yaml:"clears,flow,omitempty"`
+}
+
+// CheckClears says what is wrong with clears as a file has them, how many
+// times one, two, three and four rows went at once: a count under none.
+func CheckClears(c [4]int) error {
+	if slices.Min(c[:]) < 0 {
+		return fmt.Errorf("clears: %v, a count under none", c)
+	}
+	return nil
 }
 
 type file struct {
@@ -52,6 +67,16 @@ func Load(path string) ([]Score, error) {
 	var f file
 	if err := yaml.Unmarshal(data, &f); err != nil {
 		return nil, err
+	}
+	for i, s := range f.Scores {
+		if s.Lines != nil && *s.Lines < 0 {
+			return nil, fmt.Errorf("score %d: %d lines", i+1, *s.Lines)
+		}
+		if s.Clears != nil {
+			if err := CheckClears(*s.Clears); err != nil {
+				return nil, fmt.Errorf("score %d: %w", i+1, err)
+			}
+		}
 	}
 	return f.Scores, nil
 }

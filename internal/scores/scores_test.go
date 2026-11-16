@@ -4,6 +4,7 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
+	"strings"
 	"testing"
 	"time"
 )
@@ -28,7 +29,13 @@ func TestSaveThenLoad(t *testing.T) {
 		t.Fatalf("no file yet: %v, %v", got, err)
 	}
 	at := time.Date(2026, 11, 11, 14, 2, 0, 0, time.FixedZone("TST", 8*3600))
-	want := []Score{{at, "vulcan", 12340}, {at.Add(time.Minute), "a\tb", 50}}
+	lines := 212
+	// The rows and the clears (user, 2026-11-16); none in a record of
+	// v0.3.1 or before, the second.
+	want := []Score{
+		{Time: at, Name: "vulcan", Score: 12340, Lines: &lines, Clears: &[4]int{61, 28, 11, 15}},
+		{Time: at.Add(time.Minute), Name: "a\tb", Score: 50},
+	}
 	if err := Save(path, want); err != nil {
 		t.Fatal(err)
 	}
@@ -39,23 +46,39 @@ func TestSaveThenLoad(t *testing.T) {
 	if len(got) != 2 || !got[0].Time.Equal(at) || got[0].Name != "vulcan" || got[0].Score != 12340 || got[1].Name != "a\tb" {
 		t.Fatalf("read back %+v", got)
 	}
+	if got[0].Lines == nil || *got[0].Lines != 212 || got[0].Clears == nil || *got[0].Clears != [4]int{61, 28, 11, 15} {
+		t.Fatalf("the rows and the clears read back %v, %v", got[0].Lines, got[0].Clears)
+	}
+	if got[1].Lines != nil || got[1].Clears != nil {
+		t.Fatal("a record with no rows or clears read back with some")
+	}
 	data, _ := os.ReadFile(path)
 	if !slices.Contains([]string{"scores:\n"}, string(data[:8])) {
 		t.Fatalf("the file starts %q", data[:8])
 	}
+	if s := string(data); !strings.Contains(s, "lines: 212\n") || !strings.Contains(s, "clears: [61, 28, 11, 15]\n") || strings.Count(s, "clears:") != 1 {
+		t.Fatalf("the rows and the clears not written as a line each, once:\n%s", s)
+	}
 }
 
 func TestLoadBroken(t *testing.T) {
-	path := filepath.Join(t.TempDir(), "scores.yaml")
-	os.WriteFile(path, []byte("scores: [nope"), 0o644)
-	if _, err := Load(path); err == nil {
-		t.Fatal("a broken file read")
+	for name, body := range map[string]string{
+		"yaml":         "scores: [nope",
+		"lines":        "scores:\n  - name: a\n    score: 1\n    lines: -1\n",
+		"clears":       "scores:\n  - name: a\n    score: 1\n    clears: [1, -2, 0, 0]\n",
+		"three clears": "scores:\n  - name: a\n    score: 1\n    clears: [1, 2, 0]\n",
+	} {
+		path := filepath.Join(t.TempDir(), "scores.yaml")
+		os.WriteFile(path, []byte(body), 0o644)
+		if got, err := Load(path); err == nil {
+			t.Fatalf("%s: a broken file read: %+v", name, got)
+		}
 	}
 }
 
 func TestRankedBestFirstThenEarliest(t *testing.T) {
 	at := time.Now()
-	all := []Score{{at, "a", 10}, {at.Add(2), "b", 30}, {at.Add(1), "c", 30}, {at, "d", 0}}
+	all := []Score{{Time: at, Name: "a", Score: 10}, {Time: at.Add(2), Name: "b", Score: 30}, {Time: at.Add(1), Name: "c", Score: 30}, {Time: at, Name: "d"}}
 	if got := Ranked(all); !slices.Equal(got, []int{2, 1, 0, 3}) {
 		t.Fatalf("ranked %v", got)
 	}

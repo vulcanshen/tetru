@@ -121,11 +121,12 @@ func TestTetruScreen(t *testing.T) {
 		if r := row(d, 2); !strings.HasPrefix(r, "┏") || !strings.Contains(r, "[1] PLAYGROUND") || !strings.HasSuffix(r, "┓") {
 			t.Fatalf("not PLAYGROUND alone, focused, the whole width: %q", r)
 		}
-		if r := row(d, 3); !strings.Contains(r, "┌─ NEXT 1 ─") || !strings.HasSuffix(r, "┐ ┃") {
-			t.Fatalf("NEXT 1 is not a box in PLAYGROUND at its right: %q", r)
+		if r := row(d, 3); !strings.Contains(r, "┌─ NEXT ─") || !strings.HasSuffix(r, "┐ ┃") {
+			t.Fatalf("NEXT is not a box in PLAYGROUND at its right: %q", r)
 		}
-		if !d.Has("┌─ NEXT 2 ─") || !d.Has("┌─ INFO ─") || !d.Has("┌─ KEYS ─") || d.Has("[2]") || d.Has("[3]") || d.Has("[4]") {
-			t.Fatal("no NEXT 2 or INFO box, or a box numbered")
+		// One box, the next piece alone (user, 2026-11-16).
+		if d.Has("NEXT 1") || d.Has("NEXT 2") || !d.Has("┌─ INFO ─") || !d.Has("┌─ KEYS ─") || d.Has("[2]") || d.Has("[3]") || d.Has("[4]") {
+			t.Fatal("a box for each piece to come, no INFO or KEYS box, or a box numbered")
 		}
 		// The column as wide however wide the screen (user, 2026-11-12).
 		for _, c := range []struct{ w, f, c int }{{58, 34, 23}, {75, 51, 23}, {148, 124, 23}} {
@@ -170,8 +171,8 @@ func TestLeastSizeIsTheGameAlone(t *testing.T) {
 	if r := row(d, minH-2); !strings.HasPrefix(r, "┗") {
 		t.Fatalf("PLAYGROUND's frame is not right over the footer: %q", r)
 	}
-	if got := strings.Count(strings.Join(d.Screen(), ""), pixelGlyph); got != fieldW*sceneH+2*boxW*boxH {
-		t.Fatalf("narrow, at the least size, %d pixels, not all of the field and the boxes", got)
+	if got := strings.Count(strings.Join(d.Screen(), ""), pixelGlyph); got != fieldW*sceneH+boxW*boxH {
+		t.Fatalf("narrow, at the least size, %d pixels, not all of the field and the box", got)
 	}
 	d.Resize(minW-1, minH)
 	if !d.Has("needs a terminal of at least 42×32") {
@@ -196,12 +197,12 @@ func TestPictureGrowsTwiceOnALargeTerminal(t *testing.T) {
 		}
 		return -1
 	}
-	if got := at("NEXT 2") - at("NEXT 1"); got != 2*boxH+2 {
-		t.Fatalf("NEXT 1 is %d high, not twice", got)
+	if got := at("INFO") - at("NEXT"); got != 2*boxH+2 {
+		t.Fatalf("NEXT is %d high, not twice", got)
 	}
 	d.Resize(150, 40)
-	if _, _, k := split(148, 35); k != 1 || widest(d) != fieldW+boxW {
-		t.Fatalf("150×40, too low for twice: %d times, %d pixels a row", k, widest(d))
+	if _, _, k := split(148, 35); k != 1 || strings.Count(strings.Join(d.Screen(), ""), pixelGlyph) != fieldW*sceneH+boxW*boxH {
+		t.Fatalf("150×40, too low for twice: %d times, the pixels not each drawn once", k)
 	}
 }
 
@@ -227,36 +228,73 @@ func TestStatsInInfo(t *testing.T) {
 	}
 }
 
+// INFO has the clears under the score, a line each, at 60 × 32 with KEYS
+// whole under it (user, 2026-11-16: how many times one row, two, three,
+// four at once; Single, Double, Triple, Quad).
+func TestTheClearsInInfo(t *testing.T) {
+	tt, d := open(t, 60, 32)
+	want := []string{"│ Level: 1 ", "│ Lines: 0 ", "│ Score: 0 ", "│ Single: 0 ", "│ Double: 0 ", "│ Triple: 0 ", "│ Quad: 0 "}
+	at := -1
+	for i, r := range d.Screen() {
+		if strings.Contains(r, want[0]) {
+			at = i
+		}
+	}
+	for i, s := range want {
+		if at < 0 || !strings.Contains(row(d, at+i), s) {
+			t.Fatalf("INFO's line %d is not %q", i+1, s)
+		}
+	}
+	if !d.Has("Esc    pause") || !d.Has("Space  menu") {
+		t.Fatal("KEYS is cut at 60 × 32")
+	}
+	play(d)
+	clearOf(t, tt, 2)
+	d.Advance(game.ClearTime(2))
+	if !d.Has("Lines: 2") || !d.Has("Double: 1") || !d.Has("Single: 0") || !d.Has("Quad: 0") {
+		t.Fatal("INFO does not follow the clears")
+	}
+	tt.g.Clears = [4]int{12, 3, 1, 4}
+	d.Advance(frame)
+	if !d.Has("Single: 12") || !d.Has("Double: 3") || !d.Has("Triple: 1") || !d.Has("Quad: 4") {
+		t.Fatal("INFO does not show each clear's count")
+	}
+}
+
 func TestPictureIsLockus(t *testing.T) {
-	if boxW != 6 || boxH != 4 {
-		t.Fatalf("a box is %d wide and %d high, not 6 and 4 (user, 2026-11-11)", boxW, boxH)
+	// One box, 6 wide, 4 high, the next piece alone in it (user,
+	// 2026-11-16: one piece to come seen; 2026-11-11: 4 × 6).
+	if boxW != 6 || boxH != 4 || game.Queue != 1 {
+		t.Fatalf("the box is %d wide and %d high, %d pieces to come, not 6 and 4, one", boxW, boxH, game.Queue)
 	}
 	s := picture(nil, true)
 	if s.px[0][0] != inkGround || s.px[sceneH-1][fieldW-1] != inkGround || s.px[0][fieldW] != inkNone {
 		t.Fatal("the field is not the ground alone, unframed")
 	}
-	for i := range game.Queue {
-		y := i * (boxH + 1)
-		if s.px[y][queueX] != inkGround || s.px[y+boxH-1][sceneW-1] != inkGround {
-			t.Fatalf("box %d is not the ground alone, unframed", i)
-		}
+	if s.px[0][queueX] != inkGround || s.px[boxH-1][sceneW-1] != inkGround || s.px[boxH][queueX] != inkNone {
+		t.Fatal("the box is not the ground alone, unframed")
 	}
-	if s.px[boxH][queueX] != inkNone {
-		t.Fatal("no pixel between the boxes")
+	for _, seed := range []uint64{1, 2, 3, 4, 5, 6, 7} {
+		g := game.New(seed, 10)
+		s = picture(g, true)
+		n := 0
+		for y := range boxH {
+			for x := queueX; x < sceneW; x++ {
+				switch s.px[y][x] {
+				case inkPiece + uint8(g.Next[0]):
+					n++
+				case inkGround:
+				default:
+					t.Fatalf("seed %d: the box has more than the next piece", seed)
+				}
+			}
+		}
+		if n != 4 {
+			t.Fatalf("seed %d: the box shows %d blocks of the next piece, not its 4", seed, n)
+		}
 	}
 	g := game.New(1, 10)
 	s = picture(g, true)
-	for i, p := range g.Next {
-		found := false
-		for y := i * (boxH + 1); y < i*(boxH+1)+boxH; y++ {
-			for x := queueX; x < sceneW; x++ {
-				found = found || s.px[y][x] == inkPiece+uint8(p)
-			}
-		}
-		if !found {
-			t.Fatalf("box %d does not show piece %d", i, p)
-		}
-	}
 	for _, b := range g.Blocks() {
 		if s.px[b[1]][b[0]] != inkPiece+uint8(g.Cur) {
 			t.Fatal("the falling piece is not drawn")
@@ -1023,6 +1061,7 @@ func TestQuitKeepsTheGameAndTheNextStartGoesOn(t *testing.T) {
 	d.Press("j")
 	tt.g.Put(0, game.Rows-1, 3)
 	tt.g.Put(1, game.Rows-1, 4)
+	tt.g.Clears = [4]int{3, 1, 0, 0}
 	level, lines, score := tt.g.Level, tt.g.Lines, tt.g.Score
 	d.Press("q")
 	if !d.Quit() {
@@ -1050,6 +1089,9 @@ func TestQuitKeepsTheGameAndTheNextStartGoesOn(t *testing.T) {
 	if g.Cell(0, game.Rows-1) != 4 || g.Cell(1, game.Rows-1) != 5 || g.Cell(2, game.Rows-1) != 0 {
 		t.Fatal("the stack saved is not back, each block its piece's")
 	}
+	if !g.Counted || g.Clears != [4]int{3, 1, 0, 0} || !d.Has("Single: 3") || !d.Has("Double: 1") {
+		t.Fatalf("the clears saved are not back: %v, counted %v", g.Clears, g.Counted)
+	}
 	// The colours back as they were (user, 2026-11-13).
 	if p := picture(g, true); p.px[game.Rows-1][0] != inkPiece+3 || p.px[game.Rows-1][1] != inkPiece+4 {
 		t.Fatal("the blocks of the game saved are not in their pieces' colours")
@@ -1067,6 +1109,91 @@ func TestQuitKeepsTheGameAndTheNextStartGoesOn(t *testing.T) {
 	d.Press("Enter")
 	if all := kept(t); len(all) != 1 || all[0].Score != score {
 		t.Fatalf("the game taken up and ended kept %+v", all)
+	} else if all[0].Lines == nil || *all[0].Lines != lines || all[0].Clears == nil || *all[0].Clears != [4]int{3, 1, 0, 0} {
+		t.Fatalf("the game taken up and ended kept the rows %v and the clears %v", all[0].Lines, all[0].Clears)
+	}
+}
+
+// A game saved by v0.3.1, which kept no clears, is taken up with them not
+// known: - in INFO and on Rank once it ends, its rows kept all the same.
+func TestAGameSavedWithNoClearsHasThemNotKnown(t *testing.T) {
+	dir := t.TempDir()
+	t.Setenv("TETRU__DATA", dir)
+	t.Setenv("TETRU__CONFIG", t.TempDir())
+	body := "lines_per_level: 10\nlevel: 3\nlines: 25\nscore: 900\nstack:\n" + strings.Repeat("  - \"............\"\n", game.Rows)
+	if err := os.WriteFile(filepath.Join(dir, "game.yaml"), []byte(body), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	tt := NewTetru()
+	d := tdptest.Start(t, tt.App, 60, 32)
+	if tt.g == nil || tt.g.Counted || !d.Has("Lines: 25") || !d.Has("Single: -") || !d.Has("Quad: -") {
+		t.Fatal("a game saved with no clears is not taken up with them not known")
+	}
+	d.Press("x")
+	d.Type("old")
+	d.Press("Enter")
+	all := kept(t)
+	if len(all) != 1 || all[0].Lines == nil || *all[0].Lines != 25 || all[0].Clears != nil {
+		t.Fatalf("kept %+v", all)
+	}
+	d.Press("R")
+	if !regexp.MustCompile(`old\s+900\s+25\s+-\s+-\s+-\s+-`).MatchString(row(d, 4)) {
+		t.Fatalf("on Rank: %q", row(d, 4))
+	}
+}
+
+// Rank has each score's rows and clears, as INFO has them; a score kept
+// before they were (v0.3.1 or before) has - for them. At 60 columns all
+// but the time fit; wider, the time is back (user, 2026-11-16).
+func TestRankHasTheRowsAndTheClears(t *testing.T) {
+	dir := t.TempDir()
+	t.Setenv("TETRU__DATA", dir)
+	t.Setenv("TETRU__CONFIG", t.TempDir())
+	lines := 212
+	all := []scores.Score{
+		{Time: time.Date(2026, 11, 15, 21, 4, 0, 0, time.UTC), Name: "VULCAN", Score: 123456, Lines: &lines, Clears: &[4]int{61, 28, 11, 15}},
+		{Time: time.Date(2026, 11, 13, 9, 30, 0, 0, time.UTC), Name: "A Very Long Name", Score: 7300},
+	}
+	if err := scores.Save(scores.Path(), all); err != nil {
+		t.Fatal(err)
+	}
+	tt := NewTetru()
+	d := tdptest.Start(t, tt.App, 60, 32)
+	d.Press("R")
+	head := regexp.MustCompile(`#\s+NAME\s+SCORE\s+LINES\s+SINGLE\s+DOUBLE\s+TRIPLE\s+QUAD\s`)
+	if r := row(d, 3); !head.MatchString(r) || strings.Contains(r, "TIME") {
+		t.Fatalf("at 60 columns the header is %q", r)
+	}
+	if r := row(d, 4); !regexp.MustCompile(`1\s+VULCAN\s+123,456\s+212\s+61\s+28\s+11\s+15\D`).MatchString(r) {
+		t.Fatalf("the first is %q", r)
+	}
+	if r := row(d, 5); !regexp.MustCompile(`2\s+A Ve\S*…\s+7,300\s+-\s+-\s+-\s+-\s`).MatchString(r) {
+		t.Fatalf("the second, kept before the rows and the clears, is %q", r)
+	}
+	d.Resize(100, 32)
+	if r := row(d, 3); !head.MatchString(r) || !strings.Contains(r, "TIME") || !strings.Contains(row(d, 5), "A Very Long Name") {
+		t.Fatalf("at 100 columns the header is %q", r)
+	}
+	// Narrower still, the clears go, the most common first, the rows last.
+	d.Resize(48, 32)
+	if r := row(d, 3); !strings.Contains(r, "LINES") || strings.Contains(r, "SINGLE") || !strings.Contains(r, "QUAD") {
+		t.Fatalf("at 48 columns the header is %q", r)
+	}
+}
+
+// A game kept in the rank keeps its rows and clears with its score.
+func TestTheScoreKeepsTheRowsAndTheClears(t *testing.T) {
+	tt, d := open(t, 60, 32)
+	play(d)
+	clearOf(t, tt, 3)
+	d.Advance(game.ClearTime(3))
+	d.Press("Esc")
+	d.Press("x")
+	d.Type("amy")
+	d.Press("Enter")
+	all := kept(t)
+	if len(all) != 1 || all[0].Lines == nil || *all[0].Lines != 3 || all[0].Clears == nil || *all[0].Clears != [4]int{0, 0, 1, 0} {
+		t.Fatalf("kept %+v", all)
 	}
 }
 
@@ -1278,7 +1405,7 @@ func clearOf(t *testing.T, tt *Tetru, n int) *game.Game {
 	stack[game.Rows-5][0] = game.Kept
 	var g *game.Game
 	for seed := uint64(1); ; seed++ {
-		if g = game.Resume(seed, 10, 1, 0, 0, stack); g.Cur == 0 {
+		if g = game.Resume(seed, 10, 1, 0, 0, &[4]int{}, stack); g.Cur == 0 {
 			break
 		}
 	}

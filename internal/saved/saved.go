@@ -1,7 +1,9 @@
 // Package saved keeps the one game saved to go on with later (user,
 // 2026-11-11: Save keeps the score and the blocks on the ground, and
-// quits): its rows a level, its level, rows and score and its stack, each
-// block's piece too (user, 2026-11-13: the colours back as they were), in
+// quits): its rows a level, its level, rows and score, its clears (user,
+// 2026-11-16: how many times one, two, three, four rows at once) and its
+// stack, each block's piece too (user, 2026-11-13: the colours back as
+// they were), in
 // the data directory (tdp E3: ~/.tetru/game.yaml, TETRU__DATA to move it). It
 // is read back as tetru starts, and then removed.
 package saved
@@ -21,9 +23,12 @@ import (
 )
 
 // Game is a game saved: the rows a level it began with (game.PerLevel), its
-// stack's blocks as game.Stack gives them.
+// clears as game.Clears has them, nil when they are not known (a game
+// saved by v0.3.1 or before, or one taken up from it), its stack's blocks
+// as game.Stack gives them.
 type Game struct {
 	PerLevel, Level, Lines, Score int
+	Clears                        *[4]int
 	Stack                         [game.Rows][game.Cols]uint8
 }
 
@@ -40,6 +45,7 @@ type file struct {
 	Level    int      `yaml:"level"`
 	Lines    int      `yaml:"lines"`
 	Score    int      `yaml:"score"`
+	Clears   *[4]int  `yaml:"clears,flow,omitempty"`
 	Stack    []string `yaml:"stack"`
 }
 
@@ -71,6 +77,12 @@ func Load(path string) (*Game, error) {
 			return nil, fmt.Errorf("lines_per_level: %d is not a row or more", g.PerLevel)
 		}
 	}
+	if f.Clears != nil {
+		if err := scores.CheckClears(*f.Clears); err != nil {
+			return nil, err
+		}
+		g.Clears = f.Clears
+	}
 	for y, row := range f.Stack {
 		if len(row) != game.Cols || strings.Trim(row, marks) != "" {
 			return nil, fmt.Errorf("stack row %d: %q is not %d of %s", y+1, row, game.Cols, marks)
@@ -85,7 +97,7 @@ func Load(path string) (*Game, error) {
 // Save writes g, the file replaced whole so a failed write leaves the old
 // one as it was.
 func Save(path string, g Game) error {
-	f := file{PerLevel: &g.PerLevel, Level: g.Level, Lines: g.Lines, Score: g.Score}
+	f := file{PerLevel: &g.PerLevel, Level: g.Level, Lines: g.Lines, Score: g.Score, Clears: g.Clears}
 	for _, row := range g.Stack {
 		var b strings.Builder
 		for _, c := range row {

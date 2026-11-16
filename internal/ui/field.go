@@ -14,15 +14,17 @@ import (
 // The field is drawn as locku's tetromino saver draws its board (user,
 // 2026-11-11): a pixel is a square glyph two columns wide and a row high, a
 // block a pixel; the ground lit too, in surface0, as locku's board is; the
-// pieces to come a box of ground each. The field has no frame of its own:
+// piece to come a box of ground. The field has no frame of its own:
 // PLAYGROUND's is it (user, 2026-11-11: the panel is the game). PLAYGROUND is the only
 // panel (user, 2026-11-11: NEXT 1, NEXT 2 and INFO with no [N], never
-// focused): at its right are three boxes of its own, framed as content is
+// focused): at its right are boxes of its own, framed as content is
 // (tdp F1: a frame a panel's content draws is content, how it is drawn
-// the app's), Next 1 and Next 2 and INFO (user, 2026-11-11: at the
-// right); narrow, PLAYGROUND draws the boxes with no frames, a pixel from the
-// field, a pixel apart, and no INFO.
-// A box is 6 pixels wide and 4 high (user, 2026-11-11: 4 × 6, after 5 × 5).
+// the app's), Next, INFO and KEYS (user, 2026-11-11: at the right);
+// narrow, PLAYGROUND draws the box with no frame, a pixel from the field,
+// and no INFO.
+// The box is 6 pixels wide and 4 high, the next piece in it alone (user,
+// 2026-11-16: one piece to come seen, so INFO has room for the clears;
+// 2026-11-11: 4 × 6, after 5 × 5).
 const (
 	boxW, boxH = 6, 4
 	// fieldW and sceneH are the field; queueX is where the column of boxes
@@ -80,8 +82,8 @@ var inks = []terminu.Color{
 }
 
 // field is the PLAYGROUND panel's body: the field of t's game and, at its right,
-// the boxes of the pieces to come and INFO; narrow, the level, the rows and
-// the score over the field and the boxes beside it.
+// the boxes of the piece to come and INFO; narrow, the level, the rows and
+// the score over the field and the box beside it.
 type field struct{ t *Tetru }
 
 // scene is the picture, a pixel an ink.
@@ -96,7 +98,7 @@ func (s *scene) put(x, y int, ink uint8) {
 // picture is the scene of g, nil before the first game: the ground and the
 // boxes, the stack, the hint under the piece where hint (where a drop would
 // set it), the piece falling (or waiting at the top while rows
-// go), the pieces to come; the rows going are not in it, they go out
+// go), the piece to come; the rows going are not in it, they go out
 // over it (clearRows);
 // at the end the pieces grey as far as the curtain is down. A pause and the
 // end are said by popups, not drawn here (user, 2026-11-11: locku draws
@@ -108,20 +110,16 @@ func picture(g *game.Game, hint bool) scene {
 			s.px[y][x] = inkGround
 		}
 	}
-	// The boxes: ground, a pixel apart.
-	for i := range game.Queue {
-		for y := range boxH {
-			for x := range boxW {
-				s.put(queueX+x, i*(boxH+1)+y, inkGround)
-			}
+	// The box: ground.
+	for y := range boxH {
+		for x := range boxW {
+			s.put(queueX+x, y, inkGround)
 		}
 	}
 	if g == nil {
 		return s
 	}
-	for i, p := range g.Next {
-		preview(&s, p, queueX, i*(boxH+1))
-	}
+	preview(&s, g.Next[0], queueX, 0)
 	for y := range game.Rows {
 		for x := range game.Cols {
 			if c := g.Cell(x, y); c != 0 {
@@ -177,7 +175,7 @@ func preview(s *scene, p, x, y int) {
 // big at its sides where there is room (sides), and the column of boxes
 // at the right, at the scale split gives (user, 2026-11-11: the field
 // alone, the level, the rows and the score in INFO); narrow, the level,
-// the rows and the score over the field and the boxes beside it.
+// the rows and the score over the field and the box beside it.
 func (f *field) Draw(w, h int, focused bool) []string {
 	t := f.t
 	sc := picture(t.g, t.hint)
@@ -189,7 +187,7 @@ func (f *field) Draw(w, h int, focused bool) []string {
 		}
 		lines := append(head, pixels(&sc, 0, sceneW, 0, sceneH, 1)...)
 		out := middle(lines, cols, w, h)
-		// The boxes are right of the field: nothing goes out that way.
+		// The box is right of the field: nothing goes out that way.
 		clearRows(out, t.g, &sc, w, 1, sceneW, max(0, (w-cols)/2), max(0, (h-len(lines))/2)+len(head), 0, sides{})
 		return out
 	}
@@ -223,25 +221,21 @@ func (f *field) Draw(w, h int, focused bool) []string {
 // scale both are drawn at: twice where both have the room.
 func split(w, h int) (fw, cw, k int) {
 	cw, k = sideW, 1
-	if c := max(sideW, 2*2*boxW+2); w-c-1 >= 2*2*fieldW && h >= 2*sceneH && h >= 2*(2*boxH+2)+infoH {
+	if c := max(sideW, 2*2*boxW+2); w-c-1 >= 2*2*fieldW && h >= 2*sceneH && h >= 2*boxH+2+infoH {
 		cw, k = c, 2
 	}
 	return w - cw - 1, cw, k
 }
 
 // column is the boxes at PLAYGROUND's right, cw wide and h high, every pixel k ×
-// k glyphs: Next 1 and Next 2, a box each in the middle of its frame; INFO
-// under them, as high as its rows; KEYS under it down to the bottom.
+// k glyphs: Next, the box of the piece to come in the middle of its frame;
+// INFO under it, as high as its rows; KEYS under it down to the bottom.
 func (t *Tetru) column(sc *scene, cw, h, k int) []string {
 	nh := boxH*k + 2
-	var out []string
-	for i, title := range []string{"Next 1", "Next 2"} {
-		y0 := i * (boxH + 1)
-		out = append(out, framed(title, middle(pixels(sc, queueX, sceneW, y0, y0+boxH, k), 2*boxW*k, cw-2, nh-2), cw)...)
-	}
+	out := framed("Next", middle(pixels(sc, queueX, sceneW, 0, boxH, k), 2*boxW*k, cw-2, nh-2), cw)
 	m := &info{t}
 	out = append(out, framed("Info", m.Stats(cw-2, statRows), cw)...)
-	return append(out, framed("Keys", m.Keys(cw-2, h-2*nh-(statRows+2)-2), cw)...)
+	return append(out, framed("Keys", m.Keys(cw-2, h-nh-(statRows+2)-2), cw)...)
 }
 
 // framed is body in a frame w wide, the title upper case after the frame's
@@ -435,20 +429,43 @@ func glyphs(at, sh []uint8, left, w int) string {
 	return terminu.Pad(b.String(), w)
 }
 
-// stats are the level, the rows cleared and the score, of the game or of
-// the last one, a line each: labels in Overlay0, values in Lavender (where
-// the game is), as a statusbar's (tdp screen.4).
+// stats are the level, the rows cleared, the score and the clears, of the
+// game or of the last one, a line each: labels in Overlay0, values in
+// Lavender (where the game is), as a statusbar's (tdp screen.4).
 func (t *Tetru) stats() []string {
-	level, lines, score := 1, 0, 0
+	level, lines, score, clears := 1, 0, 0, &[4]int{}
 	if t.g != nil {
-		level, lines, score = t.g.Level, t.g.Lines, t.g.Score
+		level, lines, score, clears = t.g.Level, t.g.Lines, t.g.Score, nil
+		if t.g.Counted {
+			clears = &t.g.Clears
+		}
 	}
 	q, v := terminu.Fg(terminu.Overlay0), terminu.Fg(terminu.Lavender)
-	return []string{
+	rows := []string{
 		q.Render("Level: ") + v.Render(strconv.Itoa(level)),
 		q.Render("Lines: ") + v.Render(strconv.Itoa(lines)),
 		q.Render("Score: ") + v.Render(comma(score)),
 	}
+	for i, n := range counts(clears) {
+		rows = append(rows, q.Render(clearNames[i]+": ")+v.Render(n))
+	}
+	return rows
+}
+
+// clearNames are the clears' names, one, two, three and four rows at once
+// (user, 2026-11-16: Single, Double, Triple, Quad).
+var clearNames = [4]string{"Single", "Double", "Triple", "Quad"}
+
+// counts are clears written, a count each; - each when they are not known
+// (nil: a game saved by v0.3.1 or before, or a score it kept).
+func counts(c *[4]int) [4]string {
+	out := [4]string{"-", "-", "-", "-"}
+	if c != nil {
+		for i, n := range c {
+			out[i] = strconv.Itoa(n)
+		}
+	}
+	return out
 }
 
 // statsRows are the stats on two lines, narrow, over the field: the level,

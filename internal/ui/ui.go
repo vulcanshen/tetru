@@ -1,5 +1,5 @@
 // Package ui is tetru's terminal UI on terminu-go: three screens (user,
-// 2026-11-11), Tetru with the PLAYGROUND panel, the pieces to come and INFO,
+// 2026-11-11), Tetru with the PLAYGROUND panel, the piece to come and INFO,
 // Rank with the scores kept, Settings with the keys to play with;
 // the Gaming mode the game runs in.
 package ui
@@ -31,14 +31,15 @@ var icon []byte
 
 const (
 	// minW, minH are tetru's least size (tdp L1, lower than 60 × 32): wide
-	// enough for PLAYGROUND alone (narrow), the field and the boxes, 38 columns,
+	// enough for PLAYGROUND alone (narrow), the field and the box, 38 columns,
 	// the level, the rows and the score over them, 38, its frame and a
 	// cell's margin each side; high enough for the chip row, its rule and
-	// the footer, PLAYGROUND's frame and the column in it at the right: Next 1
-	// and Next 2, INFO and KEYS, each with its frame.
-	minW, minH = 42, 3 + 2 + 2*(boxH+2) + infoH
-	// narrowBelow is the width under which PLAYGROUND draws the boxes with no
-	// frames and no INFO (tdp screen.5's most).
+	// the footer, PLAYGROUND's frame and in it the higher of the column at
+	// the right, Next, INFO and KEYS, each with its frame, and narrow, the
+	// two lines of the level, the rows and the score, a line and the field.
+	minW, minH = 42, 3 + 2 + max(boxH+2+infoH, 2+1+sceneH)
+	// narrowBelow is the width under which PLAYGROUND draws the box with no
+	// frame and no INFO (tdp screen.5's most).
 	narrowBelow = 60
 	// sideW is how wide the boxes at PLAYGROUND's right are, the pieces in
 	// them drawn once: INFO's rows and its frame.
@@ -100,7 +101,7 @@ func NewTetru() *Tetru {
 	// 2026-11-11: Save keeps it and quits; the next start goes on with it).
 	var sg *saved.Game
 	if sg, t.stashErr = saved.Load(t.stash); sg != nil {
-		t.g = game.Resume(t.seed(), sg.PerLevel, sg.Level, sg.Lines, sg.Score, sg.Stack)
+		t.g = game.Resume(t.seed(), sg.PerLevel, sg.Level, sg.Lines, sg.Score, sg.Clears, sg.Stack)
 		t.lv.show(t.g.Level)
 		t.rmErr = saved.Remove(t.stash)
 		t.App.Log(terminu.Info, "Took up the game saved: level "+strconv.Itoa(sg.Level)+", "+comma(sg.Score)+" points")
@@ -117,11 +118,19 @@ func NewTetru() *Tetru {
 	a.OnMsg = t.onMsg
 	a.Start = t.start
 
+	// The rows and the clears of each score too (user, 2026-11-16), as INFO
+	// has them; where they do not all fit, the time goes first, then the
+	// clears, the most common first, and the rows last (tdp panel.5).
 	t.list = &terminu.List{
 		Columns: []terminu.Column{
 			{Title: "#", Number: true}, // the place (user, 2026-11-12)
 			{Title: "Name", Shrink: true, MinWidth: 6},
 			{Title: "Score", Number: true},
+			{Title: "Lines", Number: true, Drop: 6},
+			{Title: clearNames[0], Number: true, Drop: 2},
+			{Title: clearNames[1], Number: true, Drop: 3},
+			{Title: clearNames[2], Number: true, Drop: 4},
+			{Title: clearNames[3], Number: true, Drop: 5},
 			{Title: "Time", Drop: 1},
 		},
 		EmptyFact: "No scores yet",
@@ -144,8 +153,8 @@ func NewTetru() *Tetru {
 	t.setModeKeys()
 	t.setActions()
 	t.setRows("")
-	// PLAYGROUND is the screen's only panel: Next 1, Next 2 and INFO are boxes
-	// it draws, with no [N], the focus never on them (user, 2026-11-11).
+	// PLAYGROUND is the screen's only panel: Next, INFO and KEYS are boxes it
+	// draws, with no [N], the focus never on them (user, 2026-11-11).
 	a.AddScreen(&terminu.Screen{
 		Name:        "Tetru",
 		Key:         "T",
@@ -251,7 +260,7 @@ func (t *Tetru) setActions() {
 }
 
 // keepGame keeps the game going in the file of the game saved, its rows a
-// level, level, rows, score and stack, for the next start to go on with; it is not kept
+// level, level, rows, score, clears and stack, for the next start to go on with; it is not kept
 // in the rank now, but once it ends after it is taken up again. Nobody
 // saves by hand: tetru does it as it quits with a game going (user,
 // 2026-11-12: save and quit are two things, a stray s mid-game must not
@@ -259,12 +268,22 @@ func (t *Tetru) setActions() {
 // time starts over).
 func (t *Tetru) keepGame() error {
 	g := t.g
-	if err := saved.Save(t.stash, saved.Game{PerLevel: g.PerLevel, Level: g.Level, Lines: g.Lines, Score: g.Score, Stack: g.Stack()}); err != nil {
+	if err := saved.Save(t.stash, saved.Game{PerLevel: g.PerLevel, Level: g.Level, Lines: g.Lines, Score: g.Score, Clears: t.clears(), Stack: g.Stack()}); err != nil {
 		return err
 	}
 	t.saved = true
 	t.App.Log(terminu.Success, "Saved the game: level "+strconv.Itoa(g.Level)+", "+comma(g.Score)+" points")
 	return nil
+}
+
+// clears are the game's clears as kept: nil when they are not known (a
+// game saved by v0.3.1 or before, taken up).
+func (t *Tetru) clears() *[4]int {
+	if !t.g.Counted {
+		return nil
+	}
+	c := t.g.Clears
+	return &c
 }
 
 // anon is the name a score is kept for when none is given (user,
@@ -465,9 +484,9 @@ func (t *Tetru) notKept() string {
 	return comma(t.g.Score) + " points, not in the best " + strconv.Itoa(scores.Most)
 }
 
-// save keeps the game's score for name, once, if it is worth keeping; the
-// worst of the twenty-one then goes. The new record is the cursor's on RANK
-// (tdp K3: the item added).
+// save keeps the game's score for name, its rows and clears with it, once,
+// if it is worth keeping; the worst of the twenty-one then goes. The new
+// record is the cursor's on RANK (tdp K3: the item added).
 func (t *Tetru) save(name string) tea.Cmd {
 	if t.g == nil || t.saved {
 		return nil
@@ -477,7 +496,8 @@ func (t *Tetru) save(name string) tea.Cmd {
 	if !t.worth() {
 		return nil
 	}
-	t.all = scores.Best(append(t.all, scores.Score{Time: time.Now().Truncate(time.Second), Name: name, Score: t.g.Score}))
+	lines := t.g.Lines
+	t.all = scores.Best(append(t.all, scores.Score{Time: time.Now().Truncate(time.Second), Name: name, Score: t.g.Score, Lines: &lines, Clears: t.clears()}))
 	t.setRows(strconv.Itoa(len(t.all) - 1)) // the new one, last as kept
 	if err := scores.Save(t.path, t.all); err != nil {
 		return t.App.Error("Can't keep the score", t.path, err.Error())
@@ -536,13 +556,19 @@ func (t *Tetru) keepAndQuit() tea.Cmd {
 }
 
 // setRows lists the records best first, each with its place (user,
-// 2026-11-12); sel is the ID of the row to put the cursor on, "" to leave
-// it.
+// 2026-11-12), its rows and its clears (user, 2026-11-16), - where a record
+// kept by v0.3.1 or before has none; sel is the ID of the row to put the
+// cursor on, "" to leave it.
 func (t *Tetru) setRows(sel string) {
 	var rows []terminu.Row
 	for n, i := range scores.Ranked(t.all) {
 		s := t.all[i]
-		r := terminu.Row{ID: strconv.Itoa(i), Cells: []string{strconv.Itoa(n + 1), s.Name, comma(s.Score), s.Time.Local().Format("2006-01-02 15:04")}}
+		lines := "-"
+		if s.Lines != nil {
+			lines = strconv.Itoa(*s.Lines)
+		}
+		c := counts(s.Clears)
+		r := terminu.Row{ID: strconv.Itoa(i), Cells: []string{strconv.Itoa(n + 1), s.Name, comma(s.Score), lines, c[0], c[1], c[2], c[3], s.Time.Local().Format("2006-01-02 15:04")}}
 		if n < len(podium) {
 			for _, c := range r.Cells {
 				r.Styled = append(r.Styled, []terminu.Span{{Text: c, Style: terminu.Fg(podium[n])}})

@@ -25,6 +25,7 @@ func TestSaveLoadRemove(t *testing.T) {
 	}
 	var g Game
 	g.PerLevel, g.Level, g.Lines, g.Score = 15, 3, 35, 12340
+	g.Clears = &[4]int{9, 4, 2, 3} // user, 2026-11-16
 	// Each block its piece's (user, 2026-11-13: the colours back).
 	for i := range game.Pieces {
 		g.Stack[game.Rows-1][i] = uint8(1 + i)
@@ -41,12 +42,30 @@ func TestSaveLoadRemove(t *testing.T) {
 	if !strings.Contains(string(data), "lines_per_level: 15\n") {
 		t.Fatalf("the rows a level not kept:\n%s", data)
 	}
+	if !strings.Contains(string(data), "clears: [9, 4, 2, 3]\n") {
+		t.Fatalf("the clears not kept:\n%s", data)
+	}
 	// Windows has no Unix modes: a file there is always rw-rw-rw-.
 	if fi, _ := os.Stat(path); runtime.GOOS != "windows" && fi.Mode().Perm() != 0o644 {
 		t.Fatalf("mode %v", fi.Mode().Perm())
 	}
 	back, err := Load(path)
-	if err != nil || *back != g {
+	if err != nil || back.Clears == nil || *back.Clears != *g.Clears {
+		t.Fatalf("read back %+v, %v", back, err)
+	}
+	if back.Clears = g.Clears; *back != g {
+		t.Fatalf("read back %+v", back)
+	}
+	// A game whose clears are not known (taken up from one saved by v0.3.1)
+	// is saved with none, and read back so.
+	g.Clears = nil
+	if err := Save(path, g); err != nil {
+		t.Fatal(err)
+	}
+	if data, _ := os.ReadFile(path); strings.Contains(string(data), "clears") {
+		t.Fatalf("clears not known written:\n%s", data)
+	}
+	if back, err := Load(path); err != nil || back.Clears != nil {
 		t.Fatalf("read back %+v, %v", back, err)
 	}
 	if err := Remove(path); err != nil {
@@ -73,6 +92,10 @@ func TestLoadAGameOfV010(t *testing.T) {
 	if g.PerLevel != OldPerLevel || OldPerLevel != 20 {
 		t.Fatalf("a game saved without its rows a level goes on at %d", g.PerLevel)
 	}
+	// Nor, till v0.3.1, the clears: not known.
+	if g.Clears != nil {
+		t.Fatalf("a game saved without its clears has %v", *g.Clears)
+	}
 }
 
 func TestLoadBroken(t *testing.T) {
@@ -87,6 +110,8 @@ func TestLoadBroken(t *testing.T) {
 		"level":     "level: 16\nstack:\n" + rows("............", game.Rows),
 		"score":     "level: 1\nscore: -1\nstack:\n" + rows("............", game.Rows),
 		"per level": "lines_per_level: 0\nlevel: 1\nstack:\n" + rows("............", game.Rows),
+		"clears":    "level: 1\nclears: [0, 0, -1, 0]\nstack:\n" + rows("............", game.Rows),
+		"3 clears":  "level: 1\nclears: [0, 0, 1]\nstack:\n" + rows("............", game.Rows),
 	} {
 		path := filepath.Join(t.TempDir(), "game.yaml")
 		os.WriteFile(path, []byte(body), 0o644)

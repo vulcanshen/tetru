@@ -16,8 +16,8 @@ with the player's name and the time, and ranks them, the best first.
 ## Features
 
 - **Drawn as locku's falling blocks**: the same square pixels and colours. The well at the left; at its right, in the same
-  panel, the next two pieces, a box each, then INFO with the level, the rows and the score, and KEYS with the keys to
-  play with.
+  panel, the next piece in a box, then INFO with the level, the rows, the score and how many times one, two,
+  three or four rows went at once (Single, Double, Triple, Quad), and KEYS with the keys to play with.
 - **Your keys**: every key you play with can be changed on the Settings screen, `Space` too for a turn or the drop;
   `Esc` (pause) stays as it is.
 - **Fifteen levels of speed**: a level every ten rows, from a row a second to ten a second; past the fifteenth the
@@ -28,8 +28,8 @@ with the player's name and the time, and ranks them, the best first.
   columns, the levels are A to F; the last is gold.
 - **A hint, if you like**: a lighter grey on the ground shows where the piece lands if you drop it now, at every
   level; switch it off on the Settings screen.
-- **The best twenty kept**: the place, the name, the score and the time, the best first on the Rank screen, the first
-  three in yellow, green and sky blue. You play first and say who played as the game ends; with no name it is ANON. A
+- **The best twenty kept**: the place, the name, the score, the rows, the Singles, Doubles, Triples and Quads, and the
+  time, the best first on the Rank screen, the first three in yellow, green and sky blue. You play first and say who played as the game ends; with no name it is ANON. A
   game whose score is not in the best twenty is not kept, and nobody is asked.
 - **Pause whenever**: `Esc` pauses and leaves the game where it is, `Enter` to go on. `Space` shows what you can do, the game waiting while it is open.
 - **Quit and go on later**: quitting with a game going keeps it, its score and the blocks on the ground, nobody
