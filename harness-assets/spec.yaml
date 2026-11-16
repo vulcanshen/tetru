@@ -1,4 +1,4 @@
-id: 70
+id: 71
 from: v1.2.9
 to: v1.2.10
 tasks:
@@ -198,10 +198,12 @@ tasks:
       - 'GitHub 的 social preview：docs/social-preview.png（使用者 2026-11-12：social preview 還沒作），照家族其他成員的樣子（locku 的 social-preview）：640×320 黑底，上面是 docs/icon.svg 直接畫成 260×260，下面是 Tiny5 字型的 tetru（#cdd6f4）。tdp 沒管這張圖，家族成員都有；開 GitHub repo 後在 Settings 的 Social preview 上傳'
       - 'docs/social-preview.png：harness v1.2.2 的 project.3 寫明 docs/ 裡圖上沒寫的檔案由 app 自行決定（原本找不到根據，2026-11-12 review 回報 harness #1，使用者選 B，已關）'
   - id: 13
-    spec: 69
-    request: '除了 Space 是暫停並打開 Space menu，其他的鍵都在 Settings 裡讓使用者自己設定。後來（使用者 2026-11-13）：Setting 不需要拆兩個 panel 去作設定，同一個 panel 分成兩個 section 就好'
+    spec: 71
+    request: '除了 Space 是暫停並打開 Space menu，其他的鍵都在 Settings 裡讓使用者自己設定。後來（使用者 2026-11-13）：Setting 不需要拆兩個 panel 去作設定，同一個 panel 分成兩個 section 就好。再後來（使用者 2026-11-16）：Space 也給玩家選，預設不變；Settings 每一列都可以選 Space（使用者想要的是 Space 落到底），選了按 Enter 後跳警告，或者 tgo 有沒有辦法在那個選項上就提示警告'
     tdp: [tdp panel.12, tdp select, tdp popup.7, tdp toast, tdp E2, tdp E3, tdp F5, tdp note.7, tdp K1, tdp K11, tdp K12, tdp P5, tdp M5, tdp popup.1, tdp screen.2, tdp K6, tdp panel.11, tdp note.6]
     remark:
+      - note: 'Space 給玩家選：tdp v1.2.10 的 K11 寫明模式裡 Space 打開模式的 Space menu（表、app 自己的模式「裡面照樣要守的」），使用者設定的鍵不能是 Space（「Space、?、!、Esc、q、Ctrl-C、Tab 與數字鍵照上表，不能改」，這句是使用者 2026-11-13 經 tetru 定的）。使用者 2026-11-15 想讓 Space 落到底，也說跟「不知道就按 Space」違背；2026-11-16 定了方向：預設不變，玩家在 Settings 選了才換，每一列都能選，選了跳警告。送給本機的 terminu session（使用者：直接溝通不發 issue），提了 A（預設不變、玩家選了之後模式裡沒有 Space menu，? 與 footer 照樣揭露，Esc 之後 Space 開 panel 的 menu；理由是 K11 放行改 Enter 的「使用者自己選的鍵不會這樣」與 K10 的 PTY），B（預設就是動作），C（不放行），並問 select 的選項能不能帶說明好提示警告（tgo Select.Options 是 []string），不然用 Warning toast。會動到 task 4（footer 的 Space:menu）、task 5（Gaming 的 Space menu）。回覆（2026-11-16，terminu 轉達）：使用者選 A，預設照舊、app 不能把動作設成預設；放了之後模式沒有 Space menu，原本只在 menu 的鍵都要在 60 欄的 footer（放不下就不能提供 Space），footer 寫 Space:<動作>，Space 已經有動作時再選跳 Warning；警告也選 A：select 不改，選定 Space 後跳 Warning toast（字由 app 決定）。tdp 的 K5、K11、screen.2、menu.4 已改（新增 K11-27，K11-1/14/15/20/25 加例外），還沒定版；terminu-go v1.2.11 的模式先攔 Space 開 menu、footer 一律寫 Space:menu，要等 terminu-go 改。暫時照現在：Space 只開 menu，Settings 不列 Space'
+        issue: 本機 terminu session 2026-11-16
       - '讓玩家改 Gaming 的鍵、能選哪些、怎麼設定，app 可以自行決定（tdp K11，K11-14；tdp #5 回報後 v1.2.3 放行）；要守的：選到 Gaming 裡已經有作用的鍵（別的動作的鍵、core key）就跳 Warning、寫出被誰用了、不設定；? 與 footer 寫的是目前的鍵；core key 與 panel 的鍵不給改'
       - note: '使用者 2026-11-13 要 Settings 是同一個 panel 分成兩段（鍵、提示的開關）。tdp v1.2.8 只有一般清單能分組（panel.11），回報 tdp #15；tdp v1.2.9 的 panel.12 加了分組（terminu-go v1.2.10 的 Field.Group），照它合成一個 panel。中間暫時是兩個 panel（[1] KEYS、[2] PLAY）'
         issue: tdp #15
