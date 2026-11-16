@@ -68,7 +68,7 @@ tasks:
       暫停時 PLAYGROUND 的 hint 是 Enter:resume；Space menu 是一般的：
       PANEL OPERATION 的 [Enter] Resume（this game, where it was）、[n]ew game、[x] End game，與 Global operation（沒有 Save，task 16）；Enter 回到 Gaming
       Tab、數字鍵在 Gaming 裡不暫停（tgo Mode.Pause 沒設）：只有一個 panel，tgo 換 panel 時不做事、不出聲
-      Settings 沒有 Pause 那一列（task 13）；INFO 寫 Space menu、Esc pause（task 14）
+      Settings 沒有 Pause 那一列（task 13）；KEYS 寫 Space menu、Esc pause（task 14）
       玩家把旋轉或落到底放到 Space 時（task 13）：Gaming 裡按 Space 做那個動作（tgo v1.2.12：Keys 收 Space、有 Do 的 ModeKey），沒有 Gaming 的 Space menu，動作停用時按了不作用；[r]estart、[q]uit 本來就在 footer（r:restart q:quit，task 4）；Esc 暫停之後按 Space 開 PLAYGROUND 的 Space menu（[Enter] Resume、[n]ew game、[x] End game）
     test: [TestTheGameStopsUnderAPopup, TestEscPausesEnterResumes, TestTabInPlayDoesNothing, TestSpaceMenuRunsRestartAndTheKeysAreInHelp, TestSettingsHaveNoPauseRow, TestRestartFromThePlayModesSpaceMenu, TestPlay, TestSpaceIsATurnOrTheDropIfThePlayerChooses]
   - id: 6
